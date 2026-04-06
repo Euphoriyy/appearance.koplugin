@@ -196,118 +196,110 @@ local function font_color_menu()
                 },
                 set_color_menu(),
                 pick_color_menu(),
-            }
+                {
+                    text = _("Alternative night mode color"),
+                    checked_func = AltNightFontColor.get,
+                    callback = function()
+                        AltNightFontColor.toggle()
+                        fg_cached.alt_night_color = AltNightFontColor.get()
 
-            table.insert(items, {
-                text = _("Alternative night mode color"),
-                checked_func = AltNightFontColor.get,
-                callback = function()
-                    AltNightFontColor.toggle()
-                    fg_cached.alt_night_color = AltNightFontColor.get()
+                        if Screen.night_mode then
+                            recomputeFGColor()
 
-                    if Screen.night_mode then
+                            if fg_cached.set_textbox_color then
+                                refreshFileManager()
+                            end
+
+                            if fg_cached.set_page_color and common.has_document_open() then
+                                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                            end
+                        end
+                    end,
+                },
+                {
+                    text = _("Invert color in night mode"),
+                    enabled_func = function() return not AltNightFontColor.get() end,
+                    checked_func = InvertFontColor.get,
+                    callback = function()
+                        InvertFontColor.toggle()
+                        fg_cached.invert_in_night_mode = InvertFontColor.get()
                         recomputeFGColor()
 
-                        if fg_cached.set_textbox_color then
-                            refreshFileManager()
+                        if Screen.night_mode then
+                            if fg_cached.set_textbox_color then
+                                refreshFileManager()
+                            end
+
+                            if fg_cached.set_page_color and common.has_document_open() then
+                                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                            end
                         end
+                    end,
+                    separator = true,
+                },
+                {
+                    text = _("Apply to text boxes (CoverBrowser)"),
+                    checked_func = TextBoxFontColor.get,
+                    callback = function()
+                        TextBoxFontColor.toggle()
+                        fg_cached.set_textbox_color = TextBoxFontColor.get()
 
-                        if fg_cached.set_page_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
-                    end
-                end,
-            })
-
-            table.insert(items, {
-                text = _("Invert color in night mode"),
-                enabled_func = function() return not AltNightFontColor.get() end,
-                checked_func = InvertFontColor.get,
-                callback = function()
-                    InvertFontColor.toggle()
-                    fg_cached.invert_in_night_mode = InvertFontColor.get()
-                    recomputeFGColor()
-
-                    if Screen.night_mode then
-                        if fg_cached.set_textbox_color then
-                            refreshFileManager()
-                        end
-
-                        if fg_cached.set_page_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
-                    end
-                end,
-                separator = true,
-            })
-
-            table.insert(items, {
-                text = _("Apply to text boxes (CoverBrowser)"),
-                checked_func = TextBoxFontColor.get,
-                callback = function()
-                    TextBoxFontColor.toggle()
-                    fg_cached.set_textbox_color = TextBoxFontColor.get()
-
-                    -- Update the file list
-                    refreshFileManager()
-                end,
-            })
-
-            table.insert(items, {
-                text = _("Apply to dictionary text"),
-                checked_func = DictionaryFontColor.get,
-                callback = function()
-                    DictionaryFontColor.toggle()
-                    fg_cached.set_dictionary_color = DictionaryFontColor.get()
-                end,
-            })
-
-            table.insert(items, {
-                text = _("Apply to reader pages (epub, html, fb2, txt...)"),
-                checked_func = PageFontColor.get,
-                callback = function()
-                    PageFontColor.toggle()
-                    fg_cached.set_page_color = PageFontColor.get()
-
-                    if common.has_document_open() then
-                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                    end
-                end,
-            })
-
-            table.insert(items, {
-                text = _("Apply in reader only"),
-                checked_func = ReaderOnlyFontColor.get,
-                callback = function()
-                    ReaderOnlyFontColor.toggle()
-                    fg_cached.reader_only = ReaderOnlyFontColor.get()
-
-                    if fg_cached.set_textbox_color then
+                        -- Update the file list
                         refreshFileManager()
-                    end
+                    end,
+                },
+                {
+                    text = _("Apply to dictionary text"),
+                    checked_func = DictionaryFontColor.get,
+                    callback = function()
+                        DictionaryFontColor.toggle()
+                        fg_cached.set_dictionary_color = DictionaryFontColor.get()
+                    end,
+                },
+                {
+                    text = _("Apply to reader pages (epub, html, fb2, txt...)"),
+                    checked_func = PageFontColor.get,
+                    callback = function()
+                        PageFontColor.toggle()
+                        fg_cached.set_page_color = PageFontColor.get()
 
-                    if common.has_document_open() and fg_cached.set_page_color then
-                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                    end
-                end,
-                separator = true,
-            })
+                        if common.has_document_open() then
+                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                        end
+                    end,
+                },
+                {
+                    text = _("Apply in reader only"),
+                    checked_func = ReaderOnlyFontColor.get,
+                    callback = function()
+                        ReaderOnlyFontColor.toggle()
+                        fg_cached.reader_only = ReaderOnlyFontColor.get()
 
-            table.insert(items, {
-                text = _("Enable markup colors"),
-                checked_func = MarkupColors.get,
-                callback = function()
-                    MarkupColors.toggle()
-                end,
-            })
+                        if fg_cached.set_textbox_color then
+                            refreshFileManager()
+                        end
 
-            table.insert(items, {
-                text = _("Invert markup colors in night mode"),
-                checked_func = InvertMarkupColors.get,
-                callback = function()
-                    InvertMarkupColors.toggle()
-                end,
-            })
+                        if common.has_document_open() and fg_cached.set_page_color then
+                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                        end
+                    end,
+                    separator = true,
+                },
+                {
+                    text = _("Enable markup colors"),
+                    checked_func = MarkupColors.get,
+                    callback = function()
+                        MarkupColors.toggle()
+                    end,
+                },
+                {
+                    text = _("Invert markup colors in night mode"),
+                    checked_func = InvertMarkupColors.get,
+                    callback = function()
+                        InvertMarkupColors.toggle()
+                    end,
+                },
+            }
             return items
         end,
     }
