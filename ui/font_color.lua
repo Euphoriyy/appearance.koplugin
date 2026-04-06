@@ -3,7 +3,6 @@ local ColorWheelWidget = require("widgets/colorwheelwidget")
 local DictQuickLookup = require("ui/widget/dictquicklookup")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
-local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local RenderText = require("ui/rendertext")
 local Screen = require("device").screen
@@ -15,7 +14,6 @@ local UIManager = require("ui/uimanager")
 local bit = require("bit")
 local common = require("lib/common")
 local logger = require("logger")
-local util = require("util")
 
 -- Settings
 local HexFontColor = Setting("ui_font_color_hex", "#000000")               -- RGB hex for UI font color (default: #000000)
@@ -24,7 +22,6 @@ local AltNightFontColor = Setting("ui_font_color_alt_night", false)        -- Wh
 local NightHexFontColor = Setting("ui_font_color_night_hex", "#FFFFFF")    -- RGB hex for the alternative UI font color in night mode (default: #FFFFFF)
 local TextBoxFontColor = Setting("ui_font_color_textbox", true)            -- Whether the font color of TextBoxWidgets should be changed (default: true)
 local DictionaryFontColor = Setting("ui_font_color_dict", true)            -- Whether the font color of the dictionary should be changed (default: true)
-local PageFontColor = Setting("ui_font_color_reader_page", false)          -- Whether the font color of the page should be changed (default: false)
 local ReaderOnlyFontColor = Setting("ui_font_color_reader_only", false)    -- Whether the font color should be changed in the reader only (default: false)
 local MarkupColors = Setting("ui_font_color_markup", true)                 -- Whether the markup colors should be enabled (default: true)
 local InvertMarkupColors = Setting("ui_font_color_inverted_markup", false) -- Whether the markup colors should be inverted in night mode (default: false)
@@ -35,7 +32,6 @@ local fg_cached = {
     invert_in_night_mode = InvertFontColor.get(),
     set_textbox_color = TextBoxFontColor.get(),
     set_dictionary_color = DictionaryFontColor.get(),
-    set_page_color = PageFontColor.get(),
     reader_only = ReaderOnlyFontColor.get(),
     hex = HexFontColor.get(),
     night_hex = NightHexFontColor.get(),
@@ -91,11 +87,6 @@ local function refresh()
     -- If TextBoxWidget colors are enabled, then update the file list
     if fg_cached.set_textbox_color then
         refreshFileManager()
-    end
-
-    -- Reapply page CSS
-    if fg_cached.set_page_color and common.has_document_open() then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
     end
 end
 
@@ -208,10 +199,6 @@ local function font_color_menu()
                         if fg_cached.set_textbox_color then
                             refreshFileManager()
                         end
-
-                        if fg_cached.set_page_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
                     end
                 end,
             },
@@ -227,10 +214,6 @@ local function font_color_menu()
                     if Screen.night_mode then
                         if fg_cached.set_textbox_color then
                             refreshFileManager()
-                        end
-
-                        if fg_cached.set_page_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
                         end
                     end
                 end,
@@ -256,18 +239,6 @@ local function font_color_menu()
                 end,
             },
             {
-                text = _("Apply to reader pages (epub, html, fb2, txt...)"),
-                checked_func = PageFontColor.get,
-                callback = function()
-                    PageFontColor.toggle()
-                    fg_cached.set_page_color = PageFontColor.get()
-
-                    if common.has_document_open() then
-                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                    end
-                end,
-            },
-            {
                 text = _("Apply in reader only"),
                 checked_func = ReaderOnlyFontColor.get,
                 callback = function()
@@ -276,10 +247,6 @@ local function font_color_menu()
 
                     if fg_cached.set_textbox_color then
                         refreshFileManager()
-                    end
-
-                    if common.has_document_open() and fg_cached.set_page_color then
-                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
                     end
                 end,
                 separator = true,
@@ -314,10 +281,6 @@ function UIManager:ToggleNightMode()
         if fg_cached.set_textbox_color then
             refreshFileManager()
         end
-
-        if fg_cached.set_page_color and common.has_document_open() then
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        end
     end
 end
 
@@ -331,10 +294,6 @@ function UIManager:SetNightMode(night_mode)
         if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
             if fg_cached.set_textbox_color then
                 refreshFileManager()
-            end
-
-            if fg_cached.set_page_color and common.has_document_open() then
-                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
             end
         end
     end
@@ -717,30 +676,6 @@ function DictQuickLookup:getHtmlDictionaryCss()
         ]]
 
         return original_css .. custom_css
-    else
-        return original_css
-    end
-end
-
--- Add font color to reader style tweak CSS if enabled
-local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
-function ReaderStyleTweak:getCssText()
-    local original_css = original_ReaderStyleTweak_getCssText(self)
-
-    if fg_cached.set_page_color then
-        local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
-        if Screen.night_mode then
-            if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-                fg_hex = common.invertColor(fg_hex)
-            end
-        end
-
-        local fg_css = [[
-            body {
-                color: ]] .. fg_hex .. [[ !important;
-            }
-        ]]
-        return util.trim(fg_css .. original_css)
     else
         return original_css
     end

@@ -7,7 +7,6 @@ local Cache = require("cache")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Device = require("device")
 local DictQuickLookup = require("ui/widget/dictquicklookup")
-local Document = require("document/document")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local FrameContainer = require("ui/widget/container/framecontainer")
@@ -16,11 +15,9 @@ local HtmlBoxWidget = require("ui/widget/htmlboxwidget")
 local IconWidget = require("ui/widget/iconwidget")
 local ImageWidget = require("ui/widget/imagewidget")
 local InputText = require("ui/widget/inputtext")
-local KoptInterface = require("document/koptinterface")
 local LineWidget = require("ui/widget/linewidget")
 local ProgressWidget = require("ui/widget/progresswidget")
 local ReaderFooter = require("apps/reader/modules/readerfooter")
-local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local ReaderView = require("apps/reader/modules/readerview")
 local RenderImage = require("ui/renderimage")
@@ -39,20 +36,18 @@ local userpatch = require("userpatch")
 local util = require("util")
 
 -- Settings
-local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")                  -- RGB hex for UI background color (default: #FFFFFF)
-local InvertBackgroundColor = Setting("ui_background_color_inverted", true)               -- Whether the UI background color should be inverted in night mode (default: true)
-local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)           -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
-local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000")       -- RGB hex for the alternative UI background color in night mode (default: #000000)
-local InvertIcons = Setting("ui_background_color_invert_icons", true)                     -- Whether icons should be inverted when an alternative night mode color is set
-local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)               -- Whether the background color of TextBoxWidgets should be changed (default: true)
-local ReflowableBackgroundColor = Setting("ui_background_color_reader_reflowable", false) -- Whether the background color of reflowable pages should be changed (default: false)
-local FixedBackgroundColor = Setting("ui_background_color_reader_fixed", false)           -- Whether the background color of fixed pages should be changed (default: false)
-local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)         -- Whether the background color of the ReaderFooter should be changed (default: false)
-local SidesBackgroundColor = Setting("ui_background_color_reader_sides", false)           -- Whether the background color of the reader sides should be changed (default: false)
-local GapBackgroundColor = Setting("ui_background_color_reader_gap", false)               -- Whether the background color of the page gap should be changed (default: false)
-local TransparentIcons = Setting("ui_background_color_transparent_icons", false)          -- Whether icons should be fully transparent (default: false)
-local TransparentButtons = Setting("ui_background_color_transparent_buttons", false)      -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter = Setting("ui_background_color_transparent_footer", false)        -- Whether the ReaderFooter should be fully transparent (default: false)
+local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")             -- RGB hex for UI background color (default: #FFFFFF)
+local InvertBackgroundColor = Setting("ui_background_color_inverted", true)          -- Whether the UI background color should be inverted in night mode (default: true)
+local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)      -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
+local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000")  -- RGB hex for the alternative UI background color in night mode (default: #000000)
+local InvertIcons = Setting("ui_background_color_invert_icons", true)                -- Whether icons should be inverted when an alternative night mode color is set
+local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)          -- Whether the background color of TextBoxWidgets should be changed (default: true)
+local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)    -- Whether the background color of the ReaderFooter should be changed (default: false)
+local SidesBackgroundColor = Setting("ui_background_color_reader_sides", false)      -- Whether the background color of the reader sides should be changed (default: false)
+local GapBackgroundColor = Setting("ui_background_color_reader_gap", false)          -- Whether the background color of the page gap should be changed (default: false)
+local TransparentIcons = Setting("ui_background_color_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
+local TransparentButtons = Setting("ui_background_color_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
+local TransparentFooter = Setting("ui_background_color_transparent_footer", false)   -- Whether the ReaderFooter should be fully transparent (default: false)
 
 ------------------------------------------------------------
 -- ImageWidget specific code
@@ -87,8 +82,6 @@ local bg_cached = {
     invert_in_night_mode = InvertBackgroundColor.get(),
     invert_icons_in_night_mode = InvertIcons.get(),
     set_textbox_color = TextBoxBackgroundColor.get(),
-    set_reflowable_color = ReflowableBackgroundColor.get(),
-    set_fixed_color = FixedBackgroundColor.get(),
     set_footer_color = FooterBackgroundColor.get(),
     set_sides_color = SidesBackgroundColor.get(),
     set_gap_color = GapBackgroundColor.get(),
@@ -171,11 +164,6 @@ local function refresh()
     end
 
     reloadIcons()
-
-    -- Reapply page CSS
-    if bg_cached.set_reflowable_color and common.has_document_open() and ReaderUI.instance.rolling then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-    end
 end
 
 -- Menus
@@ -289,10 +277,6 @@ local function background_color_menu()
                         if bg_cached.set_textbox_color then
                             refreshFileManager()
                         end
-
-                        if bg_cached.set_reflowable_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
                     end
                 end,
             },
@@ -324,10 +308,6 @@ local function background_color_menu()
                         if bg_cached.set_textbox_color then
                             refreshFileManager()
                         end
-
-                        if bg_cached.set_reflowable_color and common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
                     end
                 end,
                 separator = true,
@@ -341,26 +321,6 @@ local function background_color_menu()
 
                     -- Update the file list
                     refreshFileManager()
-                end,
-            },
-            {
-                text = _("Apply to reader pages (epub, html, fb2, txt...)"),
-                checked_func = ReflowableBackgroundColor.get,
-                callback = function()
-                    ReflowableBackgroundColor.toggle()
-                    bg_cached.set_reflowable_color = ReflowableBackgroundColor.get()
-
-                    if common.has_document_open() then
-                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                    end
-                end,
-            },
-            {
-                text = _("Apply to reader pages (pdf, djvu, cbz...)"),
-                checked_func = FixedBackgroundColor.get,
-                callback = function()
-                    FixedBackgroundColor.toggle()
-                    bg_cached.set_fixed_color = FixedBackgroundColor.get()
                 end,
             },
             {
@@ -759,10 +719,6 @@ function UIManager:ToggleNightMode()
         end
 
         ImageCache:clear()
-
-        if bg_cached.set_reflowable_color and common.has_document_open() then
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        end
     end
 end
 
@@ -779,10 +735,6 @@ function UIManager:SetNightMode(night_mode)
             end
 
             ImageCache:clear()
-
-            if bg_cached.set_reflowable_color and common.has_document_open() then
-                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-            end
         end
     end
 end
@@ -977,30 +929,6 @@ function Button:_doFeedbackHighlight()
         UIManager:widgetInvert(self[1], self[1].dimen.x, self[1].dimen.y)
     end
     UIManager:setDirty(nil, "fast", self[1].dimen)
-end
-
--- Add background color to reader style tweak CSS if enabled
-local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
-function ReaderStyleTweak:getCssText()
-    local original_css = original_ReaderStyleTweak_getCssText(self)
-
-    if bg_cached.set_reflowable_color then
-        local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
-        if Screen.night_mode then
-            if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-                bg_hex = common.invertColor(bg_hex)
-            end
-        end
-
-        local bg_css = [[
-            body {
-                background-color: ]] .. bg_hex .. [[ !important;
-            }
-        ]]
-        return util.trim(bg_css .. original_css)
-    else
-        return original_css
-    end
 end
 
 -- Restore virtual keyboard key border with appropriate color
@@ -1199,125 +1127,6 @@ function Button:init()
 
     if bg_cached.transparent_buttons then
         self[1].background = nil
-    end
-end
-
--- Helper: check if dual pages are enabled (comicreader.koplugin)
-local function has_dual_pages()
-    local ui = ReaderUI.instance
-    return ui.paging.isDualPageEnabled and ui.paging:isDualPageEnabled()
-end
-
--- Helper: recolor light pixels as an alternative to RGB multiplication
-local function recolorLightPixels(bb, x, y, w, h, c)
-    local bb_w = bb:getWidth()
-    local bb_h = bb:getHeight()
-    local x0 = math.max(x, 0)
-    local y0 = math.max(y, 0)
-    local x1 = math.min(x + w - 1, bb_w - 1)
-    local y1 = math.min(y + h - 1, bb_h - 1)
-    for py = y0, y1 do
-        for px = x0, x1 do
-            local pixel = bb:getPixel(px, py)
-            if pixel:getR() > 200 and pixel:getG() > 200 and pixel:getB() > 200 then
-                bb:setPixel(px, py, c)
-            end
-        end
-    end
-end
-
--- Add background color to PDFs by using RGB multiplication (or replacement)
-local original_Document_drawPage = Document.drawPage
-function Document:drawPage(target, x, y, rect, pageno, zoom, rotation, gamma)
-    original_Document_drawPage(self, target, x, y, rect, pageno, zoom, rotation, gamma)
-
-    if not bg_cached.set_fixed_color then
-        return
-    end
-
-    -- Manually replace white background in software-inverted night mode where multiplication would fail
-    -- (Note that this doesn't work on Android due to the way it inverts during night mode)
-    -- Or to have an idempotent effect when dual pages are enabled
-    -- Otherwise, the right side of the screen becomes more saturated due to repeated multiplication
-    local sw_invert = Screen.night_mode and not Device:canHWInvert()
-    if not Device:isAndroid() and (sw_invert or has_dual_pages()) then
-        recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
-    else
-        target:multiplyRectRGB(x, y, rect.w, rect.h, bg_cached.bgcolor)
-    end
-end
-
--- Do the same for when "Invert Document" is enabled in night mode
--- Use the day mode bgcolor instead of the one for night mode
-local original_Document_drawPageInverted = Document.drawPageInverted
-function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, gamma)
-    if not bg_cached.set_fixed_color then
-        original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
-        return
-    end
-
-    local bgcolor = Blitbuffer.colorFromString(bg_cached.hex)
-
-    -- Multiply against background before inversion when hardware inversion is used
-    if Device:canHWInvert() then
-        local tile = self:renderPage(pageno, rect, zoom, rotation, gamma)
-        target:blitFrom(tile.bb,
-            x, y,
-            rect.x - tile.excerpt.x,
-            rect.y - tile.excerpt.y,
-            rect.w, rect.h)
-        target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
-        target:invertRect(x, y, rect.w, rect.h)
-    else
-        original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
-        -- Manually recolor in Android instead of using RGB multiplication
-        if Device:isAndroid() then
-            recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
-        else
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
-        end
-    end
-end
-
--- Finally, add background color to context pages
-local original_KoptInterface_drawContextPage = KoptInterface.drawContextPage
-function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-    if not bg_cached.set_fixed_color then
-        original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-        return
-    end
-
-    local bgcolor = nightmode_invert and Blitbuffer.colorFromString(bg_cached.hex) or bg_cached.bgcolor
-
-    if nightmode_invert then
-        -- Document:drawPageInverted path
-        if Device:canHWInvert() then
-            local tile = self:renderPage(doc, pageno, rect, zoom, rotation, 1.0)
-            target:blitFrom(tile.bb,
-                x, y,
-                rect.x - tile.excerpt.x,
-                rect.y - tile.excerpt.y,
-                rect.w, rect.h)
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
-            target:invertRect(x, y, rect.w, rect.h)
-        else
-            original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation,
-                nightmode_invert)
-            if Device:isAndroid() then
-                recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
-            else
-                target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
-            end
-        end
-    else
-        -- Document:drawPage path
-        original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-        local sw_invert = Screen.night_mode and not Device:canHWInvert()
-        if not Device:isAndroid() and (sw_invert or has_dual_pages()) then
-            recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
-        else
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
-        end
     end
 end
 

@@ -3,6 +3,7 @@ local ReaderMenu = require("apps/reader/modules/readermenu")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _ = require("gettext")
 local common = require("lib/common")
+local book_menu = require("book/book")
 local themes_menu = require("themes")
 local ui_menu = require("ui/ui")
 
@@ -12,8 +13,9 @@ local Appearance = WidgetContainer:extend({
 })
 
 local submenus = {
-    themes = themes_menu(),
-    ui = ui_menu(),
+    themes_menu(),
+    ui_menu(),
+    book_menu(),
 }
 
 local function patch_menu(menu, order, menu_entries)
@@ -31,16 +33,9 @@ local function patch_menu(menu, order, menu_entries)
     end
 
     -- Insert sub items
-    for _, value in pairs(menu_entries) do
+    for _, value in ipairs(menu_entries) do
         table.insert(menu.menu_items.appearance.sub_item_table, value)
     end
-
-    -- Sort sub items
-    table.sort(menu.menu_items.appearance.sub_item_table, function(a, b)
-        local a_text = type(a.text_func) == "function" and a.text_func() or a.text or ""
-        local b_text = type(b.text_func) == "function" and b.text_func() or b.text or ""
-        return a_text < b_text
-    end)
 end
 
 local original_FileManagerMenu_setUpdateItemTable = FileManagerMenu.setUpdateItemTable
