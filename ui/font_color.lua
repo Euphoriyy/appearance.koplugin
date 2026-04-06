@@ -220,50 +220,55 @@ local function font_color_menu()
                 separator = true,
             },
             {
-                text = _("Apply to text boxes (CoverBrowser)"),
-                checked_func = TextBoxFontColor.get,
-                callback = function()
-                    TextBoxFontColor.toggle()
-                    fg_cached.set_textbox_color = TextBoxFontColor.get()
+                text = _("Advanced settings"),
+                sub_item_table = {
+                    {
+                        text = _("Apply to text boxes (CoverBrowser)"),
+                        checked_func = TextBoxFontColor.get,
+                        callback = function()
+                            TextBoxFontColor.toggle()
+                            fg_cached.set_textbox_color = TextBoxFontColor.get()
 
-                    -- Update the file list
-                    refreshFileManager()
-                end,
-            },
-            {
-                text = _("Apply to dictionary text"),
-                checked_func = DictionaryFontColor.get,
-                callback = function()
-                    DictionaryFontColor.toggle()
-                    fg_cached.set_dictionary_color = DictionaryFontColor.get()
-                end,
-            },
-            {
-                text = _("Apply in reader only"),
-                checked_func = ReaderOnlyFontColor.get,
-                callback = function()
-                    ReaderOnlyFontColor.toggle()
-                    fg_cached.reader_only = ReaderOnlyFontColor.get()
+                            -- Update the file list
+                            refreshFileManager()
+                        end,
+                    },
+                    {
+                        text = _("Apply to dictionary text"),
+                        checked_func = DictionaryFontColor.get,
+                        callback = function()
+                            DictionaryFontColor.toggle()
+                            fg_cached.set_dictionary_color = DictionaryFontColor.get()
+                        end,
+                    },
+                    {
+                        text = _("Apply in reader only"),
+                        checked_func = ReaderOnlyFontColor.get,
+                        callback = function()
+                            ReaderOnlyFontColor.toggle()
+                            fg_cached.reader_only = ReaderOnlyFontColor.get()
 
-                    if fg_cached.set_textbox_color then
-                        refreshFileManager()
-                    end
-                end,
-                separator = true,
-            },
-            {
-                text = _("Enable markup colors"),
-                checked_func = MarkupColors.get,
-                callback = function()
-                    MarkupColors.toggle()
-                end,
-            },
-            {
-                text = _("Invert markup colors in night mode"),
-                checked_func = InvertMarkupColors.get,
-                callback = function()
-                    InvertMarkupColors.toggle()
-                end,
+                            if fg_cached.set_textbox_color then
+                                refreshFileManager()
+                            end
+                        end,
+                        separator = true,
+                    },
+                    {
+                        text = _("Enable markup colors"),
+                        checked_func = MarkupColors.get,
+                        callback = function()
+                            MarkupColors.toggle()
+                        end,
+                    },
+                    {
+                        text = _("Invert markup colors in night mode"),
+                        checked_func = InvertMarkupColors.get,
+                        callback = function()
+                            InvertMarkupColors.toggle()
+                        end,
+                    },
+                }
             },
         },
     }

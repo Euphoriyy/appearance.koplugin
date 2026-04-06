@@ -313,77 +313,82 @@ local function background_color_menu()
                 separator = true,
             },
             {
-                text = _("Apply to text boxes (CoverBrowser)"),
-                checked_func = TextBoxBackgroundColor.get,
-                callback = function()
-                    TextBoxBackgroundColor.toggle()
-                    bg_cached.set_textbox_color = TextBoxBackgroundColor.get()
+                text = _("Advanced settings"),
+                sub_item_table = {
+                    {
+                        text = _("Apply to the reader footer"),
+                        checked_func = FooterBackgroundColor.get,
+                        callback = function()
+                            FooterBackgroundColor.toggle()
+                            bg_cached.set_footer_color = FooterBackgroundColor.get()
 
-                    -- Update the file list
-                    refreshFileManager()
-                end,
-            },
-            {
-                text = _("Apply to the reader footer"),
-                checked_func = FooterBackgroundColor.get,
-                callback = function()
-                    FooterBackgroundColor.toggle()
-                    bg_cached.set_footer_color = FooterBackgroundColor.get()
+                            if common.has_document_open() then
+                                UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
+                            end
+                        end,
+                    },
+                    {
+                        text = _("Apply to the reader sides"),
+                        checked_func = SidesBackgroundColor.get,
+                        callback = function()
+                            SidesBackgroundColor.toggle()
+                            bg_cached.set_sides_color = SidesBackgroundColor.get()
+                        end,
+                    },
+                    {
+                        text = _("Apply to the page gaps"),
+                        checked_func = GapBackgroundColor.get,
+                        callback = function()
+                            GapBackgroundColor.toggle()
+                            bg_cached.set_gap_color = GapBackgroundColor.get()
+                        end,
+                        separator = true,
+                    },
+                    {
+                        text = _("Apply to text boxes (CoverBrowser)"),
+                        checked_func = TextBoxBackgroundColor.get,
+                        callback = function()
+                            TextBoxBackgroundColor.toggle()
+                            bg_cached.set_textbox_color = TextBoxBackgroundColor.get()
 
-                    if common.has_document_open() then
-                        UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
-                    end
-                end,
-            },
-            {
-                text = _("Apply to the reader sides"),
-                checked_func = SidesBackgroundColor.get,
-                callback = function()
-                    SidesBackgroundColor.toggle()
-                    bg_cached.set_sides_color = SidesBackgroundColor.get()
-                end,
-            },
-            {
-                text = _("Apply to the page gaps"),
-                checked_func = GapBackgroundColor.get,
-                callback = function()
-                    GapBackgroundColor.toggle()
-                    bg_cached.set_gap_color = GapBackgroundColor.get()
-                end,
-                separator = true,
-            },
-            {
-                text = _("Make icons transparent"),
-                checked_func = TransparentIcons.get,
-                callback = function()
-                    TransparentIcons.toggle()
-                    bg_cached.transparent_icons = TransparentIcons.get()
+                            -- Update the file list
+                            refreshFileManager()
+                        end,
+                    },
+                    {
+                        text = _("Make icons transparent"),
+                        checked_func = TransparentIcons.get,
+                        callback = function()
+                            TransparentIcons.toggle()
+                            bg_cached.transparent_icons = TransparentIcons.get()
 
-                    reloadIcons()
-                end,
-            },
-            {
-                text = _("Make buttons transparent"),
-                checked_func = TransparentButtons.get,
-                callback = function()
-                    TransparentButtons.toggle()
-                    bg_cached.transparent_buttons = TransparentButtons.get()
+                            reloadIcons()
+                        end,
+                    },
+                    {
+                        text = _("Make buttons transparent"),
+                        checked_func = TransparentButtons.get,
+                        callback = function()
+                            TransparentButtons.toggle()
+                            bg_cached.transparent_buttons = TransparentButtons.get()
 
-                    UIManager:askForRestart()
-                end,
-            },
-            {
-                text = _("Make the reader footer transparent"),
-                enabled_func = function() return not FooterBackgroundColor.get() end,
-                checked_func = TransparentFooter.get,
-                callback = function()
-                    TransparentFooter.toggle()
-                    bg_cached.transparent_footer = TransparentFooter.get()
+                            UIManager:askForRestart()
+                        end,
+                    },
+                    {
+                        text = _("Make the reader footer transparent"),
+                        enabled_func = function() return not FooterBackgroundColor.get() end,
+                        checked_func = TransparentFooter.get,
+                        callback = function()
+                            TransparentFooter.toggle()
+                            bg_cached.transparent_footer = TransparentFooter.get()
 
-                    if common.has_document_open() then
-                        UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
-                    end
-                end,
+                            if common.has_document_open() then
+                                UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
+                            end
+                        end,
+                    },
+                },
             },
         },
     }
