@@ -7,6 +7,7 @@ local InfoMessage = require("ui/widget/infomessage")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
+local TripleConfirmBox = require("widgets/tripleconfirmbox")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
 local theme_list = require("lib/theme_list")
@@ -256,7 +257,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
             original_background = Screen.night_mode and bgcolor:invert() or bgcolor,
             background = EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(MultiConfirmBox:new({
+                UIManager:show(TripleConfirmBox:new({
                     text = _("Apply the theme to:"),
                     choice1_text = _("UI"),
                     choice1_callback = function()
@@ -531,7 +532,7 @@ local function ask_to_apply(theme, reapply, book)
         ok_text = _("Yes"),
         ok_callback = function()
             if book == nil then
-                UIManager:show(MultiConfirmBox:new({
+                UIManager:show(TripleConfirmBox:new({
                     text = _("Apply the theme to:"),
                     choice1_text = _("UI"),
                     choice1_callback = function()
