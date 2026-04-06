@@ -18,6 +18,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local Font = require("ui/font")
 local Screen = Device.screen
+local common = require("lib/common")
 
 ------------------------------------------------------------
 
@@ -147,7 +148,7 @@ function ColorWheel:_renderToBuffer(x, y)
     local side    = dr * 2 + 1
     local buf     = Blitbuffer.new(side, side, Blitbuffer.TYPE_BBRGB32)
     local bgcolor = Screen.bb:getPixel(x - 1, y - 1)
-    buf:fill(bgcolor)
+    common.fillRGB(buf, Blitbuffer.TYPE_BBRGB32, bgcolor)
 
     local cache = getWheelCache(dr)
     local hue_t = cache.hue

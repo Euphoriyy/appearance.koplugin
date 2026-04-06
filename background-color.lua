@@ -34,7 +34,6 @@ local UIManager = require("ui/uimanager")
 local UnderlineContainer = require("ui/widget/container/underlinecontainer")
 local VirtualKeyboard = require("ui/widget/virtualkeyboard")
 local common = require("lib/common")
-local ffi = require("ffi")
 local logger = require("logger")
 local userpatch = require("userpatch")
 local util = require("util")
@@ -77,13 +76,6 @@ local ImageCache = Cache:new {
     -- Rely on our FFI finalizer to free the BBs on GC
     enable_eviction_cb = false,
 }
-
-local uint8pt = ffi.typeof("uint8_t*")
-
--- color value pointer types
-local P_Color8A = ffi.typeof("Color8A*")
-local P_ColorRGB16 = ffi.typeof("ColorRGB16*")
-local P_ColorRGB32 = ffi.typeof("ColorRGB32*")
 
 --------------------------------------------
 -- Background Color
@@ -506,44 +498,6 @@ function ScreenSaverWidget:init()
     end
 end
 
--- Method to fill icon backgrounds
--- RGB version of Blitbuffer:fill
-local function fillRGB(bb, bbtype, v)
-    -- While we could use a plain ffi.fill, there are a few BB types where we do not want to stomp on the alpha byte...
-
-    -- Handle invert...
-    if bb:getInverse() == 1 then v = v:invert() end
-
-    --print("fill")
-    if bbtype == Blitbuffer.TYPE_BBRGB32 then
-        local src = v:getColorRGB32()
-        local p = ffi.cast(P_ColorRGB32, bb.data)
-        for i = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            -- Pointer arithmetics magic: +1 on an uint32_t* means +4 bytes (i.e., next pixel) ;).
-            p = p + 1
-        end
-    elseif bbtype == Blitbuffer.TYPE_BBRGB16 then
-        local src = v:getColorRGB16()
-        local p = ffi.cast(P_ColorRGB16, bb.data)
-        for i = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            p = p + 1
-        end
-    elseif bbtype == Blitbuffer.TYPE_BB8A then
-        local src = v:getColor8A()
-        local p = ffi.cast(P_Color8A, bb.data)
-        for i = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            p = p + 1
-        end
-    else
-        -- Should only be BBRGB24 & BB8 left, where we can use ffi.fill ;)
-        local p = ffi.cast(uint8pt, bb.data)
-        ffi.fill(p, bb.stride * bb.h, v.alpha)
-    end
-end
-
 local function should_invert_icons()
     if bg_cached.alt_night_color then
         return bg_cached.invert_icons_in_night_mode
@@ -637,7 +591,7 @@ function ImageWidget:_loadfile()
 
                         -- Fill icon's background with custom background color
                         if bg_cached.bgcolor then
-                            fillRGB(icon_bb, Screen.bb:getType(), bg_cached.bgcolor)
+                            common.fillRGB(icon_bb, Screen.bb:getType(), bg_cached.bgcolor)
                         end
 
                         -- And now simply compose the icon on top of that, with dithering if necessary
