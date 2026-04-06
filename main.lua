@@ -10,9 +10,9 @@ local Appearance = WidgetContainer:extend({
 })
 
 local submenus = {
-    background_color = require("background-color")(),
-    background_image = require("background-image")(),
-    font_color = require("font-color")(),
+    background_color = require("background_color")(),
+    background_image = require("background_image")(),
+    font_color = require("font_color")(),
     themes = require("themes")(),
 }
 
