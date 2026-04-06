@@ -118,97 +118,94 @@ local function background_image_menu()
         text_func = function()
             return T(_("Background image: %1"), BackgroundImage.get() and backgroundImageName() or "none")
         end,
-        sub_item_table_func = function()
-            local items = {
-                {
-                    text_func = function()
-                        local status = BackgroundImage.get()
-                            and (backgroundImageName() .. " (hold to unset)")
-                            or "none (press to select)"
-                        return T(_("Current image: %1"), status)
-                    end,
-                    callback = function(touchmenu_instance)
-                        local title_header, current_path, file_filter, caller_callback
-                        title_header = _("Current image:")
-                        current_path = BackgroundImage.get()
-                        file_filter = function(filename)
-                            return DocumentRegistry:hasProvider(filename)
-                        end
-                        caller_callback = function(path)
-                            BackgroundImage.set(path)
-                            touchmenu_instance:updateItems()
-                            reload_background_image()
-                        end
-                        filemanagerutil.showChooseDialog(
-                            title_header, caller_callback, current_path, nil, file_filter
-                        )
-                    end,
-                    hold_callback = function(touchmenu_instance)
-                        BackgroundImage.set(nil)
+        sub_item_table = {
+            {
+                text_func = function()
+                    local status = BackgroundImage.get()
+                        and (backgroundImageName() .. " (hold to unset)")
+                        or "none (press to select)"
+                    return T(_("Current image: %1"), status)
+                end,
+                callback = function(touchmenu_instance)
+                    local title_header, current_path, file_filter, caller_callback
+                    title_header = _("Current image:")
+                    current_path = BackgroundImage.get()
+                    file_filter = function(filename)
+                        return DocumentRegistry:hasProvider(filename)
+                    end
+                    caller_callback = function(path)
+                        BackgroundImage.set(path)
                         touchmenu_instance:updateItems()
                         reload_background_image()
-                    end,
-                },
-                {
-                    text = _("Stretch background image to fit screen"),
-                    checked_func = StretchImage.get,
-                    callback = function()
-                        StretchImage.toggle()
+                    end
+                    filemanagerutil.showChooseDialog(
+                        title_header, caller_callback, current_path, nil, file_filter
+                    )
+                end,
+                hold_callback = function(touchmenu_instance)
+                    BackgroundImage.set(nil)
+                    touchmenu_instance:updateItems()
+                    reload_background_image()
+                end,
+            },
+            {
+                text = _("Stretch background image to fit screen"),
+                checked_func = StretchImage.get,
+                callback = function()
+                    StretchImage.toggle()
+                    reload_background_image()
+                end,
+            },
+            {
+                text = _("Rotate background image for best fit"),
+                checked_func = RotateImage.get,
+                callback = function()
+                    RotateImage.toggle()
+                    reload_background_image()
+                end,
+            },
+            {
+                text = _("Invert background image in night mode"),
+                checked_func = InvertImage.get,
+                callback = function()
+                    InvertImage.toggle()
+                    if Screen.night_mode then
                         reload_background_image()
-                    end,
-                },
-                {
-                    text = _("Rotate background image for best fit"),
-                    checked_func = RotateImage.get,
-                    callback = function()
-                        RotateImage.toggle()
-                        reload_background_image()
-                    end,
-                },
-                {
-                    text = _("Invert background image in night mode"),
-                    checked_func = InvertImage.get,
-                    callback = function()
-                        InvertImage.toggle()
-                        if Screen.night_mode then
-                            reload_background_image()
+                    end
+                end,
+                separator = true,
+            },
+            {
+                text = _("Show background image in file browser"),
+                checked_func = ShowInFiles.get,
+                callback = function()
+                    ShowInFiles.toggle()
+                    local fm_ui = FileManager.instance
+                    if FileManager.instance then
+                        fm_ui:setupLayout()
+                        -- Refresh filemanager titlebar if it exists (patch)
+                        if FileManager.updateTitleBarTitle then
+                            fm_ui:updateTitleBarTitle()
                         end
-                    end,
-                    separator = true,
-                },
-                {
-                    text = _("Show background image in file browser"),
-                    checked_func = ShowInFiles.get,
-                    callback = function()
-                        ShowInFiles.toggle()
-                        local fm_ui = FileManager.instance
-                        if FileManager.instance then
-                            fm_ui:setupLayout()
-                            -- Refresh filemanager titlebar if it exists (patch)
-                            if FileManager.updateTitleBarTitle then
-                                fm_ui:updateTitleBarTitle()
-                            end
-                            UIManager:setDirty(FileManager.instance, "ui")
-                        end
-                    end,
-                },
-                {
-                    text = _("Show background image in reader"),
-                    checked_func = ShowInReader.get,
-                    callback = function()
-                        ShowInReader.toggle()
-                    end,
-                },
-                {
-                    text = _("Show background image in top menu"),
-                    checked_func = ShowInMenu.get,
-                    callback = function()
-                        ShowInMenu.toggle()
-                    end,
-                },
-            }
-            return items
-        end,
+                        UIManager:setDirty(FileManager.instance, "ui")
+                    end
+                end,
+            },
+            {
+                text = _("Show background image in reader"),
+                checked_func = ShowInReader.get,
+                callback = function()
+                    ShowInReader.toggle()
+                end,
+            },
+            {
+                text = _("Show background image in top menu"),
+                checked_func = ShowInMenu.get,
+                callback = function()
+                    ShowInMenu.toggle()
+                end,
+            },
+        },
     }
 end
 

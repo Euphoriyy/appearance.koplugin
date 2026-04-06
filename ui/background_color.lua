@@ -266,169 +266,166 @@ local function background_color_menu()
         text_func = function()
             return T(_("Background color: %1"), getBackgroundColor())
         end,
-        sub_item_table_func = function()
-            local items = {
-                {
-                    text_func = function()
-                        return T(_("Current color: %1"), getBackgroundColor())
-                    end,
-                },
-                set_color_menu(),
-                pick_color_menu(),
-                {
-                    text = _("Alternative night mode color"),
-                    checked_func = AltNightBackgroundColor.get,
-                    callback = function()
-                        AltNightBackgroundColor.toggle()
-                        bg_cached.alt_night_color = AltNightBackgroundColor.get()
+        sub_item_table = {
+            {
+                text_func = function()
+                    return T(_("Current color: %1"), getBackgroundColor())
+                end,
+            },
+            set_color_menu(),
+            pick_color_menu(),
+            {
+                text = _("Alternative night mode color"),
+                checked_func = AltNightBackgroundColor.get,
+                callback = function()
+                    AltNightBackgroundColor.toggle()
+                    bg_cached.alt_night_color = AltNightBackgroundColor.get()
 
-                        if Screen.night_mode then
-                            recomputeColors()
-
-                            reloadIcons()
-
-                            if bg_cached.set_textbox_color then
-                                refreshFileManager()
-                            end
-
-                            if bg_cached.set_reflowable_color and common.has_document_open() then
-                                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                            end
-                        end
-                    end,
-                },
-                {
-                    text = _("Invert icons in night mode"),
-                    enabled_func = function() return AltNightBackgroundColor.get() end,
-                    checked_func = InvertIcons.get,
-                    callback = function()
-                        InvertIcons.toggle()
-                        bg_cached.invert_icons_in_night_mode = InvertIcons.get()
-
-                        if Screen.night_mode then
-                            reloadIcons()
-                        end
-                    end,
-                },
-                {
-                    text = _("Invert color in night mode"),
-                    enabled_func = function() return not AltNightBackgroundColor.get() end,
-                    checked_func = InvertBackgroundColor.get,
-                    callback = function()
-                        InvertBackgroundColor.toggle()
-                        bg_cached.invert_in_night_mode = InvertBackgroundColor.get()
+                    if Screen.night_mode then
                         recomputeColors()
 
-                        if Screen.night_mode then
-                            reloadIcons()
+                        reloadIcons()
 
-                            if bg_cached.set_textbox_color then
-                                refreshFileManager()
-                            end
-
-                            if bg_cached.set_reflowable_color and common.has_document_open() then
-                                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                            end
+                        if bg_cached.set_textbox_color then
+                            refreshFileManager()
                         end
-                    end,
-                    separator = true,
-                },
-                {
-                    text = _("Apply to text boxes (CoverBrowser)"),
-                    checked_func = TextBoxBackgroundColor.get,
-                    callback = function()
-                        TextBoxBackgroundColor.toggle()
-                        bg_cached.set_textbox_color = TextBoxBackgroundColor.get()
 
-                        -- Update the file list
-                        refreshFileManager()
-                    end,
-                },
-                {
-                    text = _("Apply to reader pages (epub, html, fb2, txt...)"),
-                    checked_func = ReflowableBackgroundColor.get,
-                    callback = function()
-                        ReflowableBackgroundColor.toggle()
-                        bg_cached.set_reflowable_color = ReflowableBackgroundColor.get()
-
-                        if common.has_document_open() then
+                        if bg_cached.set_reflowable_color and common.has_document_open() then
                             UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
                         end
-                    end,
-                },
-                {
-                    text = _("Apply to reader pages (pdf, djvu, cbz...)"),
-                    checked_func = FixedBackgroundColor.get,
-                    callback = function()
-                        FixedBackgroundColor.toggle()
-                        bg_cached.set_fixed_color = FixedBackgroundColor.get()
-                    end,
-                },
-                {
-                    text = _("Apply to the reader footer"),
-                    checked_func = FooterBackgroundColor.get,
-                    callback = function()
-                        FooterBackgroundColor.toggle()
-                        bg_cached.set_footer_color = FooterBackgroundColor.get()
+                    end
+                end,
+            },
+            {
+                text = _("Invert icons in night mode"),
+                enabled_func = function() return AltNightBackgroundColor.get() end,
+                checked_func = InvertIcons.get,
+                callback = function()
+                    InvertIcons.toggle()
+                    bg_cached.invert_icons_in_night_mode = InvertIcons.get()
 
-                        if common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
-                        end
-                    end,
-                },
-                {
-                    text = _("Apply to the reader sides"),
-                    checked_func = SidesBackgroundColor.get,
-                    callback = function()
-                        SidesBackgroundColor.toggle()
-                        bg_cached.set_sides_color = SidesBackgroundColor.get()
-                    end,
-                },
-                {
-                    text = _("Apply to the page gaps"),
-                    checked_func = GapBackgroundColor.get,
-                    callback = function()
-                        GapBackgroundColor.toggle()
-                        bg_cached.set_gap_color = GapBackgroundColor.get()
-                    end,
-                    separator = true,
-                },
-                {
-                    text = _("Make icons transparent"),
-                    checked_func = TransparentIcons.get,
-                    callback = function()
-                        TransparentIcons.toggle()
-                        bg_cached.transparent_icons = TransparentIcons.get()
-
+                    if Screen.night_mode then
                         reloadIcons()
-                    end,
-                },
-                {
-                    text = _("Make buttons transparent"),
-                    checked_func = TransparentButtons.get,
-                    callback = function()
-                        TransparentButtons.toggle()
-                        bg_cached.transparent_buttons = TransparentButtons.get()
+                    end
+                end,
+            },
+            {
+                text = _("Invert color in night mode"),
+                enabled_func = function() return not AltNightBackgroundColor.get() end,
+                checked_func = InvertBackgroundColor.get,
+                callback = function()
+                    InvertBackgroundColor.toggle()
+                    bg_cached.invert_in_night_mode = InvertBackgroundColor.get()
+                    recomputeColors()
 
-                        UIManager:askForRestart()
-                    end,
-                },
-                {
-                    text = _("Make the reader footer transparent"),
-                    enabled_func = function() return not FooterBackgroundColor.get() end,
-                    checked_func = TransparentFooter.get,
-                    callback = function()
-                        TransparentFooter.toggle()
-                        bg_cached.transparent_footer = TransparentFooter.get()
+                    if Screen.night_mode then
+                        reloadIcons()
 
-                        if common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
+                        if bg_cached.set_textbox_color then
+                            refreshFileManager()
                         end
-                    end,
-                },
-            }
-            return items
-        end,
+
+                        if bg_cached.set_reflowable_color and common.has_document_open() then
+                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                        end
+                    end
+                end,
+                separator = true,
+            },
+            {
+                text = _("Apply to text boxes (CoverBrowser)"),
+                checked_func = TextBoxBackgroundColor.get,
+                callback = function()
+                    TextBoxBackgroundColor.toggle()
+                    bg_cached.set_textbox_color = TextBoxBackgroundColor.get()
+
+                    -- Update the file list
+                    refreshFileManager()
+                end,
+            },
+            {
+                text = _("Apply to reader pages (epub, html, fb2, txt...)"),
+                checked_func = ReflowableBackgroundColor.get,
+                callback = function()
+                    ReflowableBackgroundColor.toggle()
+                    bg_cached.set_reflowable_color = ReflowableBackgroundColor.get()
+
+                    if common.has_document_open() then
+                        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+                    end
+                end,
+            },
+            {
+                text = _("Apply to reader pages (pdf, djvu, cbz...)"),
+                checked_func = FixedBackgroundColor.get,
+                callback = function()
+                    FixedBackgroundColor.toggle()
+                    bg_cached.set_fixed_color = FixedBackgroundColor.get()
+                end,
+            },
+            {
+                text = _("Apply to the reader footer"),
+                checked_func = FooterBackgroundColor.get,
+                callback = function()
+                    FooterBackgroundColor.toggle()
+                    bg_cached.set_footer_color = FooterBackgroundColor.get()
+
+                    if common.has_document_open() then
+                        UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
+                    end
+                end,
+            },
+            {
+                text = _("Apply to the reader sides"),
+                checked_func = SidesBackgroundColor.get,
+                callback = function()
+                    SidesBackgroundColor.toggle()
+                    bg_cached.set_sides_color = SidesBackgroundColor.get()
+                end,
+            },
+            {
+                text = _("Apply to the page gaps"),
+                checked_func = GapBackgroundColor.get,
+                callback = function()
+                    GapBackgroundColor.toggle()
+                    bg_cached.set_gap_color = GapBackgroundColor.get()
+                end,
+                separator = true,
+            },
+            {
+                text = _("Make icons transparent"),
+                checked_func = TransparentIcons.get,
+                callback = function()
+                    TransparentIcons.toggle()
+                    bg_cached.transparent_icons = TransparentIcons.get()
+
+                    reloadIcons()
+                end,
+            },
+            {
+                text = _("Make buttons transparent"),
+                checked_func = TransparentButtons.get,
+                callback = function()
+                    TransparentButtons.toggle()
+                    bg_cached.transparent_buttons = TransparentButtons.get()
+
+                    UIManager:askForRestart()
+                end,
+            },
+            {
+                text = _("Make the reader footer transparent"),
+                enabled_func = function() return not FooterBackgroundColor.get() end,
+                checked_func = TransparentFooter.get,
+                callback = function()
+                    TransparentFooter.toggle()
+                    bg_cached.transparent_footer = TransparentFooter.get()
+
+                    if common.has_document_open() then
+                        UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
+                    end
+                end,
+            },
+        },
     }
 end
 
