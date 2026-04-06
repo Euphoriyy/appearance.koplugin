@@ -305,14 +305,12 @@ end
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
     original_UIManager_ToggleNightMode(self)
-
     reload_background_image()
 end
 
 local original_UIManager_SetNightMode = UIManager.SetNightMode
 function UIManager:SetNightMode()
     original_UIManager_SetNightMode(self)
-
     reload_background_image()
 end
 

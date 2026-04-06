@@ -18,7 +18,7 @@ local HexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
 local InvertBackgroundColor = Setting("book_background_color_inverted", true)
 local AltNightBackgroundColor = Setting("book_background_color_alt_night", false)
 local NightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
-local FixedBackgroundColor = Setting("book_background_color_reader_fixed", true) -- Whether the background color of fixed pages should be changed (default: false)
+local FixedBackgroundColor = Setting("book_background_color_reader_fixed", true) -- Whether the background color of fixed pages should be changed (default: true)
 
 -- Cache
 local bg_cached = {
