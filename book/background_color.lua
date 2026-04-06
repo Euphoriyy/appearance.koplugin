@@ -3,6 +3,7 @@ local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Device = require("device")
 local Document = require("document/document")
 local Event = require("ui/event")
+local FileManager = require("apps/filemanager/filemanager")
 local KoptInterface = require("document/koptinterface")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
@@ -390,6 +391,33 @@ function UIManager:SetNightMode(night_mode)
             end
         end
     end
+end
+
+-- Event handlers for when a theme is applied
+local original_FileManager_onApplyTheme = FileManager.onApplyTheme
+function FileManager:onApplyTheme()
+    if original_FileManager_onApplyTheme then
+        original_FileManager_onApplyTheme(self)
+    end
+
+    bg_cached.hex = HexBackgroundColor.get()
+    bg_cached.night_hex = NightHexBackgroundColor.get()
+    bg_cached.alt_night_color = AltNightBackgroundColor.get()
+    recomputeColors()
+    refresh()
+end
+
+local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
+function ReaderUI:onApplyTheme()
+    if original_ReaderUI_onApplyTheme then
+        original_ReaderUI_onApplyTheme(self)
+    end
+
+    bg_cached.hex = HexBackgroundColor.get()
+    bg_cached.night_hex = NightHexBackgroundColor.get()
+    bg_cached.alt_night_color = AltNightBackgroundColor.get()
+    recomputeColors()
+    refresh()
 end
 
 return background_color_menu

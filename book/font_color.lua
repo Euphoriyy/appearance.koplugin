@@ -1,7 +1,9 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Event = require("ui/event")
+local FileManager = require("apps/filemanager/filemanager")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
+local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
@@ -247,6 +249,33 @@ function UIManager:SetNightMode(night_mode)
             end
         end
     end
+end
+
+-- Event handlers for when a theme is applied
+local original_FileManager_onApplyTheme = FileManager.onApplyTheme
+function FileManager:onApplyTheme()
+    if original_FileManager_onApplyTheme then
+        original_FileManager_onApplyTheme(self)
+    end
+
+    fg_cached.hex = HexFontColor.get()
+    fg_cached.night_hex = NightHexFontColor.get()
+    fg_cached.alt_night_color = AltNightFontColor.get()
+    recomputeFGColor()
+    refresh()
+end
+
+local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
+function ReaderUI:onApplyTheme()
+    if original_ReaderUI_onApplyTheme then
+        original_ReaderUI_onApplyTheme(self)
+    end
+
+    fg_cached.hex = HexFontColor.get()
+    fg_cached.night_hex = NightHexFontColor.get()
+    fg_cached.alt_night_color = AltNightFontColor.get()
+    recomputeFGColor()
+    refresh()
 end
 
 return font_color_menu

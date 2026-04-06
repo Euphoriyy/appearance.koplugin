@@ -11,20 +11,30 @@ local UIManager = require("ui/uimanager")
 local common = require("lib/common")
 local theme_list = require("lib/theme_list")
 
--- Significant variables for the UI background and font color patches
-local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")            -- RGB hex for UI background color (default: #FFFFFF)
-local InvertBackgroundColor = Setting("ui_background_color_inverted", true)         -- Whether the UI background color should be inverted in night mode (default: true)
-local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)     -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
-local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000") -- RGB hex for the alternative UI background color in night mode (default: #000000)
-local HexFontColor = Setting("ui_font_color_hex", "#000000")                        -- RGB hex for UI font color (default: #000000)
-local AltNightFontColor = Setting("ui_font_color_alt_night", false)                 -- Whether the UI font color should be changed to an alternative color in night mode (default: false)
-local NightHexFontColor = Setting("ui_font_color_night_hex", "#FFFFFF")             -- RGB hex for the alternative UI font color in night mode (default: #FFFFFF)
+-- Significant variables for the UI background and font color
+local UIHexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")
+local UIInvertBackgroundColor = Setting("ui_background_color_inverted", true)
+local UIAltNightBackgroundColor = Setting("ui_background_color_alt_night", false)
+local UINightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000")
+local UIHexFontColor = Setting("ui_font_color_hex", "#000000")
+local UIAltNightFontColor = Setting("ui_font_color_alt_night", false)
+local UINightHexFontColor = Setting("ui_font_color_night_hex", "#FFFFFF")
+
+-- Significant variables for the Book background and font color
+local BookHexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
+local BookAltNightBackgroundColor = Setting("book_background_color_alt_night", false)
+local BookNightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
+local BookHexFontColor = Setting("book_font_color_hex", "#000000")
+local BookAltNightFontColor = Setting("book_font_color_alt_night", false)
+local BookNightHexFontColor = Setting("book_font_color_night_hex", "#FFFFFF")
 
 -- Theme variables
 local DayThemes = Setting("ui_themes_day", theme_list.DEFAULT_DAY_THEMES)
 local NightThemes = Setting("ui_themes_night", theme_list.DEFAULT_NIGHT_THEMES)
-local CurrentDayTheme = Setting("ui_themes_current_day", theme_list.DEFAULT_DAY_THEME)
-local CurrentNightTheme = Setting("ui_themes_current_night", theme_list.DEFAULT_NIGHT_THEME)
+local CurrentUIDayTheme = Setting("ui_themes_current_day", theme_list.DEFAULT_DAY_THEME)
+local CurrentUINightTheme = Setting("ui_themes_current_night", theme_list.DEFAULT_NIGHT_THEME)
+local CurrentBookDayTheme = Setting("book_themes_current_day", theme_list.DEFAULT_DAY_THEME)
+local CurrentBookNightTheme = Setting("book_themes_current_night", theme_list.DEFAULT_NIGHT_THEME)
 
 -- Cache of current theme lists
 local cached = {
@@ -33,22 +43,40 @@ local cached = {
 }
 
 -- Set background color variables
-local function setBackgroundColor(hex, night)
-    if not night then
-        HexBackgroundColor.set(hex)
+local function setBackgroundColor(hex, book, night)
+    if not book then
+        if not night then
+            UIHexBackgroundColor.set(hex)
+        else
+            UIAltNightBackgroundColor.set(true)
+            UINightHexBackgroundColor.set(hex)
+        end
     else
-        AltNightBackgroundColor.set(true)
-        NightHexBackgroundColor.set(hex)
+        if not night then
+            BookHexBackgroundColor.set(hex)
+        else
+            BookAltNightBackgroundColor.set(true)
+            BookNightHexBackgroundColor.set(hex)
+        end
     end
 end
 
 -- Set font color variables
-local function setForegroundColor(hex, night)
-    if not night then
-        HexFontColor.set(hex)
+local function setForegroundColor(hex, book, night)
+    if not book then
+        if not night then
+            UIHexFontColor.set(hex)
+        else
+            UIAltNightFontColor.set(true)
+            UINightHexFontColor.set(hex)
+        end
     else
-        AltNightFontColor.set(true)
-        NightHexFontColor.set(hex)
+        if not night then
+            BookHexFontColor.set(hex)
+        else
+            BookAltNightFontColor.set(true)
+            BookNightHexFontColor.set(hex)
+        end
     end
 end
 
@@ -108,7 +136,7 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
 
     local h, s, v = common.hexToHSV(original_hex)
     local wheel
-    local should_invert_wheel = AltNightBackgroundColor.get() or not InvertBackgroundColor.get()
+    local should_invert_wheel = UIAltNightBackgroundColor.get() or not UIInvertBackgroundColor.get()
     wheel = ColorWheelWidget:new({
         title_text = T(_("Pick %1 color"), type),
         hue = h,
@@ -230,21 +258,77 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
             callback = function()
                 UIManager:show(MultiConfirmBox:new({
                     text = _("Apply the theme to:"),
-                    choice1_text = _("§orange ☀️ Day mode§r "),
+                    choice1_text = _("UI"),
                     choice1_callback = function()
-                        CurrentDayTheme.set(theme)
+                        UIManager:show(MultiConfirmBox:new({
+                            text = _("Apply the theme to:"),
+                            choice1_text = _("§orange ☀️ Day mode§r "),
+                            choice1_callback = function()
+                                CurrentUIDayTheme.set(theme)
 
-                        setBackgroundColor(theme.bg, false)
-                        setForegroundColor(theme.fg, false)
-                        UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                                setBackgroundColor(theme.bg, false, false)
+                                setForegroundColor(theme.fg, false, false)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                            choice2_text = _("§blue ⏾ Night mode§r "),
+                            choice2_callback = function()
+                                CurrentUINightTheme.set(theme)
+
+                                setBackgroundColor(theme.bg, false, true)
+                                setForegroundColor(theme.fg, false, true)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                        }))
                     end,
-                    choice2_text = _("§blue ⏾ Night mode§r "),
+                    choice2_text = _("Book"),
                     choice2_callback = function()
-                        CurrentNightTheme.set(theme)
+                        UIManager:show(MultiConfirmBox:new({
+                            text = _("Apply the theme to:"),
+                            choice1_text = _("§orange ☀️ Day mode§r "),
+                            choice1_callback = function()
+                                CurrentBookDayTheme.set(theme)
 
-                        setBackgroundColor(theme.bg, true)
-                        setForegroundColor(theme.fg, true)
-                        UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                                setBackgroundColor(theme.bg, true, false)
+                                setForegroundColor(theme.fg, true, false)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                            choice2_text = _("§blue ⏾ Night mode§r "),
+                            choice2_callback = function()
+                                CurrentBookNightTheme.set(theme)
+
+                                setBackgroundColor(theme.bg, true, true)
+                                setForegroundColor(theme.fg, true, true)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                        }))
+                    end,
+                    choice3_text = _("Both"),
+                    choice3_callback = function()
+                        UIManager:show(MultiConfirmBox:new({
+                            text = _("Apply the theme to:"),
+                            choice1_text = _("§orange ☀️ Day mode§r "),
+                            choice1_callback = function()
+                                CurrentUIDayTheme.set(theme)
+                                CurrentBookDayTheme.set(theme)
+
+                                setBackgroundColor(theme.bg, false, false)
+                                setForegroundColor(theme.fg, false, false)
+                                setBackgroundColor(theme.bg, true, false)
+                                setForegroundColor(theme.fg, true, false)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                            choice2_text = _("§blue ⏾ Night mode§r "),
+                            choice2_callback = function()
+                                CurrentUINightTheme.set(theme)
+                                CurrentBookNightTheme.set(theme)
+
+                                setBackgroundColor(theme.bg, false, true)
+                                setForegroundColor(theme.fg, false, true)
+                                setBackgroundColor(theme.bg, true, true)
+                                setForegroundColor(theme.fg, true, true)
+                                UIManager:broadcastEvent(Event:new("ApplyTheme"))
+                            end,
+                        }))
                     end,
                 }))
 
@@ -405,20 +489,68 @@ end
 
 -- Popup to ask whether the theme should be (re)applied now
 -- Used after creation of a new theme or selection of the current theme
-local function ask_to_apply(theme, reapply)
+local function ask_to_apply(theme, reapply, book)
+    local function apply_theme(both_ui_and_book)
+        if both_ui_and_book then
+            if not theme.night then
+                CurrentUIDayTheme.set(theme)
+                CurrentBookDayTheme.set(theme)
+            else
+                CurrentUINightTheme.set(theme)
+                CurrentBookNightTheme.set(theme)
+            end
+
+            setBackgroundColor(theme.bg, false, theme.night)
+            setForegroundColor(theme.fg, false, theme.night)
+            setBackgroundColor(theme.bg, true, theme.night)
+            setForegroundColor(theme.fg, true, theme.night)
+            UIManager:broadcastEvent(Event:new("ApplyTheme"))
+        else
+            if not theme.night then
+                if not book then
+                    CurrentUIDayTheme.set(theme)
+                else
+                    CurrentBookDayTheme.set(theme)
+                end
+            else
+                if not book then
+                    CurrentUINightTheme.set(theme)
+                else
+                    CurrentBookNightTheme.set(theme)
+                end
+            end
+
+            setBackgroundColor(theme.bg, book, theme.night)
+            setForegroundColor(theme.fg, book, theme.night)
+            UIManager:broadcastEvent(Event:new("ApplyTheme"))
+        end
+    end
+
     UIManager:show(ConfirmBox:new({
         text = T(_("%1 this theme now?"), reapply and "Reapply" or "Apply"),
         ok_text = _("Yes"),
         ok_callback = function()
-            if not theme.night then
-                CurrentDayTheme.set(theme)
+            if book == nil then
+                UIManager:show(MultiConfirmBox:new({
+                    text = _("Apply the theme to:"),
+                    choice1_text = _("UI"),
+                    choice1_callback = function()
+                        book = false
+                        apply_theme(false)
+                    end,
+                    choice2_text = _("Book"),
+                    choice2_callback = function()
+                        book = true
+                        apply_theme(false)
+                    end,
+                    choice3_text = _("Both"),
+                    choice3_callback = function()
+                        apply_theme(true)
+                    end,
+                }))
             else
-                CurrentNightTheme.set(theme)
+                apply_theme(false)
             end
-
-            setBackgroundColor(theme.bg, theme.night)
-            setForegroundColor(theme.fg, theme.night)
-            UIManager:broadcastEvent(Event:new("ApplyTheme"))
         end,
     }))
 end
@@ -450,18 +582,35 @@ local function themes_menu()
             local items = {
                 {
                     text_func = function()
-                        return T(_("Current day theme: %1"), CurrentDayTheme.get().label)
+                        return T(_("Current day theme for UI: %1"), CurrentUIDayTheme.get().label)
                     end,
                     callback = function()
-                        ask_to_apply(CurrentDayTheme.get(), true)
+                        ask_to_apply(CurrentUIDayTheme.get(), true, false)
                     end,
                 },
                 {
                     text_func = function()
-                        return T(_("Current night theme: %1"), CurrentNightTheme.get().label)
+                        return T(_("Current night theme for UI: %1"), CurrentUINightTheme.get().label)
                     end,
                     callback = function()
-                        ask_to_apply(CurrentNightTheme.get(), true)
+                        ask_to_apply(CurrentUINightTheme.get(), true, false)
+                    end,
+                    separator = true,
+                },
+                {
+                    text_func = function()
+                        return T(_("Current day theme for Book: %1"), CurrentBookDayTheme.get().label)
+                    end,
+                    callback = function()
+                        ask_to_apply(CurrentBookDayTheme.get(), true, true)
+                    end,
+                },
+                {
+                    text_func = function()
+                        return T(_("Current night theme for Book: %1"), CurrentBookNightTheme.get().label)
+                    end,
+                    callback = function()
+                        ask_to_apply(CurrentBookNightTheme.get(), true, true)
                     end,
                     separator = true,
                 },
@@ -534,25 +683,42 @@ local function themes_menu()
                         {
                             text = _("Reset to current themes"),
                             callback = function()
-                                local current_day_theme = CurrentDayTheme.get()
-                                local current_night_theme = CurrentNightTheme.get()
-                                setBackgroundColor(current_day_theme.bg, false)
-                                setBackgroundColor(current_night_theme.bg, true)
-                                setForegroundColor(current_day_theme.fg, false)
-                                setForegroundColor(current_night_theme.fg, true)
+                                local current_ui_day_theme = CurrentUIDayTheme.get()
+                                local current_ui_night_theme = CurrentUINightTheme.get()
+                                local current_book_day_theme = CurrentBookDayTheme.get()
+                                local current_book_night_theme = CurrentBookNightTheme.get()
+
+                                setBackgroundColor(current_ui_day_theme.bg, false, false)
+                                setBackgroundColor(current_ui_night_theme.bg, false, true)
+                                setForegroundColor(current_ui_day_theme.fg, false, false)
+                                setForegroundColor(current_ui_night_theme.fg, false, true)
+
+                                setBackgroundColor(current_book_day_theme.bg, true, false)
+                                setBackgroundColor(current_book_night_theme.bg, true, true)
+                                setForegroundColor(current_book_day_theme.fg, true, false)
+                                setForegroundColor(current_book_night_theme.fg, true, true)
+
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         },
                         {
                             text = _("Reset to default themes"),
                             callback = function()
-                                CurrentDayTheme.set(theme_list.DEFAULT_DAY_THEME)
-                                CurrentNightTheme.set(theme_list.DEFAULT_NIGHT_THEME)
+                                CurrentUIDayTheme.set(theme_list.DEFAULT_DAY_THEME)
+                                CurrentUINightTheme.set(theme_list.DEFAULT_NIGHT_THEME)
+                                CurrentBookDayTheme.set(theme_list.DEFAULT_DAY_THEME)
+                                CurrentBookNightTheme.set(theme_list.DEFAULT_NIGHT_THEME)
 
-                                setBackgroundColor(theme_list.DEFAULT_DAY_THEME.bg, false)
-                                setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, true)
-                                setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, false)
-                                setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, true)
+                                setBackgroundColor(theme_list.DEFAULT_DAY_THEME.bg, false, false)
+                                setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, false, true)
+                                setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, false, false)
+                                setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, false, true)
+
+                                setBackgroundColor(theme_list.DEFAULT_DAY_THEME.bg, true, false)
+                                setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, true, true)
+                                setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, true, false)
+                                setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, true, true)
+
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         },
