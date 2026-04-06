@@ -3,6 +3,8 @@ local ReaderMenu = require("apps/reader/modules/readermenu")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local _ = require("gettext")
 local common = require("lib/common")
+local themes_menu = require("themes")
+local ui_menu = require("ui/ui")
 
 local Appearance = WidgetContainer:extend({
     name = "Appearance",
@@ -10,10 +12,8 @@ local Appearance = WidgetContainer:extend({
 })
 
 local submenus = {
-    background_color = require("background_color")(),
-    background_image = require("background_image")(),
-    font_color = require("font_color")(),
-    themes = require("themes")(),
+    themes = themes_menu(),
+    ui = ui_menu(),
 }
 
 local function patch_menu(menu, order, menu_entries)
