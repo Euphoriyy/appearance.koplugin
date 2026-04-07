@@ -1102,7 +1102,7 @@ userpatch.registerPatchPluginFunc("statistics", function()
     end
 end)
 
--- Propagate original_background from the button table entries to each button's FrameContainer
+-- Propagate properties from the button table entries to each button (or its FrameContainer)
 local original_ButtonTable_init = ButtonTable.init
 function ButtonTable:init()
     original_ButtonTable_init(self)
@@ -1113,6 +1113,8 @@ function ButtonTable:init()
             if btn_entry and btn_entry.original_background then
                 self.buttons_layout[i][j][1].original_background = btn_entry.original_background
             end
+            -- Buttons in a button table should NOT be transparent
+            self.buttons_layout[i][j].exclude_from_transparency = true
         end
     end
 end
@@ -1193,14 +1195,14 @@ function IconWidget:init()
     end
 end
 
--- Set buttons to be transparent after initialization
-local original_Button_init = Button.init
-function Button:init()
-    original_Button_init(self)
-
-    if bg_cached.transparent_buttons then
+-- Set buttons to be transparent before painting
+local original_Button_paintTo = Button.paintTo
+function Button:paintTo(bb, x, y)
+    if bg_cached.transparent_buttons and not self.exclude_from_transparency then
         self[1].background = nil
     end
+
+    original_Button_paintTo(self, bb, x, y)
 end
 
 -- Event handlers for when a theme is applied
