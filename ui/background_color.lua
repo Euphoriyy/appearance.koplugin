@@ -76,6 +76,28 @@ local ImageCache = Cache:new {
 }
 
 --------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local font_color
+
+local function get_font_fgcolor()
+    if not font_color then
+        font_color = require("ui/font_color")
+    end
+    return font_color.fgcolor()
+end
+
+local book_bgcolor
+
+local function get_book_bgcolor()
+    if not book_bgcolor then
+        book_bgcolor = require("book/background_color")
+    end
+    return book_bgcolor.bgcolor()
+end
+
+--------------------------------------------
 -- Background Color
 --------------------------------------------
 
@@ -443,7 +465,7 @@ function FrameContainer:paintTo(bb, x, y)
 
     -- After default painting, repaint border
     if bg_cached.set_border_color then
-        local fgcolor = require("ui/font_color").fgcolor() or bg_cached.bgcolor:invert()
+        local fgcolor = get_font_fgcolor() or bg_cached.bgcolor:invert()
 
         local my_size = self:getSize()
         local container_width = self.width or my_size.w
@@ -838,7 +860,7 @@ end
 function LineWidget:paintTo(bb, x, y)
     local original_background = self.background
 
-    local fgcolor = bg_cached.set_outline_color and require("ui/font_color").fgcolor()
+    local fgcolor = bg_cached.set_outline_color and get_font_fgcolor()
         or bg_cached.bgcolor:invert()
 
     if self.background == Blitbuffer.COLOR_WHITE then
@@ -1125,7 +1147,7 @@ end
 -- Change the background color for the reader sides & page gaps
 -- Page view mode
 function ReaderView:drawPageSurround(bb, x, y)
-    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+    local bgcolor = bg_cached.use_book_bgcolor and get_book_bgcolor()
         or bg_cached.bgcolor
     local outer_page_color = bg_cached.set_sides_color and bgcolor or self.outer_page_color
 
@@ -1144,7 +1166,7 @@ end
 
 -- Continuous view mode
 function ReaderView:drawPageBackground(bb, x, y)
-    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+    local bgcolor = bg_cached.use_book_bgcolor and get_book_bgcolor()
         or bg_cached.bgcolor
     local page_bgcolor = bg_cached.set_sides_color and bgcolor or self.page_bgcolor
 
@@ -1153,7 +1175,7 @@ end
 
 -- Continuous view mode - page gaps
 function ReaderView:drawPageGap(bb, x, y)
-    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+    local bgcolor = bg_cached.use_book_bgcolor and get_book_bgcolor()
         or bg_cached.bgcolor
     local page_gap_color = bg_cached.set_gap_color and bgcolor or self.page_gap.color
 
