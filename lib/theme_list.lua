@@ -89,6 +89,8 @@ theme_list.DEFAULT_NIGHT_THEMES = {
     { key = "dark_sky",         label = "Dark Sky",         bg = "#0A1428", fg = "#7AAAD4", night = true },
     { key = "night_blue",       label = "Night Blue",       bg = "#0D1520", fg = "#90B8D8", night = true },
     { key = "moonlight",        label = "Moonlight",        bg = "#12121E", fg = "#C8C8E0", night = true },
+    -- Purple
+    { key = "wisteria_night",   label = "Wisteria Night",   bg = "#150D1F", fg = "#E5D1F5", night = true },
     -- Programming themes
     { key = "dracula",          label = "Dracula",          bg = "#282A36", fg = "#F8F8F2", night = true },
     { key = "nord",             label = "Nord",             bg = "#2E3440", fg = "#D8DEE9", night = true },
