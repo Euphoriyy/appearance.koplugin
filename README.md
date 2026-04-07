@@ -8,7 +8,7 @@ The ultimate plugin to customize <img src="img/koreader.png" width="24" /> KORea
 |---|---|
 | **Themes** | Apply full UI & book themes with one tap |
 | **Colors** | Customize background and font colors |
-| **Color wheel** | Choose colors with visual RGB color wheel  |
+| **Color wheel** | Choose colors with a visual RGB color wheel  |
 | **Page style** | Adjust page colors for a comfortable reading experience (both reflowable & fixed-layout documents such as EPUBs, PDFs, DJVUs, & CBZs) |
 | **Backgrounds** | Set custom background images (like a wallpaper) |
 
@@ -51,7 +51,7 @@ Themes can be configured by holding down on them when selecting them from the li
 
 Go to **🞂 Appearance 🞂 Background image** and pick an image from your device storage. The background will apply immediately across the UI.
 
-You can select where you want the background image to be shown, such as in the file browser, reader, or even the top menu.
+You can select where you want the background image to be shown, such as in the file browser, reader, the top menu, and SimpleUI homescreen.
  
 To remove it, return to the same menu and hold down on the currently selected image.
 
@@ -77,7 +77,9 @@ Each color can be chosen by color picker and code. Changes apply live so you can
 </details>
 
 ## Compatibility
-Tested fully on e-ink, desktop, and mobile devices. For rounded book & folder covers to work properly with the background color, [my special rounded cover patches](https://github.com/Euphoriyy/KOReader.patches#-2-rounded-coverslua) should be used.
+Tested fully on e-ink, desktop, and mobile devices. Fully compatible with popular plugins like [Rakuyomi](https://github.com/tachibana-shin/rakuyomi) and [SimpleUI](https://github.com/doctorhetfield-cmd/simpleui.koplugin).
+
+For rounded book & folder covers to work properly with the background color, [my special rounded cover patches](https://github.com/Euphoriyy/KOReader.patches#-2-rounded-coverslua) should be used.
 
 ## Acknowledgements
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
