@@ -27,6 +27,7 @@ local ShowInReader = Setting("ui_background_image_reader", true)          -- Whe
 local ShowInMenu = Setting("ui_background_image_menu", false)             -- Whether the background image should be shown in the top menu (default: false)
 local ShowInHomescreen = Setting("ui_background_image_homescreen", true)  -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
 local BackgroundImageHistory = Setting("ui_background_image_history", {}) -- A history of the past background images selected.
+local LastBackgroundImage = Setting("ui_background_image_last", nil)      -- The last background images selected.
 
 -- Helper: get the filename for the current background image
 local function backgroundImageName(path)
@@ -142,6 +143,9 @@ local function background_image_menu()
                         return DocumentRegistry:hasProvider(filename)
                     end
                     caller_callback = function(path)
+                        -- Store last background image
+                        LastBackgroundImage.set(BackgroundImage.get())
+
                         BackgroundImage.set(path)
                         touchmenu_instance:updateItems()
                         reload_background_image()
@@ -428,14 +432,11 @@ function ReaderView:onSetDimensions(dimen)
     reload_background_image()
 end
 
--- Register background image selection as dispatcher action
-function FileManager:onSelectBackgroundImage(action_num)
-    local history = BackgroundImageHistory.get()
-    BackgroundImage.set(history[action_num])
-    reload_background_image()
-end
+-- Register background image selection & toggling as dispatcher actions
+local function SelectBackgroundImage(action_num)
+    -- Store last background image
+    LastBackgroundImage.set(BackgroundImage.get())
 
-function ReaderUI:onSelectBackgroundImage(action_num)
     local history = BackgroundImageHistory.get()
     BackgroundImage.set(history[action_num])
     reload_background_image()
@@ -451,11 +452,32 @@ local function getBackgroundImageActions()
     return action_nums, action_texts
 end
 
+local function SetLastBackgroundImage()
+    local last_background_image = LastBackgroundImage.get()
+    if last_background_image then
+        LastBackgroundImage.set(BackgroundImage.get())
+        BackgroundImage.set(last_background_image)
+        reload_background_image()
+    end
+end
+
+FileManager.onSelectBackgroundImage = SelectBackgroundImage
+ReaderUI.onSelectBackgroundImage = SelectBackgroundImage
+FileManager.onSetLastBackgroundImage = SetLastBackgroundImage
+ReaderUI.onSetLastBackgroundImage = SetLastBackgroundImage
+
 Dispatcher:registerAction("ui_background_image_select", {
     category = "string",
     event = "SelectBackgroundImage",
     title = _("Select background image"),
     args_func = getBackgroundImageActions,
+    general = true,
+})
+
+Dispatcher:registerAction("ui_background_image_set_last", {
+    category = "none",
+    event = "SetLastBackgroundImage",
+    title = _("Set last background image"),
     general = true,
 })
 
