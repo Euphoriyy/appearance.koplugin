@@ -1,9 +1,11 @@
 local Device = require("device")
+local Dispatcher = require("dispatcher")
 local DocumentRegistry = require("document/documentregistry")
 local FileManager = require("apps/filemanager/filemanager")
 local FileManagerMenu = require("apps/filemanager/filemanagermenu")
 local ImageWidget = require("ui/widget/imagewidget")
 local ReaderMenu = require("apps/reader/modules/readermenu")
+local ReaderUI = require("apps/reader/readerui")
 local ReaderView = require("apps/reader/modules/readerview")
 local Screen = Device.screen
 local Setting = require("lib/setting")
@@ -12,17 +14,18 @@ local logger = require("logger")
 local pic = require("ffi/pic")
 
 -- Settings
-local BackgroundImage = Setting("ui_background_image_path", nil)     -- Path for UI background image (default: nil)
-local StretchImage = Setting("ui_background_image_stretch", true)    -- Whether the background image should be stretched to fit the screen (default: true)
-local RotateImage = Setting("ui_background_image_auto_rotate", true) -- Whether the background image should be auto-rotated (default: true)
-local InvertImage = Setting("ui_background_image_invert", false)     -- Whether the background image should be inverted in night mode (default: false)
-local ShowInFiles = Setting("ui_background_image_filemanager", true) -- Whether the background image should be shown in the file manager (default: true)
-local ShowInReader = Setting("ui_background_image_reader", true)     -- Whether the background image should be shown in the reader (default: true)
-local ShowInMenu = Setting("ui_background_image_menu", false)        -- Whether the background image should be shown in the top menu (default: false)
+local BackgroundImage = Setting("ui_background_image_path", nil)          -- Path for UI background image (default: nil)
+local StretchImage = Setting("ui_background_image_stretch", true)         -- Whether the background image should be stretched to fit the screen (default: true)
+local RotateImage = Setting("ui_background_image_auto_rotate", true)      -- Whether the background image should be auto-rotated (default: true)
+local InvertImage = Setting("ui_background_image_invert", false)          -- Whether the background image should be inverted in night mode (default: false)
+local ShowInFiles = Setting("ui_background_image_filemanager", true)      -- Whether the background image should be shown in the file manager (default: true)
+local ShowInReader = Setting("ui_background_image_reader", true)          -- Whether the background image should be shown in the reader (default: true)
+local ShowInMenu = Setting("ui_background_image_menu", false)             -- Whether the background image should be shown in the top menu (default: false)
+local BackgroundImageHistory = Setting("ui_background_image_history", {}) -- A history of the past background images selected.
 
 -- Helper: get the filename for the current background image
-local function backgroundImageName()
-    local path = BackgroundImage.get()
+local function backgroundImageName(path)
+    path = path or BackgroundImage.get()
     return path:match("^.+/(.+)$")
 end
 
@@ -137,6 +140,11 @@ local function background_image_menu()
                         BackgroundImage.set(path)
                         touchmenu_instance:updateItems()
                         reload_background_image()
+
+                        -- Append to history
+                        local history = BackgroundImageHistory.get()
+                        table.insert(history, path)
+                        BackgroundImageHistory.set(history)
                     end
                     filemanagerutil.showChooseDialog(
                         title_header, caller_callback, current_path, nil, file_filter
@@ -326,5 +334,36 @@ function ReaderView:onSetDimensions(dimen)
     original_ReaderView_onSetDimensions(self, dimen)
     reload_background_image()
 end
+
+-- Register background image selection as dispatcher action
+function FileManager:onSelectBackgroundImage(action_num)
+    local history = BackgroundImageHistory.get()
+    BackgroundImage.set(history[action_num])
+    reload_background_image()
+end
+
+function ReaderUI:onSelectBackgroundImage(action_num)
+    local history = BackgroundImageHistory.get()
+    BackgroundImage.set(history[action_num])
+    reload_background_image()
+end
+
+local function getBackgroundImageActions()
+    local action_nums, action_texts = {}, {}
+    local history = BackgroundImageHistory.get()
+    for i, v in ipairs(history) do
+        table.insert(action_nums, i)
+        table.insert(action_texts, backgroundImageName(v))
+    end
+    return action_nums, action_texts
+end
+
+Dispatcher:registerAction("ui_background_image_select", {
+    category = "string",
+    event = "SelectBackgroundImage",
+    title = _("Select background image"),
+    args_func = getBackgroundImageActions,
+    general = true,
+})
 
 return background_image_menu
