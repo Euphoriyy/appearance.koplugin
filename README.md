@@ -49,11 +49,13 @@ Themes can be configured by holding down on them when selecting them from the li
  
 <br>
 
-Go to **🞂 Appearance 🞂 Background image** and pick an image from your device storage. The background will apply immediately across the UI.
+Go to **🞂 Appearance 🞂 User interface 🞂 Background image** and pick an image from your device storage. The background will apply immediately across the UI.
 
 You can select where you want the background image to be shown, such as in the file browser, reader, the top menu, and SimpleUI homescreen.
  
 To remove it, return to the same menu and hold down on the currently selected image.
+
+A background image can also be automatically set/changed by using the "Select background image" action in profiles. This allows you to set one of the past background images automatically or by gestures.
 
 </details>
  
