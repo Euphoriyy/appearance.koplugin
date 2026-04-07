@@ -42,6 +42,7 @@ local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false) 
 local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000")  -- RGB hex for the alternative UI background color in night mode (default: #000000)
 local InvertIcons = Setting("ui_background_color_invert_icons", true)                -- Whether icons should be inverted when an alternative night mode color is set
 local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)          -- Whether the background color of TextBoxWidgets should be changed (default: true)
+local BookBackgroundColor = Setting("ui_background_color_book", true)                -- Whether the book's background color should be used for the reader UI
 local FooterBackgroundColor = Setting("ui_background_color_reader_footer", true)     -- Whether the background color of the ReaderFooter should be changed (default: true)
 local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)       -- Whether the background color of the reader sides should be changed (default: true)
 local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)           -- Whether the background color of the page gap should be changed (default: true)
@@ -84,6 +85,7 @@ local bg_cached = {
     invert_in_night_mode = InvertBackgroundColor.get(),
     invert_icons_in_night_mode = InvertIcons.get(),
     set_textbox_color = TextBoxBackgroundColor.get(),
+    use_book_bgcolor = BookBackgroundColor.get(),
     set_footer_color = FooterBackgroundColor.get(),
     set_sides_color = SidesBackgroundColor.get(),
     set_gap_color = GapBackgroundColor.get(),
@@ -319,6 +321,15 @@ local function background_color_menu()
             {
                 text = _("Advanced settings"),
                 sub_item_table = {
+                    {
+                        text = _("Use book's background color for reader UI"),
+                        checked_func = BookBackgroundColor.get,
+                        callback = function()
+                            BookBackgroundColor.toggle()
+
+                            bg_cached.use_book_bgcolor = BookBackgroundColor.get()
+                        end,
+                    },
                     {
                         text = _("Apply to the reader footer"),
                         checked_func = FooterBackgroundColor.get,
@@ -1114,7 +1125,9 @@ end
 -- Change the background color for the reader sides & page gaps
 -- Page view mode
 function ReaderView:drawPageSurround(bb, x, y)
-    local outer_page_color = bg_cached.set_sides_color and bg_cached.bgcolor or self.outer_page_color
+    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+        or bg_cached.bgcolor
+    local outer_page_color = bg_cached.set_sides_color and bgcolor or self.outer_page_color
 
     if self.dimen.h > self.visible_area.h then
         bb:paintRectRGB32(x, y, self.dimen.w, self.state.offset.y, outer_page_color)
@@ -1131,18 +1144,20 @@ end
 
 -- Continuous view mode
 function ReaderView:drawPageBackground(bb, x, y)
-    bb:paintRectRGB32(
-        x, y, self.dimen.w, self.dimen.h,
-        bg_cached.set_sides_color and bg_cached.bgcolor or self.page_bgcolor
-    )
+    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+        or bg_cached.bgcolor
+    local page_bgcolor = bg_cached.set_sides_color and bgcolor or self.page_bgcolor
+
+    bb:paintRectRGB32(x, y, self.dimen.w, self.dimen.h, page_bgcolor)
 end
 
 -- Continuous view mode - page gaps
 function ReaderView:drawPageGap(bb, x, y)
-    bb:paintRectRGB32(
-        x, y, self.dimen.w, self.page_gap.height,
-        bg_cached.set_gap_color and bg_cached.bgcolor or self.page_gap.color
-    )
+    local bgcolor = bg_cached.use_book_bgcolor and require("book/background_color").bgcolor()
+        or bg_cached.bgcolor
+    local page_gap_color = bg_cached.set_gap_color and bgcolor or self.page_gap.color
+
+    bb:paintRectRGB32(x, y, self.dimen.w, self.page_gap.height, page_gap_color)
 end
 
 -- Set icon widgets to be transparent after initialization
