@@ -49,6 +49,7 @@ local TransparentIcons = Setting("ui_background_color_transparent_icons", false)
 local TransparentButtons = Setting("ui_background_color_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
 local TransparentFooter = Setting("ui_background_color_transparent_footer", false)   -- Whether the ReaderFooter should be fully transparent (default: false)
 local OutlineColor = Setting("ui_background_color_lines", true)                      -- Whether the UI outline should be set to the chosen foreground color (default: true)
+local BorderColor = Setting("ui_background_color_border", true)                      -- Whether the UI borders should be set to the chosen foreground color (default: true)
 
 ------------------------------------------------------------
 -- ImageWidget specific code
@@ -90,6 +91,7 @@ local bg_cached = {
     transparent_buttons = TransparentButtons.get(),
     transparent_footer = TransparentFooter.get(),
     set_outline_color = OutlineColor.get(),
+    set_border_color = BorderColor.get(),
     hex = HexBackgroundColor.get(),
     night_hex = NightHexBackgroundColor.get(),
     last_hex = nil,
@@ -398,6 +400,14 @@ local function background_color_menu()
                             bg_cached.set_outline_color = OutlineColor.get()
                         end,
                     },
+                    {
+                        text = _("Apply foreground color to UI borders"),
+                        checked_func = BorderColor.get,
+                        callback = function()
+                            BorderColor.toggle()
+                            bg_cached.set_border_color = BorderColor.get()
+                        end,
+                    },
                 },
             },
         },
@@ -419,6 +429,23 @@ function FrameContainer:paintTo(bb, x, y)
     end
 
     original_FrameContainer_paintTo(self, bb, x, y)
+
+    -- After default painting, repaint border
+    if bg_cached.set_border_color then
+        local fgcolor = require("ui/font_color").fgcolor() or bg_cached.bgcolor:invert()
+
+        local my_size = self:getSize()
+        local container_width = self.width or my_size.w
+        local container_height = self.height or my_size.h
+
+        if self.bordersize > 0 then
+            local anti_alias = G_reader_settings:nilOrTrue("anti_alias_ui")
+            bb:paintBorderRGB32(x + self.margin, y + self.margin,
+                container_width - self.margin * 2,
+                container_height - self.margin * 2,
+                self.bordersize, fgcolor, self.radius, anti_alias)
+        end
+    end
 
     self.background = original_background
     self.color = original_color
