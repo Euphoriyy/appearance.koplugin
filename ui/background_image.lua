@@ -1,14 +1,17 @@
+local Blitbuffer = require("ffi/blitbuffer")
 local Device = require("device")
 local Dispatcher = require("dispatcher")
 local DocumentRegistry = require("document/documentregistry")
 local FileManager = require("apps/filemanager/filemanager")
 local FileManagerMenu = require("apps/filemanager/filemanagermenu")
+local Font = require("ui/font")
 local ImageWidget = require("ui/widget/imagewidget")
 local ReaderMenu = require("apps/reader/modules/readermenu")
 local ReaderUI = require("apps/reader/readerui")
 local ReaderView = require("apps/reader/modules/readerview")
 local Screen = Device.screen
 local Setting = require("lib/setting")
+local TextWidget = require("ui/widget/textwidget")
 local UIManager = require("ui/uimanager")
 local logger = require("logger")
 local pic = require("ffi/pic")
@@ -319,7 +322,7 @@ function ReaderMenu:onShowMenu(tab_index, do_not_show)
     return result
 end
 
-local original_HomescreenWidget_initLayout
+local original_HomescreenWidget_initLayout, original_currently_reading_build
 
 userpatch.registerPatchPluginFunc("simpleui", function()
     local Homescreen = require("sui_homescreen")
@@ -352,6 +355,50 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         end
 
         return overlap
+    end
+
+    -- Replace the currently reading title label with one that supports transparency
+    local currently_reading = require("desktop_modules/module_currently")
+    local Config = require("sui_config")
+    if not (currently_reading and Config) then return end
+
+    local _getElemOrder = userpatch.getUpValue(currently_reading.build, "_getElemOrder")
+
+    if not original_currently_reading_build then
+        original_currently_reading_build = currently_reading.build
+    end
+
+    function currently_reading.build(w, ctx)
+        local tappable   = original_currently_reading_build(w, ctx)
+        local row        = tappable[1][1]
+        local meta       = row[2]
+
+        local pfx        = ctx.pfx
+        local elem_order = _getElemOrder(pfx)
+
+        for i, elem in ipairs(elem_order) do
+            if elem == "title" then
+                local _BASE_TITLE_FS = Screen:scaleBySize(11)
+                local scale          = Config.getModuleScale("currently", ctx.pfx)
+                local lbl_scale      = Config.getItemLabelScale("currently", ctx.pfx)
+                local title_fs       = math.max(8, math.floor(_BASE_TITLE_FS * scale * lbl_scale))
+                local face_title     = Font:getFace("smallinfofont", title_fs)
+
+                -- TextBoxWidget -> TextWidget
+                local new_label      = TextWidget:new {
+                    text    = meta[i].text,
+                    face    = face_title,
+                    bold    = true,
+                    fgcolor = Blitbuffer.COLOR_BLACK,
+                }
+
+                -- Free old label and set new one
+                meta[i]:free()
+                meta[i] = new_label
+            end
+        end
+
+        return tappable
     end
 end)
 
