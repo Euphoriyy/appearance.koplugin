@@ -1,7 +1,6 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local DictQuickLookup = require("ui/widget/dictquicklookup")
-local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local ReaderUI = require("apps/reader/readerui")
 local RenderText = require("ui/rendertext")
