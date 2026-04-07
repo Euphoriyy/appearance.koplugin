@@ -77,6 +77,11 @@ theme_list.DEFAULT_NIGHT_THEMES = {
     { key = "dark_caramel",     label = "Dark Caramel",     bg = "#1A0C00", fg = "#D4A050", night = true },
     { key = "warm_dark",        label = "Warm Dark",        bg = "#1A1410", fg = "#D4C4A8", night = true },
     { key = "dim_amber",        label = "Dim Amber",        bg = "#0F0A00", fg = "#D4A84B", night = true },
+    -- Green
+    { key = "forest_night",     label = "Forest Night",     bg = "#0D1A0D", fg = "#A8C8A0", night = true },
+    { key = "dark_moss",        label = "Dark Moss",        bg = "#0A1A0A", fg = "#90C090", night = true },
+    { key = "pine",             label = "Pine",             bg = "#0A1810", fg = "#88C0A0", night = true },
+    { key = "deep_forest",      label = "Deep Forest",      bg = "#081408", fg = "#80B880", night = true },
     -- Blue/Teal
     { key = "slate",            label = "Slate",            bg = "#2C3E50", fg = "#DCDCDC", night = true },
     { key = "midnight_blue",    label = "Midnight Blue",    bg = "#0D1117", fg = "#A0B4C8", night = true },
@@ -84,11 +89,6 @@ theme_list.DEFAULT_NIGHT_THEMES = {
     { key = "dark_sky",         label = "Dark Sky",         bg = "#0A1428", fg = "#7AAAD4", night = true },
     { key = "night_blue",       label = "Night Blue",       bg = "#0D1520", fg = "#90B8D8", night = true },
     { key = "moonlight",        label = "Moonlight",        bg = "#12121E", fg = "#C8C8E0", night = true },
-    -- Green
-    { key = "forest_night",     label = "Forest Night",     bg = "#0D1A0D", fg = "#A8C8A0", night = true },
-    { key = "dark_moss",        label = "Dark Moss",        bg = "#0A1A0A", fg = "#90C090", night = true },
-    { key = "pine",             label = "Pine",             bg = "#0A1810", fg = "#88C0A0", night = true },
-    { key = "deep_forest",      label = "Deep Forest",      bg = "#081408", fg = "#80B880", night = true },
     -- Programming themes
     { key = "dracula",          label = "Dracula",          bg = "#282A36", fg = "#F8F8F2", night = true },
     { key = "nord",             label = "Nord",             bg = "#2E3440", fg = "#D8DEE9", night = true },
