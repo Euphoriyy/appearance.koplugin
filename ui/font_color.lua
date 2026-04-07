@@ -175,7 +175,7 @@ end
 local function font_color_menu()
     return {
         text_func = function()
-            return T(_("Font color: %1"), getFontColor())
+            return T(_("Foreground color: %1"), getFontColor())
         end,
         sub_item_table = {
             {
@@ -726,4 +726,4 @@ function ReaderUI:onApplyTheme()
     refresh()
 end
 
-return font_color_menu
+return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }

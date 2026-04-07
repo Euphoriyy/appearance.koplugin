@@ -420,4 +420,4 @@ function ReaderUI:onApplyTheme()
     refresh()
 end
 
-return background_color_menu
+return { menu = background_color_menu, bgcolor = function() return bg_cached.bgcolor end }

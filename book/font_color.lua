@@ -278,4 +278,4 @@ function ReaderUI:onApplyTheme()
     refresh()
 end
 
-return font_color_menu
+return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }

@@ -48,6 +48,7 @@ local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)      
 local TransparentIcons = Setting("ui_background_color_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
 local TransparentButtons = Setting("ui_background_color_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
 local TransparentFooter = Setting("ui_background_color_transparent_footer", false)   -- Whether the ReaderFooter should be fully transparent (default: false)
+local OutlineColor = Setting("ui_background_color_lines", true)                      -- Whether the UI outline should be set to the chosen foreground color (default: true)
 
 ------------------------------------------------------------
 -- ImageWidget specific code
@@ -88,6 +89,7 @@ local bg_cached = {
     transparent_icons = TransparentIcons.get(),
     transparent_buttons = TransparentButtons.get(),
     transparent_footer = TransparentFooter.get(),
+    set_outline_color = OutlineColor.get(),
     hex = HexBackgroundColor.get(),
     night_hex = NightHexBackgroundColor.get(),
     last_hex = nil,
@@ -386,6 +388,14 @@ local function background_color_menu()
                             if common.has_document_open() then
                                 UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
                             end
+                        end,
+                    },
+                    {
+                        text = _("Apply foreground color to UI outlines"),
+                        checked_func = OutlineColor.get,
+                        callback = function()
+                            OutlineColor.toggle()
+                            bg_cached.set_outline_color = OutlineColor.get()
                         end,
                     },
                 },
@@ -790,10 +800,13 @@ end
 function LineWidget:paintTo(bb, x, y)
     local original_background = self.background
 
+    local fgcolor = bg_cached.set_outline_color and require("ui/font_color").fgcolor()
+        or bg_cached.bgcolor:invert()
+
     if self.background == Blitbuffer.COLOR_WHITE then
         self.background = bg_cached.bgcolor
     else
-        self.background = bg_cached.bgcolor:invert()
+        self.background = fgcolor
     end
 
     if self.style == "none" then return end
@@ -1153,4 +1166,4 @@ function ReaderUI:onApplyTheme()
     refresh()
 end
 
-return background_color_menu
+return { menu = background_color_menu, bgcolor = function() return bg_cached.bgcolor end }
