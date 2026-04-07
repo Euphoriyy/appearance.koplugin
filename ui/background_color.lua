@@ -47,8 +47,6 @@ local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false
 local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)       -- Whether the background color of the reader sides should be changed (default: true)
 local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)           -- Whether the background color of the page gap should be changed (default: true)
 local TransparentIcons = Setting("ui_background_color_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
-local TransparentButtons = Setting("ui_background_color_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter = Setting("ui_background_color_transparent_footer", true)    -- Whether the ReaderFooter should be fully transparent (default: true)
 local OutlineColor = Setting("ui_background_color_lines", true)                      -- Whether the UI outline should be set to the chosen foreground color (default: true)
 local BorderColor = Setting("ui_background_color_border", true)                      -- Whether the UI borders should be set to the chosen foreground color (default: true)
 
@@ -112,8 +110,6 @@ local bg_cached = {
     set_sides_color = SidesBackgroundColor.get(),
     set_gap_color = GapBackgroundColor.get(),
     transparent_icons = TransparentIcons.get(),
-    transparent_buttons = TransparentButtons.get(),
-    transparent_footer = TransparentFooter.get(),
     set_outline_color = OutlineColor.get(),
     set_border_color = BorderColor.get(),
     hex = HexBackgroundColor.get(),
@@ -403,29 +399,6 @@ local function background_color_menu()
                         end,
                     },
                     {
-                        text = _("Make buttons transparent"),
-                        checked_func = TransparentButtons.get,
-                        callback = function()
-                            TransparentButtons.toggle()
-                            bg_cached.transparent_buttons = TransparentButtons.get()
-
-                            UIManager:askForRestart()
-                        end,
-                    },
-                    {
-                        text = _("Make the reader footer transparent"),
-                        enabled_func = function() return not FooterBackgroundColor.get() end,
-                        checked_func = TransparentFooter.get,
-                        callback = function()
-                            TransparentFooter.toggle()
-                            bg_cached.transparent_footer = TransparentFooter.get()
-
-                            if common.has_document_open() then
-                                UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
-                            end
-                        end,
-                    },
-                    {
                         text = _("Apply foreground color to UI outlines"),
                         checked_func = OutlineColor.get,
                         callback = function()
@@ -490,11 +463,7 @@ function ReaderFooter:updateFooterContainer()
     original_ReaderFooter_updateFooterContainer(self)
 
     if not bg_cached.set_footer_color then
-        if bg_cached.transparent_footer then
-            self.footer_content.background = nil
-        else
-            self.footer_content.background = common.EXCLUSION_COLOR
-        end
+        self.footer_content.background = common.EXCLUSION_COLOR
     end
 end
 
@@ -1193,16 +1162,6 @@ function IconWidget:init()
         self.alpha = true
         self.original_in_nightmode = false
     end
-end
-
--- Set buttons to be transparent before painting
-local original_Button_paintTo = Button.paintTo
-function Button:paintTo(bb, x, y)
-    if bg_cached.transparent_buttons and not self.exclude_from_transparency then
-        self[1].background = nil
-    end
-
-    original_Button_paintTo(self, bb, x, y)
 end
 
 -- Event handlers for when a theme is applied
