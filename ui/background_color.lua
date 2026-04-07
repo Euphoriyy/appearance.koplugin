@@ -36,19 +36,18 @@ local userpatch = require("userpatch")
 local util = require("util")
 
 -- Settings
-local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")             -- RGB hex for UI background color (default: #FFFFFF)
-local InvertBackgroundColor = Setting("ui_background_color_inverted", true)          -- Whether the UI background color should be inverted in night mode (default: true)
-local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)      -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
-local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000")  -- RGB hex for the alternative UI background color in night mode (default: #000000)
-local InvertIcons = Setting("ui_background_color_invert_icons", true)                -- Whether icons should be inverted when an alternative night mode color is set
-local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)          -- Whether the background color of TextBoxWidgets should be changed (default: true)
-local BookBackgroundColor = Setting("ui_background_color_book", true)                -- Whether the book's background color should be used for the reader UI
-local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)    -- Whether the background color of the ReaderFooter should be changed (default: false)
-local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)       -- Whether the background color of the reader sides should be changed (default: true)
-local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)           -- Whether the background color of the page gap should be changed (default: true)
-local TransparentIcons = Setting("ui_background_color_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
-local OutlineColor = Setting("ui_background_color_lines", true)                      -- Whether the UI outline should be set to the chosen foreground color (default: true)
-local BorderColor = Setting("ui_background_color_border", true)                      -- Whether the UI borders should be set to the chosen foreground color (default: true)
+local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")            -- RGB hex for UI background color (default: #FFFFFF)
+local InvertBackgroundColor = Setting("ui_background_color_inverted", true)         -- Whether the UI background color should be inverted in night mode (default: true)
+local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)     -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
+local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000") -- RGB hex for the alternative UI background color in night mode (default: #000000)
+local InvertIcons = Setting("ui_background_color_invert_icons", true)               -- Whether icons should be inverted when an alternative night mode color is set
+local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)         -- Whether the background color of TextBoxWidgets should be changed (default: true)
+local BookBackgroundColor = Setting("ui_background_color_book", true)               -- Whether the book's background color should be used for the reader UI
+local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)   -- Whether the background color of the ReaderFooter should be changed (default: false)
+local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)      -- Whether the background color of the reader sides should be changed (default: true)
+local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)          -- Whether the background color of the page gap should be changed (default: true)
+local OutlineColor = Setting("ui_background_color_lines", true)                     -- Whether the UI outline should be set to the chosen foreground color (default: true)
+local BorderColor = Setting("ui_background_color_border", true)                     -- Whether the UI borders should be set to the chosen foreground color (default: true)
 
 ------------------------------------------------------------
 -- ImageWidget specific code
@@ -80,18 +79,14 @@ local ImageCache = Cache:new {
 local font_color
 
 local function get_font_fgcolor()
-    if not font_color then
-        font_color = require("ui/font_color")
-    end
+    font_color = font_color or require("ui/font_color")
     return font_color.fgcolor()
 end
 
 local book_bgcolor
 
 local function get_book_bgcolor()
-    if not book_bgcolor then
-        book_bgcolor = require("book/background_color")
-    end
+    book_bgcolor = book_bgcolor or require("book/background_color")
     return book_bgcolor.bgcolor()
 end
 
@@ -109,7 +104,6 @@ local bg_cached = {
     set_footer_color = FooterBackgroundColor.get(),
     set_sides_color = SidesBackgroundColor.get(),
     set_gap_color = GapBackgroundColor.get(),
-    transparent_icons = TransparentIcons.get(),
     set_outline_color = OutlineColor.get(),
     set_border_color = BorderColor.get(),
     hex = HexBackgroundColor.get(),
@@ -386,16 +380,6 @@ local function background_color_menu()
 
                             -- Update the file list
                             refreshFileManager()
-                        end,
-                    },
-                    {
-                        text = _("Make icons transparent"),
-                        checked_func = TransparentIcons.get,
-                        callback = function()
-                            TransparentIcons.toggle()
-                            bg_cached.transparent_icons = TransparentIcons.get()
-
-                            reloadIcons()
                         end,
                     },
                     {
@@ -1153,17 +1137,6 @@ function ReaderView:drawPageGap(bb, x, y)
     bb:paintRectRGB32(x, y, self.dimen.w, self.page_gap.height, page_gap_color)
 end
 
--- Set icon widgets to be transparent after initialization
-local original_IconWidget_init = IconWidget.init
-function IconWidget:init()
-    original_IconWidget_init(self)
-
-    if bg_cached.transparent_icons then
-        self.alpha = true
-        self.original_in_nightmode = false
-    end
-end
-
 -- Event handlers for when a theme is applied
 local original_FileManager_onApplyTheme = FileManager.onApplyTheme
 function FileManager:onApplyTheme()
@@ -1191,4 +1164,8 @@ function ReaderUI:onApplyTheme()
     refresh()
 end
 
-return { menu = background_color_menu, bgcolor = function() return bg_cached.bgcolor end }
+return {
+    menu = background_color_menu,
+    bgcolor = function() return bg_cached.bgcolor end,
+    reloadIcons = reloadIcons,
+}

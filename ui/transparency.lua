@@ -1,18 +1,36 @@
 local Button = require("ui/widget/button")
 local Event = require("ui/event")
+local IconWidget = require("ui/widget/iconwidget")
 local ReaderFooter = require("apps/reader/modules/readerfooter")
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
 
-local TransparentButtons = Setting("ui_transparency_buttons", false) -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter = Setting("ui_transparency_footer", true)    -- Whether the ReaderFooter should be fully transparent (default: true)
+local TransparentIcons = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
+local TransparentButtons = Setting("ui_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
+local TransparentFooter = Setting("ui_transparent_footer", true)    -- Whether the ReaderFooter should be fully transparent (default: true)
 
 -- Background color setting
 local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)
 
+--------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local ui_bgcolor
+
+local function reloadIcons()
+    ui_bgcolor = ui_bgcolor or require("ui/background_color")
+    return ui_bgcolor.reloadIcons()
+end
+
+--------------------------------------------
+-- Transparency
+--------------------------------------------
+
 -- Cache
 local cached = {
+    transparent_icons = TransparentIcons.get(),
     transparent_buttons = TransparentButtons.get(),
     transparent_footer = TransparentFooter.get(),
 }
@@ -24,6 +42,16 @@ local function transparency_menu()
     return {
         text = _("Transparency"),
         sub_item_table = {
+            {
+                text = _("Make icons transparent"),
+                checked_func = TransparentIcons.get,
+                callback = function()
+                    TransparentIcons.toggle()
+                    cached.transparent_icons = TransparentIcons.get()
+
+                    reloadIcons()
+                end,
+            },
             {
                 text = _("Make buttons transparent"),
                 checked_func = TransparentButtons.get,
@@ -49,6 +77,17 @@ local function transparency_menu()
             },
         },
     }
+end
+
+-- Set icon widgets to be transparent after initialization
+local original_IconWidget_init = IconWidget.init
+function IconWidget:init()
+    original_IconWidget_init(self)
+
+    if cached.transparent_icons then
+        self.alpha = true
+        self.original_in_nightmode = false
+    end
 end
 
 -- Set buttons to be transparent before painting
