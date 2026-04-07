@@ -4,7 +4,7 @@ local font_color_menu = require("ui/font_color")
 
 local function ui_menu()
     return {
-        text = "User Interface",
+        text = "User interface",
         sub_item_table = {
             background_color_menu(),
             background_image_menu(),
