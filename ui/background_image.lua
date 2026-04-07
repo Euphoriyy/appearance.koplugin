@@ -217,6 +217,7 @@ local function background_image_menu()
             },
             {
                 text = _("Show background image in homescreen"),
+                enabled_func = function() return G_reader_settings:readSetting("simpleui_enabled") end,
                 checked_func = ShowInHomescreen.get,
                 callback = function()
                     ShowInHomescreen.toggle()
