@@ -12,6 +12,7 @@ local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local logger = require("logger")
 local pic = require("ffi/pic")
+local userpatch = require("userpatch")
 
 -- Settings
 local BackgroundImage = Setting("ui_background_image_path", nil)          -- Path for UI background image (default: nil)
@@ -21,6 +22,7 @@ local InvertImage = Setting("ui_background_image_invert", false)          -- Whe
 local ShowInFiles = Setting("ui_background_image_filemanager", true)      -- Whether the background image should be shown in the file manager (default: true)
 local ShowInReader = Setting("ui_background_image_reader", true)          -- Whether the background image should be shown in the reader (default: true)
 local ShowInMenu = Setting("ui_background_image_menu", false)             -- Whether the background image should be shown in the top menu (default: false)
+local ShowInHomescreen = Setting("ui_background_image_homescreen", true)  -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
 local BackgroundImageHistory = Setting("ui_background_image_history", {}) -- A history of the past background images selected.
 
 -- Helper: get the filename for the current background image
@@ -213,6 +215,13 @@ local function background_image_menu()
                     ShowInMenu.toggle()
                 end,
             },
+            {
+                text = _("Show background image in homescreen"),
+                checked_func = ShowInHomescreen.get,
+                callback = function()
+                    ShowInHomescreen.toggle()
+                end,
+            },
         },
     }
 end
@@ -308,6 +317,42 @@ function ReaderMenu:onShowMenu(tab_index, do_not_show)
 
     return result
 end
+
+local original_HomescreenWidget_initLayout
+
+userpatch.registerPatchPluginFunc("simpleui", function()
+    local Homescreen = require("sui_homescreen")
+    if not Homescreen then return end
+
+    local HomescreenWidget = userpatch.getUpValue(Homescreen.show, "HomescreenWidget")
+    if not HomescreenWidget then return end
+
+    if not original_HomescreenWidget_initLayout then
+        original_HomescreenWidget_initLayout = HomescreenWidget._initLayout
+    end
+
+    function HomescreenWidget:_initLayout()
+        local bg_widget = get_bg_widget()
+        local overlap = original_HomescreenWidget_initLayout(self)
+        if not (ShowInHomescreen.get() and bg_widget) then return overlap end
+
+        local outer = overlap[1]
+        local content_widget = outer[1]
+
+        outer.padding_left = 0
+        outer.padding_right = 0
+        outer.background = nil
+        content_widget.background = nil
+
+        local original_paintTo = content_widget.paintTo
+        function content_widget:paintTo(bb, x, y)
+            bg_widget:paintTo(bb, x, y)
+            original_paintTo(self, bb, x, y)
+        end
+
+        return overlap
+    end
+end)
 
 -- Hook into night mode state changes and reload background image
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
