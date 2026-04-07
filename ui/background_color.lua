@@ -394,15 +394,6 @@ local function background_color_menu()
     }
 end
 
--- Special color which indicates that the color should either stay white or be set to the original bgcolor
--- Used for ReaderFooter option and ScreenSaverWidget
-local EXCLUSION_COLOR = Blitbuffer.colorFromString("#DAAAAD")
-local EXCLUSION_COLOR_RGB32 = EXCLUSION_COLOR:getColorRGB32()
-
-local function is_excluded(color)
-    return color and color:getColorRGB32() == EXCLUSION_COLOR_RGB32
-end
-
 -- Hook into FrameContainer painting (responsible for 80% of background)
 local original_FrameContainer_paintTo = FrameContainer.paintTo
 function FrameContainer:paintTo(bb, x, y)
@@ -410,10 +401,10 @@ function FrameContainer:paintTo(bb, x, y)
     local original_color = self.color
 
     -- Change background color if it isn't transparent (nil)
-    if original_background and not is_excluded(original_background) and original_background == Blitbuffer.COLOR_WHITE then
+    if original_background and not common.is_excluded(original_background) and original_background == Blitbuffer.COLOR_WHITE then
         self.background = bg_cached.bgcolor
         self.color = bg_cached.bgcolor:invert()
-    elseif is_excluded(original_background) then
+    elseif common.is_excluded(original_background) then
         self.background = self.original_background or Blitbuffer.COLOR_WHITE
     end
 
@@ -432,7 +423,7 @@ function ReaderFooter:updateFooterContainer()
         if bg_cached.transparent_footer then
             self.footer_content.background = nil
         else
-            self.footer_content.background = EXCLUSION_COLOR
+            self.footer_content.background = common.EXCLUSION_COLOR
         end
     end
 end
@@ -444,7 +435,7 @@ function ScreenSaverWidget:init()
 
     if self.background then
         self[1].original_background = self.background
-        self[1].background = EXCLUSION_COLOR
+        self[1].background = common.EXCLUSION_COLOR
     end
 end
 
@@ -895,7 +886,7 @@ function ToggleSwitch:update()
     self.fgcolor = bg_cached.bgcolor:invert()
 
     self[1].original_background = bg_cached.bgcolor
-    self[1].background = EXCLUSION_COLOR
+    self[1].background = common.EXCLUSION_COLOR
 
     local pos = self.position
     for i = 1, #self.toggle_content do
@@ -905,7 +896,7 @@ function ToggleSwitch:update()
             if pos == (i - 1) * self.n_pos + j then
                 cell.color = self.fgcolor
                 cell.original_background = self.fgcolor
-                cell.background = EXCLUSION_COLOR
+                cell.background = common.EXCLUSION_COLOR
                 cell[1][1].fgcolor = bg_cached.bgcolor
             else
                 cell.color = self.bgcolor
@@ -955,7 +946,7 @@ function VirtualKeyboard:addKeys()
     -- Key border
     if G_reader_settings:nilOrTrue("keyboard_key_border") then
         keyboard_frame.original_background = border_color
-        keyboard_frame.background = EXCLUSION_COLOR
+        keyboard_frame.background = common.EXCLUSION_COLOR
     end
 end
 

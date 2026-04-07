@@ -4,6 +4,15 @@ local ffi = require("ffi")
 
 local common = {}
 
+-- Special color that indicates the color should either stay white/black or be set to the original bgcolor/fgcolor
+-- Used for ReaderFooter and ScreenSaverWidget
+common.EXCLUSION_COLOR = Blitbuffer.colorFromString("#DAAAAD")
+local EXCLUSION_COLOR_RGB32 = common.EXCLUSION_COLOR:getColorRGB32()
+
+function common.is_excluded(color)
+    return color and color:getColorRGB32() == EXCLUSION_COLOR_RGB32
+end
+
 -- Helper: invert a hex color string "#RRGGBB" → "#(FF-R)(FF-G)(FF-B)"
 function common.invertColor(hex)
     -- Remove the "#" and parse as R, G, B

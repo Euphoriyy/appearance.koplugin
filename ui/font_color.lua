@@ -537,20 +537,12 @@ function TextWidget:updateSize()
     original_TextWidget_updateSize(self)
 end
 
--- Special color which indicates that the color should either stay black or be set to the original fgcolor
-local EXCLUSION_COLOR = Blitbuffer.colorFromString("#DAAAAD")
-local EXCLUSION_COLOR_RGB32 = EXCLUSION_COLOR:getColorRGB32()
-
-local function is_excluded(color)
-    return color and color:getColorRGB32() == EXCLUSION_COLOR_RGB32
-end
-
 -- Hook into TextWidget painting
 local original_TextWidget_paintTo = TextWidget.paintTo
 function TextWidget:paintTo(bb, x, y)
     local original_fgcolor = self.fgcolor
 
-    if is_excluded(original_fgcolor) then
+    if common.is_excluded(original_fgcolor) then
         self.fgcolor = self.original_fgcolor or Blitbuffer.COLOR_BLACK
     elseif original_fgcolor == Blitbuffer.COLOR_DARK_GRAY then
         -- If the original color was dark gray, then place a lighter color
@@ -701,7 +693,7 @@ UIManager:scheduleIn(1, function()
                 local cell = row[j]
                 if pos == (i - 1) * self.n_pos + j then
                     cell[1][1].original_fgcolor = cell[1][1].fgcolor
-                    cell[1][1].fgcolor = EXCLUSION_COLOR
+                    cell[1][1].fgcolor = common.EXCLUSION_COLOR
                 end
             end
         end

@@ -81,9 +81,6 @@ local function setForegroundColor(hex, book, night)
     end
 end
 
--- Special color which indicates that the color should either stay white or be set to the original bgcolor
--- Used for ReaderFooter option and ScreenSaverWidget
-local EXCLUSION_COLOR = Blitbuffer.colorFromString("#DAAAAD")
 
 -- Menus
 local _ = require("gettext")
@@ -255,7 +252,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                 string.lower(theme.fg), theme.label),
             menu_style = true,
             original_background = Screen.night_mode and bgcolor:invert() or bgcolor,
-            background = EXCLUSION_COLOR,
+            background = common.EXCLUSION_COLOR,
             callback = function()
                 UIManager:show(TripleConfirmBox:new({
                     text = _("Apply the theme to:"),
@@ -397,7 +394,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             text = _("§white ✒ Rename§r "),
             menu_style = true,
             original_background = button_bg_colors[1],
-            background = EXCLUSION_COLOR,
+            background = common.EXCLUSION_COLOR,
             callback = function()
                 local input_dialog
                 input_dialog = InputDialog:new({
@@ -437,7 +434,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             text = T(_("§white ● Edit background color§r ")),
             menu_style = true,
             original_background = button_bg_colors[2],
-            background = EXCLUSION_COLOR,
+            background = common.EXCLUSION_COLOR,
             callback = function()
                 UIManager:show(color_menu(touchmenu_instance, ColorType.BACKGROUND, theme.bg, function(bg_hex)
                     theme.bg = bg_hex
@@ -454,7 +451,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             text = T(_("§white ＴEdit foreground color§r ")),
             menu_style = true,
             original_background = button_bg_colors[3],
-            background = EXCLUSION_COLOR,
+            background = common.EXCLUSION_COLOR,
             callback = function()
                 UIManager:show(color_menu(touchmenu_instance, ColorType.FOREGROUND, theme.fg, function(fg_hex)
                     theme.fg = fg_hex
@@ -469,7 +466,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             text = _("§white ✖ Delete§r "),
             menu_style = true,
             original_background = button_bg_colors[4],
-            background = EXCLUSION_COLOR,
+            background = common.EXCLUSION_COLOR,
             callback = function()
                 remove_theme(theme)
 
