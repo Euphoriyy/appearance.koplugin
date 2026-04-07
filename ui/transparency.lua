@@ -58,8 +58,6 @@ local function transparency_menu()
                 callback = function()
                     TransparentButtons.toggle()
                     cached.transparent_buttons = TransparentButtons.get()
-
-                    UIManager:askForRestart()
                 end,
             },
             {
