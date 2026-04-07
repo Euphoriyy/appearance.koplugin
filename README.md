@@ -77,7 +77,7 @@ Each color can be chosen by color picker and code. Changes apply live so you can
 </details>
 
 ## Compatibility
-Tested fully on e-ink, desktop, and mobile devices.
+Tested fully on e-ink, desktop, and mobile devices. For rounded book & folder covers to work properly with the background color, [my special rounded cover patches](https://github.com/Euphoriyy/KOReader.patches#-2-rounded-coverslua) should be used.
 
 ## Acknowledgements
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
