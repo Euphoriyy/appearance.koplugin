@@ -43,12 +43,12 @@ local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#00000
 local InvertIcons = Setting("ui_background_color_invert_icons", true)                -- Whether icons should be inverted when an alternative night mode color is set
 local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)          -- Whether the background color of TextBoxWidgets should be changed (default: true)
 local BookBackgroundColor = Setting("ui_background_color_book", true)                -- Whether the book's background color should be used for the reader UI
-local FooterBackgroundColor = Setting("ui_background_color_reader_footer", true)     -- Whether the background color of the ReaderFooter should be changed (default: true)
+local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)    -- Whether the background color of the ReaderFooter should be changed (default: false)
 local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)       -- Whether the background color of the reader sides should be changed (default: true)
 local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)           -- Whether the background color of the page gap should be changed (default: true)
 local TransparentIcons = Setting("ui_background_color_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
 local TransparentButtons = Setting("ui_background_color_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter = Setting("ui_background_color_transparent_footer", false)   -- Whether the ReaderFooter should be fully transparent (default: false)
+local TransparentFooter = Setting("ui_background_color_transparent_footer", true)    -- Whether the ReaderFooter should be fully transparent (default: true)
 local OutlineColor = Setting("ui_background_color_lines", true)                      -- Whether the UI outline should be set to the chosen foreground color (default: true)
 local BorderColor = Setting("ui_background_color_border", true)                      -- Whether the UI borders should be set to the chosen foreground color (default: true)
 
