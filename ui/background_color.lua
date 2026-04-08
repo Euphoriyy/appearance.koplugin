@@ -1161,8 +1161,8 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
         -- If bar is not fully filled
         if fw > 0 then
-            -- Explicitly set background and foreground colors
-            bar[1].original_background = bg_cached.bgcolor
+            -- Explicitly set background and foreground colors of the progress bar
+            bar[1].original_background = bg_cached.fgcolor
             bar[1].background = common.EXCLUSION_COLOR
             bar[2].original_background = get_font_fgcolor()
             bar[2].background = common.EXCLUSION_COLOR
