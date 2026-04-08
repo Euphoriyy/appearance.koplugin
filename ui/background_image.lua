@@ -1,33 +1,34 @@
-local Blitbuffer = require("ffi/blitbuffer")
-local Device = require("device")
-local Dispatcher = require("dispatcher")
-local DocumentRegistry = require("document/documentregistry")
-local FileManager = require("apps/filemanager/filemanager")
-local FileManagerMenu = require("apps/filemanager/filemanagermenu")
-local Font = require("ui/font")
-local ImageWidget = require("ui/widget/imagewidget")
-local ReaderMenu = require("apps/reader/modules/readermenu")
-local ReaderUI = require("apps/reader/readerui")
-local ReaderView = require("apps/reader/modules/readerview")
-local Screen = Device.screen
-local Setting = require("lib/setting")
-local TextWidget = require("ui/widget/textwidget")
-local UIManager = require("ui/uimanager")
-local logger = require("logger")
-local pic = require("ffi/pic")
-local userpatch = require("userpatch")
+local Blitbuffer             = require("ffi/blitbuffer")
+local Device                 = require("device")
+local Dispatcher             = require("dispatcher")
+local DocumentRegistry       = require("document/documentregistry")
+local FileManager            = require("apps/filemanager/filemanager")
+local FileManagerMenu        = require("apps/filemanager/filemanagermenu")
+local Font                   = require("ui/font")
+local ImageWidget            = require("ui/widget/imagewidget")
+local ReaderMenu             = require("apps/reader/modules/readermenu")
+local ReaderUI               = require("apps/reader/readerui")
+local ReaderView             = require("apps/reader/modules/readerview")
+local Screen                 = Device.screen
+local Setting                = require("lib/setting")
+local TextWidget             = require("ui/widget/textwidget")
+local UIManager              = require("ui/uimanager")
+local VerticalGroup          = require("ui/widget/verticalgroup")
+local logger                 = require("logger")
+local pic                    = require("ffi/pic")
+local userpatch              = require("userpatch")
 
 -- Settings
-local BackgroundImage = Setting("ui_background_image_path", nil)          -- Path for UI background image (default: nil)
-local StretchImage = Setting("ui_background_image_stretch", true)         -- Whether the background image should be stretched to fit the screen (default: true)
-local RotateImage = Setting("ui_background_image_auto_rotate", true)      -- Whether the background image should be auto-rotated (default: true)
-local InvertImage = Setting("ui_background_image_invert", false)          -- Whether the background image should be inverted in night mode (default: false)
-local ShowInFiles = Setting("ui_background_image_filemanager", true)      -- Whether the background image should be shown in the file manager (default: true)
-local ShowInReader = Setting("ui_background_image_reader", true)          -- Whether the background image should be shown in the reader (default: true)
-local ShowInMenu = Setting("ui_background_image_menu", false)             -- Whether the background image should be shown in the top menu (default: false)
-local ShowInHomescreen = Setting("ui_background_image_homescreen", true)  -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
-local BackgroundImageHistory = Setting("ui_background_image_history", {}) -- A history of the past background images selected.
-local LastBackgroundImage = Setting("ui_background_image_last", nil)      -- The last background images selected.
+local BackgroundImage        = Setting("ui_background_image_path", nil)         -- Path for UI background image (default: nil)
+local StretchImage           = Setting("ui_background_image_stretch", true)     -- Whether the background image should be stretched to fit the screen (default: true)
+local RotateImage            = Setting("ui_background_image_auto_rotate", true) -- Whether the background image should be auto-rotated (default: true)
+local InvertImage            = Setting("ui_background_image_invert", false)     -- Whether the background image should be inverted in night mode (default: false)
+local ShowInFiles            = Setting("ui_background_image_filemanager", true) -- Whether the background image should be shown in the file manager (default: true)
+local ShowInReader           = Setting("ui_background_image_reader", true)      -- Whether the background image should be shown in the reader (default: true)
+local ShowInMenu             = Setting("ui_background_image_menu", false)       -- Whether the background image should be shown in the top menu (default: false)
+local ShowInHomescreen       = Setting("ui_background_image_homescreen", true)  -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
+local BackgroundImageHistory = Setting("ui_background_image_history", {})       -- A history of the past background images selected.
+local LastBackgroundImage    = Setting("ui_background_image_last", nil)         -- The last background images selected.
 
 -- Helper: get the filename for the current background image
 local function backgroundImageName(path)
@@ -404,6 +405,58 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
         return tappable
     end
+
+    -- Fix quotes having an opaque background by replacing TextBoxWidgets with TextWidgets
+    local quotes = require("desktop_modules/module_quote")
+    local UI     = require("sui_core")
+    if not (quotes and UI) then return end
+
+    local buildFromQuote, buildFromQuote_idx = userpatch.getUpValue(quotes.build, "buildFromQuote")
+    local _, buildWidget_idx                 = userpatch.getUpValue(buildFromQuote, "buildWidget")
+    local pickQuote                          = userpatch.getUpValue(buildFromQuote, "pickQuote")
+
+    local function new_buildWidget(inner_w, text_str, attr_str, face_quote, face_attr, vspan_gap)
+        local vg = VerticalGroup:new { align = "center" }
+        local _CLR_TEXT_QUOTE = Blitbuffer.COLOR_BLACK
+
+        vg[#vg + 1] = TextWidget:new {
+            text      = text_str,
+            face      = face_quote,
+            fgcolor   = _CLR_TEXT_QUOTE,
+            width     = inner_w,
+            alignment = "center",
+        }
+        vg[#vg + 1] = vspan_gap
+        vg[#vg + 1] = TextWidget:new {
+            text      = attr_str,
+            face      = face_attr,
+            fgcolor   = UI.CLR_TEXT_SUB,
+            bold      = true,
+            width     = inner_w,
+            alignment = "center",
+        }
+        return vg
+    end
+
+    local function new_buildFromQuote(inner_w, face_quote, face_attr, vspan_gap)
+        local q = pickQuote()
+
+        if not q then
+            return TextWidget:new {
+                text    = _("No quotes found."),
+                face    = face_quote,
+                fgcolor = UI.CLR_TEXT_SUB,
+                width   = inner_w,
+            }
+        end
+
+        local attr = "— " .. (q.a or "?")
+        if q.b and q.b ~= "" then attr = attr .. ",  " .. q.b end
+        return new_buildWidget(inner_w, "\u{201C}" .. q.q .. "\u{201D}", attr, face_quote, face_attr, vspan_gap)
+    end
+
+    userpatch.replaceUpValue(buildFromQuote, buildWidget_idx, new_buildWidget)
+    userpatch.replaceUpValue(quotes.build, buildFromQuote_idx, new_buildFromQuote)
 end)
 
 -- Hook into night mode state changes and reload background image
