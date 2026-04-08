@@ -2,9 +2,12 @@ local Blitbuffer = require("ffi/blitbuffer")
 local ButtonDialog = require("ui/widget/buttondialog")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local ConfirmBox = require("ui/widget/confirmbox")
+local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
+local FileManager = require("apps/filemanager/filemanager")
 local InfoMessage = require("ui/widget/infomessage")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
+local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
 local TripleConfirmBox = require("widgets/tripleconfirmbox")
@@ -86,7 +89,7 @@ end
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", }
+local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", }
 
 local function set_color_menu(touchmenu_instance, type, original_hex, callback)
     original_hex = original_hex or
@@ -736,5 +739,95 @@ local function themes_menu()
         end,
     }
 end
+
+-- Register theme selection dispatcher actions
+local function getThemeActions(night)
+    local action_nums, action_texts = {}, {}
+
+    local themes = night and cached.nightThemes or cached.dayThemes
+
+    for i, theme in ipairs(themes) do
+        table.insert(action_nums, i)
+        table.insert(action_texts, theme.label)
+    end
+    return action_nums, action_texts
+end
+
+local ApplicationMode = {
+    DAY_UI = 1,
+    DAY_BOOK = 2,
+    NIGHT_UI = 3,
+    NIGHT_BOOK = 4,
+}
+
+local theme_setters = {
+    [ApplicationMode.DAY_UI] = CurrentUIDayTheme,
+    [ApplicationMode.DAY_BOOK] = CurrentBookDayTheme,
+    [ApplicationMode.NIGHT_UI] = CurrentUINightTheme,
+    [ApplicationMode.NIGHT_BOOK] = CurrentBookNightTheme,
+}
+
+local function SelectTheme(_, args)
+    if not args or #args < 2 then return end
+    local application_mode, action_num = args[1], args[2]
+
+    local book = application_mode == ApplicationMode.DAY_BOOK
+        or application_mode == ApplicationMode.NIGHT_BOOK
+    local night = application_mode == ApplicationMode.NIGHT_UI
+        or application_mode == ApplicationMode.NIGHT_BOOK
+
+    local themes = night and cached.nightThemes or cached.dayThemes
+
+    local theme = themes[action_num]
+    if not theme then return end
+
+    local setter = theme_setters[application_mode]
+    if setter then
+        setter.set(theme)
+    end
+
+    setBackgroundColor(theme.bg, book, night)
+    setForegroundColor(theme.fg, book, night)
+    UIManager:broadcastEvent(Event:new("ApplyTheme"))
+end
+
+FileManager.onSelectTheme = SelectTheme
+ReaderUI.onSelectTheme = SelectTheme
+
+Dispatcher:registerAction("ui_themes_select_day_ui", {
+    category = "string",
+    event = "SelectTheme",
+    arg = ApplicationMode.DAY_UI,
+    title = _("Select day theme for UI"),
+    args_func = function() return getThemeActions(false) end,
+    general = true,
+})
+
+Dispatcher:registerAction("ui_themes_select_day_book", {
+    category = "string",
+    event = "SelectTheme",
+    arg = ApplicationMode.DAY_BOOK,
+    title = _("Select day theme for book"),
+    args_func = function() return getThemeActions(false) end,
+    general = true,
+})
+
+Dispatcher:registerAction("ui_themes_select_night_ui", {
+    category = "string",
+    event = "SelectTheme",
+    arg = ApplicationMode.NIGHT_UI,
+    title = _("Select night theme for UI"),
+    args_func = function() return getThemeActions(true) end,
+    general = true,
+})
+
+Dispatcher:registerAction("ui_themes_select_night_book", {
+    category = "string",
+    event = "SelectTheme",
+    arg = ApplicationMode.NIGHT_BOOK,
+    title = _("Select night theme for book"),
+    args_func = function() return getThemeActions(true) end,
+    general = true,
+})
 
 return themes_menu

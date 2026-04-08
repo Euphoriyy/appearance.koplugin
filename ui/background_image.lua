@@ -463,6 +463,7 @@ end
 
 FileManager.onSelectBackgroundImage = SelectBackgroundImage
 ReaderUI.onSelectBackgroundImage = SelectBackgroundImage
+
 FileManager.onSetLastBackgroundImage = SetLastBackgroundImage
 ReaderUI.onSetLastBackgroundImage = SetLastBackgroundImage
 

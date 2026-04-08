@@ -35,6 +35,8 @@ Navigate to **🞂 Appearance 🞂 Themes** and select any theme from the list. 
  
 To go back to the default look, choose **🞂 Appearance 🞂 Themes 🞂 Reset themes 🞂 Reset to default themes**. This clears all theme overrides and restores KOReader's original colors.
 
+Themes can also be selected automatically using dispatcher actions (e.g., via profiles or gestures).
+
 </details>
 
 <details>
