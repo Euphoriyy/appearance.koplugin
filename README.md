@@ -4,7 +4,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/Euphoriyy/appearance.koplugin)](https://github.com/Euphoriyy/appearance.koplugin/releases)
 [![Lua](https://img.shields.io/badge/Lua-%232C2D72.svg?logo=lua&logoColor=white)](#)
 
-The ultimate plugin to customise [<img src="img/koreader.png" width="24" /> KOReader](https://koreader.rocks)'s appearance in any way you would like! It adds features that are similar to those found in other ebook readers like [Readest](https://readest.com), [Librera](https://librera.mobi), & [Moon+ Reader](https://moondownload.com), making it the ideal reader.
+The ultimate plugin to customize [<img src="img/koreader.png" width="24" /> KOReader](https://koreader.rocks)'s appearance in any way you would like! It adds features that are similar to those found in other ebook readers like [Readest](https://readest.com), [Librera](https://librera.mobi), & [Moon+ Reader](https://moondownload.com), making it the ideal reader.
 
 ## Features
 
@@ -88,7 +88,7 @@ Each color can be chosen by color picker and code. Changes apply live so you can
 ## Compatibility
 Tested fully on e-ink, desktop, and mobile devices. Fully compatible with popular plugins like [Rakuyomi](https://github.com/tachibana-shin/rakuyomi) and [SimpleUI](https://github.com/doctorhetfield-cmd/simpleui.koplugin).
 
-PDF background color customisation is compatible with the dual pages feature introduced by [ComicReader](https://github.com/KORComic/comicreader.koplugin).
+PDF background color customization is compatible with the dual pages feature introduced by [ComicReader](https://github.com/KORComic/comicreader.koplugin).
 
 For rounded book & folder covers to work properly with the background color, [my special rounded cover patches](https://github.com/Euphoriyy/KOReader.patches#-2-rounded-coverslua) should be used.
 
