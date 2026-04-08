@@ -94,6 +94,7 @@ For rounded book & folder covers to work properly with the background color, [my
 ## Acknowledgements
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
 - Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko).
+- The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin).
 
 ## License
 This project is licensed under the **GNU General Public License v3.0**.
