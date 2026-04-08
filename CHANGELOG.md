@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.0...v1.1.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **ui/background_color:** correct SimpleUI progress bar fg/bg colors ([5adac75](https://github.com/Euphoriyy/appearance.koplugin/commit/5adac7543ac2608d943fc914d2c126bd5a79bf68))
+* **ui/background_image:** SimpleUI quotes having opaque backgrounds ([037c209](https://github.com/Euphoriyy/appearance.koplugin/commit/037c209db028bc828739cf70290b5e66c0297251))
+
 ## [1.1.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.0.0...v1.1.0) (2026-04-08)
 
 
