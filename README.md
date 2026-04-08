@@ -80,6 +80,7 @@ Under **🞂 Appearance 🞂 Book**:
  
 - **Background color** - the color of the page background
 - **Font color** - the color of the page text
+- **Progress bar colors** - the read/unread colors of the book progress bar in the footer
  
 Each color can be chosen by color picker and code. Changes apply live so you can preview as you go. There are **Advanced settings** as well that allow you to experiment with more fine-tuned tweaking.
 
