@@ -816,8 +816,10 @@ function LineWidget:paintTo(bb, x, y)
     local fgcolor = bg_cached.set_outline_color and get_font_fgcolor()
         or bg_cached.bgcolor:invert()
 
-    if self.background == Blitbuffer.COLOR_WHITE then
+    if original_background == Blitbuffer.COLOR_WHITE and not common.is_excluded(original_background) then
         self.background = bg_cached.bgcolor
+    elseif common.is_excluded(original_background) then
+        self.background = self.original_background
     else
         self.background = fgcolor
     end
@@ -1136,6 +1138,40 @@ function ReaderView:drawPageGap(bb, x, y)
 
     bb:paintRectRGB32(x, y, self.dimen.w, self.page_gap.height, page_gap_color)
 end
+
+userpatch.registerPatchPluginFunc("simpleui", function()
+    -- Fix foreground color of progress bar being set to the background color
+    local currently_reading = require("desktop_modules/module_currently")
+    local Config = require("sui_config")
+    if not (currently_reading and Config) then return end
+
+    local original_buildProgressBarWithPct, up_value_idx = userpatch.getUpValue(currently_reading.build,
+        "buildProgressBarWithPct")
+
+    local function buildProgressBarWithPct(w, pct, bar_h, scale, lbl_scale, face_inline)
+        local horizontal_group  = original_buildProgressBarWithPct(w, pct, bar_h, scale, lbl_scale, face_inline)
+        local bar               = horizontal_group[1]
+
+        local _BASE_PCT_W       = Screen:scaleBySize(32)
+        local _BASE_BAR_PCT_GAP = Screen:scaleBySize(6)
+        local PCT_W             = math.max(16, math.floor(_BASE_PCT_W * scale * lbl_scale))
+        local GAP               = math.max(2, math.floor(_BASE_BAR_PCT_GAP * scale))
+        local bar_w             = math.max(10, w - GAP - PCT_W)
+        local fw                = math.max(0, math.floor(bar_w * math.min(pct, 1.0)))
+
+        -- If bar is not fully filled
+        if fw > 0 then
+            -- Explicitly set background and foreground colors
+            bar[1].original_background = bg_cached.bgcolor
+            bar[1].background = common.EXCLUSION_COLOR
+            bar[2].original_background = get_font_fgcolor()
+            bar[2].background = common.EXCLUSION_COLOR
+        end
+        return horizontal_group
+    end
+
+    userpatch.replaceUpValue(currently_reading.build, up_value_idx, buildProgressBarWithPct)
+end)
 
 -- Event handlers for when a theme is applied
 local original_FileManager_onApplyTheme = FileManager.onApplyTheme
