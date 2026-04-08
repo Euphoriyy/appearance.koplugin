@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.1...v1.1.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **ui/background_image:** use fgcolor for SimpleUI progress bar track background ([8b2ee4f](https://github.com/Euphoriyy/appearance.koplugin/commit/8b2ee4f07e994406e26406ee120b3a29c8647751))
+
 ## [1.1.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.0...v1.1.1) (2026-04-08)
 
 
