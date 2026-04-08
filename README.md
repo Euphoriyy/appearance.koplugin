@@ -18,8 +18,9 @@ The ultimate plugin to customise [<img src="img/koreader.png" width="24" /> KORe
 
 ## Installation
 1. Download the latest release.
-2. Copy the `appearance.koplugin` directory to the `koreader/plugins` folder on your device.
-3. Restart KOReader.
+2. Extract the `appearance.koplugin` directory from the archive.
+3. Move the `appearance.koplugin` directory to the `koreader/plugins` folder on your device.
+4. Restart KOReader.
 
 ## Configuration
 The plugin can be fully configured under the new **Appearance** menu on the <sub><img src="img/appbar.settings.svg" style="width:2%; height:auto;"></sub> **Settings** tab. The appearance of the *User interface* and *Book* can be configured separately as well together via *Themes*.
