@@ -1,5 +1,9 @@
 # appearance.koplugin
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/Euphoriyy/appearance.koplugin)](https://github.com/Euphoriyy/appearance.koplugin/releases)
+[![Lua](https://img.shields.io/badge/Lua-%232C2D72.svg?logo=lua&logoColor=white)](#)
+
 The ultimate plugin to customize <img src="img/koreader.png" width="24" /> KOReader's appearance in any way you would like!
 
 ## Features
