@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.2...v1.3.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* **book/progress_bar_colors:** footer settings getter failing when not in a book ([136910d](https://github.com/Euphoriyy/appearance.koplugin/commit/136910d1df02c96e5dc3f5bba4a875ad924db478))
+
 ## [1.3.2](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.1...v1.3.2) (2026-04-10)
 
 
