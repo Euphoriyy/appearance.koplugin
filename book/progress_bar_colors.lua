@@ -50,6 +50,12 @@ function Settings:getDefault(thin, color_attrib)
     return default[color_attrib]
 end
 
+function Settings:get(thin, color_attrib)
+    local settings = self.footer.settings and self.footer.settings[getStyle(thin)]
+    local color = settings and settings[color_attrib]
+    return color or self:getDefault(thin, color_attrib)
+end
+
 function Settings:set(thin, color_attrib, color)
     local style = getStyle(thin)
     local settings = self.footer.settings[style] or {}
