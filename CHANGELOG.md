@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.0...v1.3.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **ui/background_color:** correct SimpleUI reading goals progress bar fg/bg colors ([7a38104](https://github.com/Euphoriyy/appearance.koplugin/commit/7a3810483f70393ea2cef4c2dfaa934e7668d03c))
+
 ## [1.3.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.2.0...v1.3.0) (2026-04-10)
 
 
