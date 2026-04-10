@@ -121,6 +121,11 @@ For rounded book & folder covers to work properly with the background color, [my
 - The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin).
 - UI font replacement based on the based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
 
+## Support
+If you want to support me, you can star this repository or buy me a coffee. :)
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/X8X21UH4E1)
+
 ## License
 This project is licensed under the **GNU General Public License v3.0**.
 See the [LICENSE](./LICENSE) file for full details.
