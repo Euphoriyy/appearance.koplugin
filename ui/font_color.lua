@@ -678,26 +678,23 @@ function DictQuickLookup:getHtmlDictionaryCss()
 end
 
 -- Hook into ToggleSwitch updates and fix the font color
--- Run late after the background color patch
-UIManager:scheduleIn(1, function()
-    local original_ToggleSwitch_update = ToggleSwitch.update
+local original_ToggleSwitch_update = ToggleSwitch.update
 
-    function ToggleSwitch:update()
-        original_ToggleSwitch_update(self)
+function ToggleSwitch:update()
+    original_ToggleSwitch_update(self)
 
-        local pos = self.position
-        for i = 1, #self.toggle_content do
-            local row = self.toggle_content[i]
-            for j = 1, #row do
-                local cell = row[j]
-                if pos == (i - 1) * self.n_pos + j then
-                    cell[1][1].original_fgcolor = cell[1][1].fgcolor
-                    cell[1][1].fgcolor = common.EXCLUSION_COLOR
-                end
+    local pos = self.position
+    for i = 1, #self.toggle_content do
+        local row = self.toggle_content[i]
+        for j = 1, #row do
+            local cell = row[j]
+            if pos == (i - 1) * self.n_pos + j then
+                cell[1][1].original_fgcolor = cell[1][1].fgcolor
+                cell[1][1].fgcolor = common.EXCLUSION_COLOR
             end
         end
     end
-end)
+end
 
 -- Event handlers for when a theme is applied
 local original_FileManager_onApplyTheme = FileManager.onApplyTheme
