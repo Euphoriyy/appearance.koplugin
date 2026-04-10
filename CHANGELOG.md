@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.2.0...v1.3.0) (2026-04-10)
+
+
+### Features
+
+* **ui/font_face:** show “(no bold)” label for fonts missing bold variant ([c6ae338](https://github.com/Euphoriyy/appearance.koplugin/commit/c6ae338e6e4c9383bf13ca3c874b14e1813fb230))
+
+
+### Bug Fixes
+
+* **ui/background_image:** update patching of SimpleUI to match latest version ([a5b491c](https://github.com/Euphoriyy/appearance.koplugin/commit/a5b491c98bb60441db909bffa3621f5a45c7ab24)), closes [#10](https://github.com/Euphoriyy/appearance.koplugin/issues/10)
+* **ui/font_color:** apply ToggleSwitch update without delayed scheduling ([27ce86a](https://github.com/Euphoriyy/appearance.koplugin/commit/27ce86a863bcc393cce3a4688c3f9c030d2cd34e))
+
+
+### Performance Improvements
+
+* **ui/background_image:** close picture document after use ([12bfa65](https://github.com/Euphoriyy/appearance.koplugin/commit/12bfa6526269320c862d10c1f62c8b5207fd5e52))
+
 ## [1.2.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.2...v1.2.0) (2026-04-10)
 
 
