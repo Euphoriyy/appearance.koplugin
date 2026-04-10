@@ -1145,7 +1145,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
     local Config = require("sui_config")
     if not (currently_reading and Config) then return end
 
-    local original_buildProgressBarWithPct, up_value_idx = userpatch.getUpValue(currently_reading.build,
+    local original_buildProgressBarWithPct, buildProgressBarWithPct_idx = userpatch.getUpValue(currently_reading.build,
         "buildProgressBarWithPct")
 
     local function buildProgressBarWithPct(w, pct, bar_h, scale, lbl_scale, face_inline)
@@ -1170,7 +1170,32 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         return horizontal_group
     end
 
-    userpatch.replaceUpValue(currently_reading.build, up_value_idx, buildProgressBarWithPct)
+    userpatch.replaceUpValue(currently_reading.build, buildProgressBarWithPct_idx, buildProgressBarWithPct)
+
+    local SH = require("desktop_modules/module_books_shared")
+
+    local original_SH_progressBar = SH.progressBar
+
+    function SH.progressBar(w, pct, bh)
+        local fw = math.max(0, math.floor(w * math.min(pct or 0, 1.0)))
+        local bar = original_SH_progressBar(w, pct, bh)
+        if fw <= 0 then
+            bar.original_background = get_font_fgcolor()
+            bar.background = common.EXCLUSION_COLOR
+            return bar
+        end
+        bar[1].original_background = bg_cached.fgcolor
+        bar[1].background = common.EXCLUSION_COLOR
+        bar[2].original_background = get_font_fgcolor()
+        bar[2].background = common.EXCLUSION_COLOR
+        return bar
+    end
+
+    local reading_goals = require("desktop_modules/module_reading_goals")
+    local buildGoalRow = userpatch.getUpValue(reading_goals.build, "buildGoalRow")
+    local _, buildProgressBar_idx = userpatch.getUpValue(buildGoalRow, "buildProgressBar")
+
+    userpatch.replaceUpValue(buildGoalRow, buildProgressBar_idx, SH.progressBar)
 end)
 
 -- Event handlers for when a theme is applied
