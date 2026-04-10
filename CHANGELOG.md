@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.1...v1.3.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* **book/progress_bar_colors:** add missing function for getting footer settings ([8d9af0a](https://github.com/Euphoriyy/appearance.koplugin/commit/8d9af0a21c805014c7178eee0e6ef756f3e45807))
+
 ## [1.3.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.0...v1.3.1) (2026-04-10)
 
 
