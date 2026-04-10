@@ -101,7 +101,7 @@ local function font_face_menu()
             })
             for i, name in ipairs(font_list) do
                 table.insert(items, {
-                    text = name,
+                    text = T(name .. " %1", fonts[name].regular == fonts[name].bold and "(no bold)" or ""),
                     enabled_func = function() return name ~= UIFontName.get() end,
                     font_func = function(size) return Font:getFace(fonts[name].regular, size) end,
                     callback = function()
