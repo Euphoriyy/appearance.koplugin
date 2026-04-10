@@ -374,12 +374,14 @@ userpatch.registerPatchPluginFunc("simpleui", function()
     end
 
     function currently_reading.build(w, ctx)
-        local tappable   = original_currently_reading_build(w, ctx)
-        local row        = tappable[1][1]
-        local meta       = row[2]
+        local result        = original_currently_reading_build(w, ctx)
+        local tappable      = ctx.kb_currently_focused and result[1] or result
+        local row           = tappable[1][1]
+        local meta_centered = row[2]
+        local meta          = meta_centered[1]
 
-        local pfx        = ctx.pfx
-        local elem_order = _getElemOrder(pfx)
+        local pfx           = ctx.pfx
+        local elem_order    = _getElemOrder(pfx)
 
         for i, elem in ipairs(elem_order) do
             if elem == "title" then
@@ -403,7 +405,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
             end
         end
 
-        return tappable
+        return result
     end
 
     -- Fix quotes having an opaque background by replacing TextBoxWidgets with TextWidgets
