@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.2...v1.2.0) (2026-04-10)
+
+
+### Features
+
+* **book:** add progress bar color customization menu ([ef214e5](https://github.com/Euphoriyy/appearance.koplugin/commit/ef214e5d28a5b4a7dd095c7f2518fd3e5d0c8b2a))
+* **ui:** add UI font replacement menu ([3923d43](https://github.com/Euphoriyy/appearance.koplugin/commit/3923d436fe38a17da9275889f18a03469cf59250))
+
 ## [1.1.2](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.1.1...v1.1.2) (2026-04-08)
 
 
