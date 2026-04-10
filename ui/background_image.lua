@@ -43,8 +43,8 @@ local function get_image_dimen(path)
         logger.info("get_image_dimen error:", tostring(doc))
         return nil, nil
     end
-    local w = doc.width
-    local h = doc.height
+    local w, h = doc.width, doc.height
+    doc:close()
     return w, h
 end
 
