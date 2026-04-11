@@ -555,7 +555,7 @@ function ImageWidget:_loadfile()
 
                         -- Fill icon's background with custom background color
                         if bg_cached.bgcolor then
-                            common.fillRGB(icon_bb, Screen.bb:getType(), bg_cached.bgcolor)
+                            icon_bb:paintRectRGB32(0, 0, icon_bb.w, icon_bb.h, bg_cached.bgcolor)
                         end
 
                         -- And now simply compose the icon on top of that, with dithering if necessary

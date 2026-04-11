@@ -1,6 +1,5 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ReaderUI = require("apps/reader/readerui")
-local ffi = require("ffi")
 
 local common = {}
 
@@ -100,50 +99,6 @@ function common.lightenColor(c, amount)
         math.floor(g + (255 - g) * amount),
         math.floor(b + (255 - b) * amount)
     )
-end
-
-local uint8pt = ffi.typeof("uint8_t*")
-
--- color value pointer types
-local P_Color8A = ffi.typeof("Color8A*")
-local P_ColorRGB16 = ffi.typeof("ColorRGB16*")
-local P_ColorRGB32 = ffi.typeof("ColorRGB32*")
-
--- RGB version of Blitbuffer:fill
-function common.fillRGB(bb, bbtype, v)
-    -- While we could use a plain ffi.fill, there are a few BB types where we do not want to stomp on the alpha byte...
-
-    -- Handle invert...
-    if bb:getInverse() == 1 then v = v:invert() end
-
-    --print("fill")
-    if bbtype == Blitbuffer.TYPE_BBRGB32 then
-        local src = v:getColorRGB32()
-        local p = ffi.cast(P_ColorRGB32, bb.data)
-        for _ = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            -- Pointer arithmetics magic: +1 on an uint32_t* means +4 bytes (i.e., next pixel) ;).
-            p = p + 1
-        end
-    elseif bbtype == Blitbuffer.TYPE_BBRGB16 then
-        local src = v:getColorRGB16()
-        local p = ffi.cast(P_ColorRGB16, bb.data)
-        for _ = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            p = p + 1
-        end
-    elseif bbtype == Blitbuffer.TYPE_BB8A then
-        local src = v:getColor8A()
-        local p = ffi.cast(P_Color8A, bb.data)
-        for _ = 1, bb.pixel_stride * bb.h do
-            p[0] = src
-            p = p + 1
-        end
-    else
-        -- Should only be BBRGB24 & BB8 left, where we can use ffi.fill ;)
-        local p = ffi.cast(uint8pt, bb.data)
-        ffi.fill(p, bb.stride * bb.h, v.alpha)
-    end
 end
 
 -- Helper: check if we have a document open
