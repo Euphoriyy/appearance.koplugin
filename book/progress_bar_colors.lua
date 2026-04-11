@@ -58,6 +58,7 @@ function Settings:get(thin, color_attrib)
 end
 
 function Settings:set(thin, color_attrib, color)
+    if not self.footer then return nil end
     local style = getStyle(thin)
     local settings = self.footer.settings[style] or {}
     settings[color_attrib] = color
