@@ -16,6 +16,7 @@ local to_be_replaced
 local font_type = { regular = "NotoSans-Regular.ttf", bold = "NotoSans-Bold.ttf" }
 
 local function get_bold_path(path_regular)
+    if not path_regular then return nil end
     local path_bold, n_repl = path_regular:gsub("%-Regular%.", "-Bold.", 1)
     return n_repl > 0 and path_bold
 end
