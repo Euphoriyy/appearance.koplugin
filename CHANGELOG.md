@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.4](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.3...v1.3.4) (2026-04-11)
+
+
+### Bug Fixes
+
+* **book/progress_bar_colors:** footer settings setter failing when not in a book ([778914f](https://github.com/Euphoriyy/appearance.koplugin/commit/778914fce9776ab55b8edab75bb193c1bcce4576))
+* **ui/font_face:** add nil check when retrieving the bold path of a font ([04da70c](https://github.com/Euphoriyy/appearance.koplugin/commit/04da70c8e5c2ccc93b7ee8c14fe63972b46cf6d7))
+
 ## [1.3.3](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.2...v1.3.3) (2026-04-10)
 
 
