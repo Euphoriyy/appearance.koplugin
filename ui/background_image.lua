@@ -1,3 +1,4 @@
+local AlphaTextBoxWidget     = require("widgets/alphatextboxwidget")
 local Blitbuffer             = require("ffi/blitbuffer")
 local Device                 = require("device")
 local Dispatcher             = require("dispatcher")
@@ -408,7 +409,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         return result
     end
 
-    -- Fix quotes having an opaque background by replacing TextBoxWidgets with TextWidgets
+    -- Fix quotes having an opaque background
     local quotes = require("desktop_modules/module_quote")
     local UI     = require("sui_core")
     if not (quotes and UI) then return end
@@ -421,15 +422,15 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         local vg = VerticalGroup:new { align = "center" }
         local _CLR_TEXT_QUOTE = Blitbuffer.COLOR_BLACK
 
-        vg[#vg + 1] = TextWidget:new {
+        vg[#vg + 1] = AlphaTextBoxWidget:new {
             text      = text_str,
             face      = face_quote,
             fgcolor   = _CLR_TEXT_QUOTE,
             width     = inner_w,
             alignment = "center",
         }
-        vg[#vg + 1] = vspan_gap
-        vg[#vg + 1] = TextWidget:new {
+        -- vg[#vg + 1] = vspan_gap -- Don't use vertical span gap due to imperfect transparency
+        vg[#vg + 1] = AlphaTextBoxWidget:new {
             text      = attr_str,
             face      = face_attr,
             fgcolor   = UI.CLR_TEXT_SUB,
@@ -444,10 +445,11 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         local q = pickQuote()
 
         if not q then
-            return TextWidget:new {
+            return AlphaTextBoxWidget:new {
                 text    = _("No quotes found."),
                 face    = face_quote,
                 fgcolor = UI.CLR_TEXT_SUB,
+                bgcolor = nil,
                 width   = inner_w,
             }
         end
