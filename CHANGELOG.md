@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.6](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.5...v1.3.6) (2026-04-12)
+
+
+### Bug Fixes
+
+* **ui/background_image:** save last background image before unsetting ([8bcd2fa](https://github.com/Euphoriyy/appearance.koplugin/commit/8bcd2faa369ecd776312408640fafeda67e86889))
+* **ui/background_image:** use sensible default path in image picker ([8439082](https://github.com/Euphoriyy/appearance.koplugin/commit/8439082c36c4765ada22908d4e0caf4302d4647c))
+* **ui:** prevent color patches from overriding transparent TextBoxWidgets ([f7343da](https://github.com/Euphoriyy/appearance.koplugin/commit/f7343daa4a703c95b786e4301d200aff7aa5f479))
+
 ## [1.3.5](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.4...v1.3.5) (2026-04-12)
 
 
