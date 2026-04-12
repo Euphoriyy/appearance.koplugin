@@ -555,9 +555,8 @@ function TextWidget:paintTo(bb, x, y)
         self.fgcolor = fg_cached.fgcolor
     end
 
-    -- Use original B/W TextWidget painting method if color is not enabled,
-    -- or if reader only is enabled and not in reader
-    if not Screen:isColorEnabled() or (fg_cached.reader_only and not common.has_document_open()) then
+    -- Use original B/W TextWidget painting method if reader only is enabled and not in reader
+    if fg_cached.reader_only and not common.has_document_open() then
         original_TextWidget_paintTo(self, bb, x, y)
         self.fgcolor = original_fgcolor
     else
