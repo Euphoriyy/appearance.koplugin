@@ -14,6 +14,7 @@ local Screen                 = Device.screen
 local Setting                = require("lib/setting")
 local UIManager              = require("ui/uimanager")
 local VerticalGroup          = require("ui/widget/verticalgroup")
+local lfs                    = require("libs/libkoreader-lfs")
 local logger                 = require("logger")
 local pic                    = require("ffi/pic")
 local userpatch              = require("userpatch")
@@ -138,8 +139,24 @@ local function background_image_menu()
                 end,
                 callback = function(touchmenu_instance)
                     local title_header, current_path, file_filter, caller_callback
-                    title_header = _("Current image:")
-                    current_path = BackgroundImage.get()
+
+                    local home_dir = G_reader_settings:readSetting("home_dir") or Device.home_dir
+                        or lfs.currentdir()
+                    local current_screensaver = G_reader_settings:readSetting("screensaver_document_cover")
+                    current_path = BackgroundImage.get() or LastBackgroundImage.get()
+                        or current_screensaver
+                        or home_dir
+
+                    if current_path == BackgroundImage.get() then
+                        title_header = _("Current image or document cover:")
+                    elseif current_path == LastBackgroundImage.get() then
+                        title_header = _("Last image or document cover:")
+                    elseif current_path == current_screensaver then
+                        title_header = _("Screensaver directory:")
+                    elseif current_path == home_dir then
+                        title_header = _("Home or current directory:")
+                    end
+
                     file_filter = function(filename)
                         return DocumentRegistry:hasProvider(filename)
                     end
