@@ -17,22 +17,28 @@ local font_type = { regular = "NotoSans-Regular.ttf", bold = "NotoSans-Bold.ttf"
 
 local function get_bold_path(path_regular)
     if not path_regular then return nil end
+    -- Try "Font-Regular.ext" -> "Font-Bold.ext"
     local path_bold, n_repl = path_regular:gsub("%-Regular%.", "-Bold.", 1)
+    if n_repl > 0 then return path_bold end
+    -- Try "Font.ext" -> "Font-Bold.ext"
+    path_bold, n_repl = path_regular:gsub("(%.)([^.]+)$", "-Bold.%2", 1)
     return n_repl > 0 and path_bold
 end
 
-local function set_font(name)
-    if not UIFontEnabled.get() then return end
-    local current_name = UIFontName.get()
-    if name ~= current_name then
-        name = name or current_name
-        if not fonts[name] then return end
-        for font, typ in pairs(to_be_replaced) do
-            Font.fontmap[font] = fonts[name][typ]
-        end
-        UIFontName.set(name)
-        return true
+local function apply_font(name)
+    name = name or UIFontName.get()
+    if not UIFontEnabled.get() or not fonts[name] then return end
+    for font, typ in pairs(to_be_replaced) do
+        Font.fontmap[font] = fonts[name][typ]
     end
+end
+
+local function set_font(name)
+    if not fonts[name] then return end
+    local changed = name ~= UIFontName.get()
+    UIFontName.set(name)
+    apply_font(name)
+    return changed
 end
 
 local function init(font_name)
@@ -53,15 +59,13 @@ local function init(font_name)
         local regular_exists = path_exists[path_regular]
         local bold_exists = path_exists[path_bold]
 
+        table.insert(font_list, name)
         -- Add both regular and bold versions if they exist, otherwise default to whatever is left
         if regular_exists and bold_exists then
-            table.insert(font_list, name)
             fonts[name] = { regular = path_regular, bold = path_bold }
         elseif regular_exists then
-            table.insert(font_list, name)
             fonts[name] = { regular = path_regular, bold = path_regular }
         elseif bold_exists then
-            table.insert(font_list, name)
             fonts[name] = { regular = path_bold, bold = path_bold }
         end
     end
@@ -74,7 +78,7 @@ local function init(font_name)
         to_be_replaced[name] = type_font[font]
     end
 
-    return set_font(font_name)
+    apply_font(font_name)
 end
 
 init()
@@ -95,7 +99,7 @@ local function font_face_menu()
                 checked_func = UIFontEnabled.get,
                 callback = function()
                     UIFontEnabled.toggle()
-                    init()
+                    apply_font()
                     UIManager:askForRestart(_("Restart to fully apply the UI font change."))
                 end,
                 separator = true,
@@ -106,7 +110,7 @@ local function font_face_menu()
                     enabled_func = function() return name ~= UIFontName.get() end,
                     font_func = function(size) return Font:getFace(fonts[name].regular, size) end,
                     callback = function()
-                        if init(name) then
+                        if set_font(name) then
                             UIManager:askForRestart(_("Restart to fully apply the UI font change."))
                         end
                     end,
