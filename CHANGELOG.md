@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.5](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.4...v1.3.5) (2026-04-12)
+
+
+### Bug Fixes
+
+* **ui/background_image:** make SimpleUI quotes aligned properly ([4243b4d](https://github.com/Euphoriyy/appearance.koplugin/commit/4243b4da93571deec73d0c500e4fa2c6361dce60)), closes [#19](https://github.com/Euphoriyy/appearance.koplugin/issues/19)
+
 ## [1.3.4](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.3...v1.3.4) (2026-04-11)
 
 
