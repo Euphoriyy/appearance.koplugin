@@ -32,9 +32,17 @@ local BackgroundImageHistory = Setting("ui_background_image_history", {})       
 local LastBackgroundImage    = Setting("ui_background_image_last", nil)         -- The last background images selected.
 
 -- Helper: get the filename for the current background image
-local function backgroundImageName(path)
+local function background_image_name(path)
     path = path or BackgroundImage.get()
     return path:match("^.+/(.+)$")
+end
+
+-- Helper: save the last background image to the current one if one is set
+local function save_last_background_image()
+    local current_background_image = BackgroundImage.get()
+    if current_background_image then
+        LastBackgroundImage.set(current_background_image)
+    end
 end
 
 -- Helper: get the dimensions of an image by loading it as a picture document
@@ -127,13 +135,13 @@ local filemanagerutil = require("apps/filemanager/filemanagerutil")
 local function background_image_menu()
     return {
         text_func = function()
-            return T(_("Background image: %1"), BackgroundImage.get() and backgroundImageName() or "none")
+            return T(_("Background image: %1"), BackgroundImage.get() and background_image_name() or "none")
         end,
         sub_item_table = {
             {
                 text_func = function()
                     local status = BackgroundImage.get()
-                        and (backgroundImageName() .. " (hold to unset)")
+                        and (background_image_name() .. " (hold to unset)")
                         or "none (press to select)"
                     return T(_("Current image: %1"), status)
                 end,
@@ -161,8 +169,7 @@ local function background_image_menu()
                         return DocumentRegistry:hasProvider(filename)
                     end
                     caller_callback = function(path)
-                        -- Store last background image
-                        LastBackgroundImage.set(BackgroundImage.get())
+                        save_last_background_image()
 
                         BackgroundImage.set(path)
                         touchmenu_instance:updateItems()
@@ -178,6 +185,8 @@ local function background_image_menu()
                     )
                 end,
                 hold_callback = function(touchmenu_instance)
+                    save_last_background_image()
+
                     BackgroundImage.set(nil)
                     touchmenu_instance:updateItems()
                     reload_background_image()
@@ -513,8 +522,7 @@ end
 
 -- Register background image selection & toggling as dispatcher actions
 local function SelectBackgroundImage(action_num)
-    -- Store last background image
-    LastBackgroundImage.set(BackgroundImage.get())
+    save_last_background_image()
 
     local history = BackgroundImageHistory.get()
     BackgroundImage.set(history[action_num])
@@ -526,7 +534,7 @@ local function getBackgroundImageActions()
     local history = BackgroundImageHistory.get()
     for i, v in ipairs(history) do
         table.insert(action_nums, i)
-        table.insert(action_texts, backgroundImageName(v))
+        table.insert(action_texts, background_image_name(v))
     end
     return action_nums, action_texts
 end
