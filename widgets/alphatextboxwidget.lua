@@ -42,6 +42,7 @@ function AlphaTextBoxWidget:init()
         line_height = self.line_height,
         fgcolor = Blitbuffer.COLOR_BLACK,
         bgcolor = Blitbuffer.COLOR_WHITE,
+        alpha = true,
     }
     self.dimen = self._textbox:getSize()
 end

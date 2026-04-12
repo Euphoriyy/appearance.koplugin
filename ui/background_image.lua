@@ -12,7 +12,6 @@ local ReaderUI               = require("apps/reader/readerui")
 local ReaderView             = require("apps/reader/modules/readerview")
 local Screen                 = Device.screen
 local Setting                = require("lib/setting")
-local TextWidget             = require("ui/widget/textwidget")
 local UIManager              = require("ui/uimanager")
 local VerticalGroup          = require("ui/widget/verticalgroup")
 local logger                 = require("logger")
@@ -365,8 +364,10 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
     -- Replace the currently reading title label with one that supports transparency
     local currently_reading = require("desktop_modules/module_currently")
-    local Config = require("sui_config")
-    if not (currently_reading and Config) then return end
+    local SH                = require("desktop_modules/module_books_shared")
+    local UI                = require("sui_core")
+    local Config            = require("sui_config")
+    if not (currently_reading and SH and UI and Config) then return end
 
     local _getElemOrder = userpatch.getUpValue(currently_reading.build, "_getElemOrder")
 
@@ -386,18 +387,23 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
         for i, elem in ipairs(elem_order) do
             if elem == "title" then
-                local _BASE_TITLE_FS = Screen:scaleBySize(11)
-                local scale          = Config.getModuleScale("currently", ctx.pfx)
-                local lbl_scale      = Config.getItemLabelScale("currently", ctx.pfx)
-                local title_fs       = math.max(8, math.floor(_BASE_TITLE_FS * scale * lbl_scale))
-                local face_title     = Font:getFace("smallinfofont", title_fs)
+                local _BASE_COVER_GAP = Screen:scaleBySize(16) -- between cover and text column
+                local scale           = Config.getModuleScale("currently", ctx.pfx)
+                local thumb_scale     = Config.getThumbScale("currently", ctx.pfx)
+                local lbl_scale       = Config.getItemLabelScale("currently", ctx.pfx)
+                local D               = SH.getDims(scale, thumb_scale)
+                local cover_gap       = math.max(1, math.floor(_BASE_COVER_GAP * scale))
+                local tw              = w - UI.PAD - D.COVER_W - cover_gap - UI.PAD
+                local _BASE_TITLE_FS  = Screen:scaleBySize(11)
+                local title_fs        = math.max(8, math.floor(_BASE_TITLE_FS * scale * lbl_scale))
+                local face_title      = Font:getFace("smallinfofont", title_fs)
 
-                -- TextBoxWidget -> TextWidget
-                local new_label      = TextWidget:new {
-                    text    = meta[i].text,
-                    face    = face_title,
-                    bold    = true,
-                    fgcolor = Blitbuffer.COLOR_BLACK,
+                local new_label       = AlphaTextBoxWidget:new {
+                    text      = meta[i].text,
+                    face      = face_title,
+                    bold      = true,
+                    width     = tw,
+                    max_lines = 2,
                 }
 
                 -- Free old label and set new one
@@ -411,8 +417,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
     -- Fix quotes having an opaque background
     local quotes = require("desktop_modules/module_quote")
-    local UI     = require("sui_core")
-    if not (quotes and UI) then return end
+    if not quotes then return end
 
     local buildFromQuote, buildFromQuote_idx = userpatch.getUpValue(quotes.build, "buildFromQuote")
     local _, buildWidget_idx                 = userpatch.getUpValue(buildFromQuote, "buildWidget")

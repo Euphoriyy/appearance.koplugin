@@ -644,7 +644,9 @@ local original_TextBoxWidget_renderText = TextBoxWidget._renderText
 function TextBoxWidget:_renderText(start_row_idx, end_row_idx)
     local original_fgcolor = self.fgcolor
 
-    if fg_cached.set_textbox_color and not (fg_cached.reader_only and not common.has_document_open()) then
+    if fg_cached.set_textbox_color and not self.alpha
+        and not (fg_cached.reader_only and not common.has_document_open())
+    then
         self.fgcolor = fg_cached.fgcolor
     end
 
