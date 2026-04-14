@@ -84,12 +84,24 @@ end
 -- Per-radius lookup cache: hue + saturation for every pixel.
 -- Built once per unique draw_radius, survives widget rebuilds.
 -- Pixels outside the circle are marked with sat = -1.
+--
+-- Cap the cache at MAX_CACHE_ENTRIES entries (LRU eviction).
+-- Without a bound the table grows forever if draw_scale or widget
+-- size varies across the process lifetime.
 ------------------------------------------------------------
-local _wheel_cache = {}
+local _wheel_cache      = {}
+local _wheel_cache_keys = {} -- insertion-order list for LRU eviction
+local MAX_CACHE_ENTRIES = 8
 
 local function getWheelCache(draw_radius)
     if _wheel_cache[draw_radius] then
         return _wheel_cache[draw_radius]
+    end
+
+    -- Evict oldest entry when the cache is full
+    if #_wheel_cache_keys >= MAX_CACHE_ENTRIES then
+        local oldest = table.remove(_wheel_cache_keys, 1)
+        _wheel_cache[oldest] = nil
     end
 
     local r2    = draw_radius * draw_radius
@@ -112,6 +124,7 @@ local function getWheelCache(draw_radius)
 
     local cache = { hue = hue_t, sat = sat_t }
     _wheel_cache[draw_radius] = cache
+    table.insert(_wheel_cache_keys, draw_radius)
     return cache
 end
 
@@ -140,6 +153,13 @@ function ColorWheel:init()
     -- Pre-warm the cache so the first paint doesn't stutter
     getWheelCache(self.draw_radius)
     self._needs_redraw = true
+end
+
+function ColorWheel:free()
+    if self._cached_buf then
+        self._cached_buf:free()
+        self._cached_buf = nil
+    end
 end
 
 function ColorWheel:_renderToBuffer(x, y)
@@ -330,7 +350,27 @@ function ColorWheelWidget:init()
     self:update()
 end
 
+-- Free all owned FFI/widget resources before rebuilding the widget tree.
+function ColorWheelWidget:_freeChildren()
+    if self.color_wheel then
+        self.color_wheel:free()
+        self.color_wheel = nil
+    end
+    if self._live_hex then
+        self._live_hex:free()
+        self._live_hex = nil
+    end
+end
+
+function ColorWheelWidget:onCloseWidget()
+    self:_freeChildren()
+end
+
 function ColorWheelWidget:update()
+    -- Free previous ColorWheel (and its _cached_buf) and LiveHex
+    -- before creating new ones, so no orphaned FFI buffers are left behind.
+    self:_freeChildren()
+
     local wheel_size    = self.width - 2 * Size.padding.large
     local preview_size  = math.floor(wheel_size / 4)
 
