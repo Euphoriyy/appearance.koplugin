@@ -374,8 +374,13 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         local outer = overlap[1]
         local content_widget = outer[1]
 
+        -- Move padding from outer widget to content widget
+        local side_off = outer.padding_left
+        content_widget.padding_left = side_off
+        content_widget.padding_right = side_off
         outer.padding_left = 0
         outer.padding_right = 0
+
         outer.background = nil
         content_widget.background = nil
 
