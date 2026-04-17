@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.7](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.6...v1.3.7) (2026-04-17)
+
+
+### Bug Fixes
+
+* **ui/background_image:** missing side padding on widgets in SimpleUI homescreen ([14e9b86](https://github.com/Euphoriyy/appearance.koplugin/commit/14e9b86a2cca713b95b6711f1bc106a43e750892))
+* **ui/font_color:** apply font color on non-color screens ([91f68f7](https://github.com/Euphoriyy/appearance.koplugin/commit/91f68f77d87afca763c1ccd2849bca4fa6efdbb9))
+* **widgets/colorwheelwidget:** cap wheel cache and free FFI buffers on rebuild and close ([21f2bf6](https://github.com/Euphoriyy/appearance.koplugin/commit/21f2bf60581f168347b06778a86a1181998592ad))
+
 ## [1.3.6](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.5...v1.3.6) (2026-04-12)
 
 
