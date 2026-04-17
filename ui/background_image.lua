@@ -193,7 +193,7 @@ local function background_image_menu()
                 end,
             },
             {
-                text = _("Stretch background image to fit screen"),
+                text = _("Stretch to fit screen"),
                 checked_func = StretchImage.get,
                 callback = function()
                     StretchImage.toggle()
@@ -201,7 +201,7 @@ local function background_image_menu()
                 end,
             },
             {
-                text = _("Rotate background image for best fit"),
+                text = _("Rotate for best fit"),
                 checked_func = RotateImage.get,
                 callback = function()
                     RotateImage.toggle()
@@ -209,7 +209,7 @@ local function background_image_menu()
                 end,
             },
             {
-                text = _("Invert background image in night mode"),
+                text = _("Invert image in night mode"),
                 checked_func = InvertImage.get,
                 callback = function()
                     InvertImage.toggle()
@@ -220,7 +220,7 @@ local function background_image_menu()
                 separator = true,
             },
             {
-                text = _("Show background image in file browser"),
+                text = _("Show in file browser"),
                 checked_func = ShowInFiles.get,
                 callback = function()
                     ShowInFiles.toggle()
@@ -236,21 +236,21 @@ local function background_image_menu()
                 end,
             },
             {
-                text = _("Show background image in reader"),
+                text = _("Show in reader"),
                 checked_func = ShowInReader.get,
                 callback = function()
                     ShowInReader.toggle()
                 end,
             },
             {
-                text = _("Show background image in top menu"),
+                text = _("Show in top menu"),
                 checked_func = ShowInMenu.get,
                 callback = function()
                     ShowInMenu.toggle()
                 end,
             },
             {
-                text = _("Show background image in homescreen"),
+                text = _("Show in homescreen"),
                 enabled_func = function() return G_reader_settings:readSetting("simpleui_enabled") end,
                 checked_func = ShowInHomescreen.get,
                 callback = function()
