@@ -14,6 +14,7 @@ local Geom = require("ui/geometry")
 local HtmlBoxWidget = require("ui/widget/htmlboxwidget")
 local IconWidget = require("ui/widget/iconwidget")
 local ImageWidget = require("ui/widget/imagewidget")
+local InputDialog = require("ui/widget/inputdialog")
 local InputText = require("ui/widget/inputtext")
 local LineWidget = require("ui/widget/linewidget")
 local ProgressWidget = require("ui/widget/progresswidget")
@@ -189,7 +190,6 @@ local _ = require("gettext")
 local T = require("ffi/util").template
 
 local function set_color_menu()
-    InputDialog = require("ui/widget/inputdialog")
     return {
         text = _("Enter color code"),
         keep_menu_open = true,

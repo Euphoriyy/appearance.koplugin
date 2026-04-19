@@ -2,6 +2,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local DictQuickLookup = require("ui/widget/dictquicklookup")
 local FileManager = require("apps/filemanager/filemanager")
+local InputDialog = require("ui/widget/inputdialog")
 local ReaderUI = require("apps/reader/readerui")
 local RenderText = require("ui/rendertext")
 local Screen = require("device").screen
@@ -94,7 +95,6 @@ local _ = require("gettext")
 local T = require("ffi/util").template
 
 local function set_color_menu()
-    InputDialog = require("ui/widget/inputdialog")
     return {
         text = _("Enter color code"),
         keep_menu_open = true,

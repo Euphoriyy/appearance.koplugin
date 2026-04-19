@@ -4,6 +4,7 @@ local Device = require("device")
 local Document = require("document/document")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
+local InputDialog = require("ui/widget/inputdialog")
 local KoptInterface = require("document/koptinterface")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
@@ -89,7 +90,6 @@ local _ = require("gettext")
 local T = require("ffi/util").template
 
 local function set_color_menu()
-    InputDialog = require("ui/widget/inputdialog")
     return {
         text = _("Enter color code"),
         keep_menu_open = true,
