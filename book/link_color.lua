@@ -1,4 +1,3 @@
-local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
@@ -6,62 +5,62 @@ local InputDialog = require("ui/widget/inputdialog")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
-local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
+local _ = require("gettext")
 local common = require("lib/common")
 local util = require("util")
 
-local HexFontColor = Setting("book_font_color_hex", "#000000")
-local InvertFontColor = Setting("book_font_color_inverted", true)
-local AltNightFontColor = Setting("book_font_color_alt_night", false)
-local NightHexFontColor = Setting("book_font_color_night_hex", "#FFFFFF")
+local HexLinkColor = Setting("book_link_color_hex", nil)
+local InvertLinkColor = Setting("book_link_color_inverted", true)
+local AltNightLinkColor = Setting("book_link_color_alt_night", false)
+local NightHexLinkColor = Setting("book_link_color_night_hex", nil)
 
 -- Cache
-local fg_cached = {
-    alt_night_color = AltNightFontColor.get(),
-    invert_in_night_mode = InvertFontColor.get(),
-    hex = HexFontColor.get(),
-    night_hex = NightHexFontColor.get(),
+local link_cached = {
+    alt_night_color = AltNightLinkColor.get(),
+    invert_in_night_mode = InvertLinkColor.get(),
+    hex = HexLinkColor.get(),
+    night_hex = NightHexLinkColor.get(),
     last_hex = nil,
-    fgcolor = nil,
+    computed_hex = nil,
 }
 
--- Recompute and cache the final fgcolor based on current settings
--- Applies night mode inversion if enabled, and updates fg_cached.fgcolor only if it has changed
-local function recomputeFGColor()
-    local hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
+-- Recompute and cache the final link color based on current settings
+-- Applies night mode inversion if enabled
+local function recomputeLinkColor()
+    local hex = (Screen.night_mode and link_cached.alt_night_color) and link_cached.night_hex or link_cached.hex
     if Screen.night_mode then
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
+        if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
     end
-    if hex ~= fg_cached.last_hex then
-        fg_cached.fgcolor = Blitbuffer.colorFromString(hex)
-        fg_cached.last_hex = hex
+    if hex ~= link_cached.last_hex then
+        link_cached.computed_hex = hex
+        link_cached.last_hex = hex
     end
 end
 
--- Compute and cache the initial fgcolor based on current settings
-recomputeFGColor()
+-- Compute and cache the initial link color based on current settings
+recomputeLinkColor()
 
-local function getFontColor()
-    if Screen.night_mode and fg_cached.alt_night_color then
-        return NightHexFontColor.get()
+local function getLinkColor()
+    if Screen.night_mode and link_cached.alt_night_color then
+        return NightHexLinkColor.get() or "default"
     else
-        return HexFontColor.get()
+        return HexLinkColor.get() or "default"
     end
 end
 
-local function setFontColor(hex)
-    if Screen.night_mode and fg_cached.alt_night_color then
-        NightHexFontColor.set(hex)
-        fg_cached.night_hex = hex
+local function setLinkColor(hex)
+    if Screen.night_mode and link_cached.alt_night_color then
+        NightHexLinkColor.set(hex)
+        link_cached.night_hex = hex
     else
-        HexFontColor.set(hex)
-        fg_cached.hex = hex
+        HexLinkColor.set(hex)
+        link_cached.hex = hex
     end
 
-    recomputeFGColor()
+    recomputeLinkColor()
 end
 
 local function refresh()
@@ -83,7 +82,7 @@ local function set_color_menu()
             local input_dialog
             input_dialog = InputDialog:new({
                 title = "Enter custom color code",
-                input = getFontColor(),
+                input = getLinkColor(),
                 input_hint = "#000000",
                 buttons = {
                     {
@@ -103,7 +102,7 @@ local function set_color_menu()
                                         return
                                     end
 
-                                    setFontColor(string.upper(text))
+                                    setLinkColor(string.upper(text))
                                     refresh()
 
                                     if touchmenu_instance then
@@ -127,17 +126,17 @@ local function pick_color_menu()
         text = _("Pick color visually"),
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local h, s, v = common.hexToHSV(getFontColor())
+            local h, s, v = common.hexToHSV(getLinkColor())
             local wheel
-            local should_invert_wheel = AltNightFontColor.get() or not InvertFontColor.get()
+            local should_invert_wheel = AltNightLinkColor.get() or not InvertLinkColor.get()
             wheel = ColorWheelWidget:new({
-                title_text = "Pick font color",
+                title_text = "Pick link color",
                 hue = h,
                 saturation = s,
                 value = v,
                 invert_in_night_mode = should_invert_wheel,
                 callback = function(hex)
-                    setFontColor(hex)
+                    setLinkColor(hex)
                     refresh()
 
                     if touchmenu_instance then
@@ -151,32 +150,39 @@ local function pick_color_menu()
             })
             UIManager:show(wheel)
         end,
-        separator = true,
     }
 end
 
-local function font_color_menu()
+local function link_color_menu()
     return {
         text_func = function()
-            return T(_("Font color: %1"), getFontColor())
+            return T(_("Link color: %1"), getLinkColor())
         end,
         sub_item_table = {
             {
                 text_func = function()
-                    return T(_("Current color: %1"), getFontColor())
+                    return T(_("Current color: %1"), getLinkColor())
                 end,
             },
             set_color_menu(),
             pick_color_menu(),
             {
-                text = _("Alternative night mode color"),
-                checked_func = AltNightFontColor.get,
+                text = _("Reset color"),
                 callback = function()
-                    AltNightFontColor.toggle()
-                    fg_cached.alt_night_color = AltNightFontColor.get()
+                    setLinkColor(nil)
+                    refresh()
+                end,
+                separator = true,
+            },
+            {
+                text = _("Alternative night mode color"),
+                checked_func = AltNightLinkColor.get,
+                callback = function()
+                    AltNightLinkColor.toggle()
+                    link_cached.alt_night_color = AltNightLinkColor.get()
 
                     if Screen.night_mode then
-                        recomputeFGColor()
+                        recomputeLinkColor()
 
                         refresh()
                     end
@@ -184,12 +190,12 @@ local function font_color_menu()
             },
             {
                 text = _("Invert color in night mode"),
-                enabled_func = function() return not AltNightFontColor.get() end,
-                checked_func = InvertFontColor.get,
+                enabled_func = function() return not AltNightLinkColor.get() end,
+                checked_func = InvertLinkColor.get,
                 callback = function()
-                    InvertFontColor.toggle()
-                    fg_cached.invert_in_night_mode = InvertFontColor.get()
-                    recomputeFGColor()
+                    InvertLinkColor.toggle()
+                    link_cached.invert_in_night_mode = InvertLinkColor.get()
+                    recomputeLinkColor()
 
                     if Screen.night_mode then
                         refresh()
@@ -200,24 +206,21 @@ local function font_color_menu()
     }
 end
 
--- Add font color to reader style tweak CSS if enabled
+-- Add link color to reader style tweak CSS if enabled
 local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self)
 
-    local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
-    if Screen.night_mode then
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-            fg_hex = common.invertColor(fg_hex)
-        end
-    end
-
-    local fg_css = [[
-            body {
-                color: ]] .. fg_hex .. [[ !important;
+    if link_cached.computed_hex then
+        local link_css = [[
+            a {
+                color: ]] .. link_cached.computed_hex .. [[ !important;
             }
         ]]
-    return util.trim(fg_css .. original_css)
+        return util.trim(link_css .. original_css)
+    else
+        return original_css
+    end
 end
 
 -- Hook into night mode state changes and update cache
@@ -225,9 +228,9 @@ local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
     original_UIManager_ToggleNightMode(self)
 
-    recomputeFGColor()
+    recomputeLinkColor()
 
-    if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
+    if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
         refresh()
     end
 end
@@ -237,9 +240,9 @@ function UIManager:SetNightMode(night_mode)
     original_UIManager_SetNightMode(self)
 
     if Screen.night_mode ~= night_mode then
-        recomputeFGColor()
+        recomputeLinkColor()
 
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
+        if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
             refresh()
         end
     end
@@ -252,10 +255,10 @@ function FileManager:onApplyTheme()
         original_FileManager_onApplyTheme(self)
     end
 
-    fg_cached.hex = HexFontColor.get()
-    fg_cached.night_hex = NightHexFontColor.get()
-    fg_cached.alt_night_color = AltNightFontColor.get()
-    recomputeFGColor()
+    link_cached.hex = HexLinkColor.get()
+    link_cached.night_hex = NightHexLinkColor.get()
+    link_cached.alt_night_color = AltNightLinkColor.get()
+    recomputeLinkColor()
     refresh()
 end
 
@@ -265,11 +268,11 @@ function ReaderUI:onApplyTheme()
         original_ReaderUI_onApplyTheme(self)
     end
 
-    fg_cached.hex = HexFontColor.get()
-    fg_cached.night_hex = NightHexFontColor.get()
-    fg_cached.alt_night_color = AltNightFontColor.get()
-    recomputeFGColor()
+    link_cached.hex = HexLinkColor.get()
+    link_cached.night_hex = NightHexLinkColor.get()
+    link_cached.alt_night_color = AltNightLinkColor.get()
+    recomputeLinkColor()
     refresh()
 end
 
-return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }
+return link_color_menu

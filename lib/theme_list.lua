@@ -1,8 +1,8 @@
 local theme_list = {}
 
 -- Default KOReader themes
-theme_list.DEFAULT_DAY_THEME = { key = "default_day", label = "Default Day", bg = "#FFFFFF", fg = "#000000", night = false }
-theme_list.DEFAULT_NIGHT_THEME = { key = "default_night", label = "Default Night", bg = "#000000", fg = "#FFFFFF", night = true }
+theme_list.DEFAULT_DAY_THEME = { key = "default_day", label = "Default Day", bg = "#FFFFFF", fg = "#000000", link = nil, night = false }
+theme_list.DEFAULT_NIGHT_THEME = { key = "default_night", label = "Default Night", bg = "#000000", fg = "#FFFFFF", link = nil, night = true }
 
 -- Default themes list
 theme_list.DEFAULT_DAY_THEMES = {

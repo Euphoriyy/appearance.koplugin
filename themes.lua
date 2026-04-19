@@ -6,6 +6,7 @@ local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local InfoMessage = require("ui/widget/infomessage")
+local InputDialog = require("ui/widget/inputdialog")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
@@ -24,13 +25,16 @@ local UIHexFontColor = Setting("ui_font_color_hex", "#000000")
 local UIAltNightFontColor = Setting("ui_font_color_alt_night", false)
 local UINightHexFontColor = Setting("ui_font_color_night_hex", "#FFFFFF")
 
--- Significant variables for the Book background and font color
+-- Significant variables for the Book background, font, and link color
 local BookHexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
 local BookAltNightBackgroundColor = Setting("book_background_color_alt_night", false)
 local BookNightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
 local BookHexFontColor = Setting("book_font_color_hex", "#000000")
 local BookAltNightFontColor = Setting("book_font_color_alt_night", false)
 local BookNightHexFontColor = Setting("book_font_color_night_hex", "#FFFFFF")
+local BookHexLinkColor = Setting("book_link_color_hex", nil)
+local BookAltNightLinkColor = Setting("book_link_color_alt_night", false)
+local BookNightHexLinkColor = Setting("book_link_color_night_hex", nil)
 
 -- Theme variables
 local DayThemes = Setting("ui_themes_day", theme_list.DEFAULT_DAY_THEMES)
@@ -84,16 +88,32 @@ local function setForegroundColor(hex, book, night)
     end
 end
 
+local function setLinkColor(hex, book, night)
+    if not book then return end
+    if not night then
+        BookHexLinkColor.set(hex)
+    else
+        BookAltNightLinkColor.set(true)
+        BookNightHexLinkColor.set(hex)
+    end
+end
 
 -- Menus
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", }
+local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", LINK = "link", }
 
 local function set_color_menu(touchmenu_instance, type, original_hex, callback)
-    original_hex = original_hex or
-        (type == ColorType.BACKGROUND and theme_list.DEFAULT_DAY_THEME.bg or theme_list.DEFAULT_DAY_THEME.fg)
+    if not original_hex then
+        if type == ColorType.BACKGROUND then
+            original_hex = theme_list.DEFAULT_DAY_THEME.bg
+        elseif type == ColorType.FOREGROUND then
+            original_hex = theme_list.DEFAULT_DAY_THEME.fg
+        elseif type == ColorType.LINK then
+            original_hex = "#0066FF"
+        end
+    end
 
     local input_dialog
     input_dialog = InputDialog:new({
@@ -134,8 +154,15 @@ local function set_color_menu(touchmenu_instance, type, original_hex, callback)
 end
 
 local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
-    original_hex = original_hex or
-        (type == ColorType.BACKGROUND and theme_list.DEFAULT_DAY_THEME.bg or theme_list.DEFAULT_DAY_THEME.fg)
+    if not original_hex then
+        if type == ColorType.BACKGROUND then
+            original_hex = theme_list.DEFAULT_DAY_THEME.bg
+        elseif type == ColorType.FOREGROUND then
+            original_hex = theme_list.DEFAULT_DAY_THEME.fg
+        elseif type == ColorType.LINK then
+            original_hex = "#0066FF"
+        end
+    end
 
     local h, s, v = common.hexToHSV(original_hex)
     local wheel
@@ -163,7 +190,10 @@ end
 
 -- Menu to select method for choosing color
 local function color_menu(touchmenu_instance, type, original_hex, callback)
-    local dialog = MultiConfirmBox:new({
+    local skippable = type == ColorType.LINK
+    local VariableConfirmBox = skippable and TripleConfirmBox or MultiConfirmBox
+
+    local dialog = VariableConfirmBox:new({
         text = T(_("Choose the %1 color by:"), type),
         choice1_text = _("Hex code"),
         choice1_callback = function()
@@ -175,14 +205,19 @@ local function color_menu(touchmenu_instance, type, original_hex, callback)
         choice2_callback = function()
             UIManager:show(pick_color_menu(touchmenu_instance, type, original_hex, callback))
         end,
+        choice3_text = _("Skip"),
+        choice3_callback = function()
+            callback(nil)
+        end,
+        choice3_enabled = skippable,
     })
     return dialog
 end
 
 -- Add theme to the appropriate list
-local function add_theme(name, bg_hex, fg_hex, night)
+local function add_theme(name, bg_hex, fg_hex, link_hex, night)
     local key = string.lower(name:gsub(" ", "_"))
-    local theme = { key = key, label = name, bg = bg_hex, fg = fg_hex, night = night }
+    local theme = { key = key, label = name, bg = bg_hex, fg = fg_hex, link = link_hex, night = night }
 
     if not night then
         table.insert(cached.dayThemes, theme)
@@ -253,8 +288,9 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
     for i, theme in ipairs(themes) do
         local bgcolor = Blitbuffer.colorFromString(theme.bg)
         buttons[i] = { {
-            text = T(_("§%1 §%2 %3 §r "), theme.night and "blue ⏾" or "orange ☀️",
-                string.lower(theme.fg), theme.label),
+            -- Could also use ↗ symbol ¯\_('' )_/¯
+            text = T(_("§%1 §%2 %3 §%4 ⤴ §r"), theme.night and "blue ⏾" or "orange ☀️",
+                string.lower(theme.fg), theme.label, theme.link or "blue"),
             menu_style = true,
             original_background = Screen.night_mode and bgcolor:invert() or bgcolor,
             background = common.EXCLUSION_COLOR,
@@ -293,6 +329,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
 
                                 setBackgroundColor(theme.bg, true, false)
                                 setForegroundColor(theme.fg, true, false)
+                                setLinkColor(theme.link, true, false)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                             choice2_text = _("§blue ⏾ Night mode§r "),
@@ -301,6 +338,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
 
                                 setBackgroundColor(theme.bg, true, true)
                                 setForegroundColor(theme.fg, true, true)
+                                setLinkColor(theme.link, true, true)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         }))
@@ -318,6 +356,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                                 setForegroundColor(theme.fg, false, false)
                                 setBackgroundColor(theme.bg, true, false)
                                 setForegroundColor(theme.fg, true, false)
+                                setLinkColor(theme.link, true, false)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                             choice2_text = _("§blue ⏾ Night mode§r "),
@@ -329,6 +368,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                                 setForegroundColor(theme.fg, false, true)
                                 setBackgroundColor(theme.bg, true, true)
                                 setForegroundColor(theme.fg, true, true)
+                                setLinkColor(theme.link, true, true)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         }))
@@ -383,6 +423,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
         Blitbuffer.colorFromString("#BA8E23"),
         Blitbuffer.colorFromString("#2D728F"),
         Blitbuffer.colorFromString("#60AB9A"),
+        Blitbuffer.colorFromString("#700548"),
         Blitbuffer.colorFromString("#FF5964"),
     }
 
@@ -448,8 +489,6 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
                     UIManager:close(dialog)
                     refreshThemeButtons()
                 end))
-
-                UIManager:close(dialog)
             end,
         } },
         { {
@@ -468,9 +507,24 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ✖ Delete§r "),
+            text = T(_("§white ⤴ Edit link color§r ")),
             menu_style = true,
             original_background = button_bg_colors[4],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                UIManager:show(color_menu(touchmenu_instance, ColorType.LINK, theme.link, function(link_hex)
+                    theme.link = link_hex
+                    replace_theme(theme, theme)
+
+                    UIManager:close(dialog)
+                    refreshThemeButtons()
+                end))
+            end,
+        } },
+        { {
+            text = _("§white ✖ Delete§r "),
+            menu_style = true,
+            original_background = button_bg_colors[5],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 remove_theme(theme)
@@ -507,6 +561,7 @@ local function ask_to_apply(theme, reapply, book)
             setForegroundColor(theme.fg, false, theme.night)
             setBackgroundColor(theme.bg, true, theme.night)
             setForegroundColor(theme.fg, true, theme.night)
+            setLinkColor(theme.link, true, theme.night)
             UIManager:broadcastEvent(Event:new("ApplyTheme"))
         else
             if not theme.night then
@@ -525,6 +580,7 @@ local function ask_to_apply(theme, reapply, book)
 
             setBackgroundColor(theme.bg, book, theme.night)
             setForegroundColor(theme.fg, book, theme.night)
+            setLinkColor(theme.link, book, theme.night)
             UIManager:broadcastEvent(Event:new("ApplyTheme"))
         end
     end
@@ -559,17 +615,17 @@ local function ask_to_apply(theme, reapply, book)
 end
 
 -- Popup that asks which mode the theme should be created for
-local function select_mode(name, bg_hex, fg_hex)
+local function select_mode(name, bg_hex, fg_hex, link_hex)
     UIManager:show(MultiConfirmBox:new({
         text = _("The theme is for:"),
         choice1_text = _("§orange ☀️ Day mode§r "),
         choice1_callback = function()
-            local theme = add_theme(name, bg_hex, fg_hex, false)
+            local theme = add_theme(name, bg_hex, fg_hex, link_hex, false)
             ask_to_apply(theme)
         end,
         choice2_text = _("§blue ⏾ Night mode§r "),
         choice2_callback = function()
-            local theme = add_theme(name, bg_hex, fg_hex, true)
+            local theme = add_theme(name, bg_hex, fg_hex, link_hex, true)
             ask_to_apply(theme)
         end,
     }))
@@ -580,8 +636,6 @@ local function themes_menu()
     return {
         text = _("Themes"),
         sub_item_table_func = function()
-            InputDialog = require("ui/widget/inputdialog")
-
             local items = {
                 {
                     text_func = function()
@@ -665,7 +719,10 @@ local function themes_menu()
                                                             ColorType.FOREGROUND,
                                                             nil,
                                                             function(fg_hex)
-                                                                select_mode(text, bg_hex, fg_hex)
+                                                                UIManager:show(color_menu(touchmenu_instance,
+                                                                    ColorType.LINK, nil, function(link_hex)
+                                                                        select_mode(text, bg_hex, fg_hex, link_hex)
+                                                                    end))
                                                             end))
                                                     end))
 
@@ -700,6 +757,8 @@ local function themes_menu()
                                 setBackgroundColor(current_book_night_theme.bg, true, true)
                                 setForegroundColor(current_book_day_theme.fg, true, false)
                                 setForegroundColor(current_book_night_theme.fg, true, true)
+                                setLinkColor(current_book_day_theme.link, true, false)
+                                setLinkColor(current_book_night_theme.link, true, true)
 
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
@@ -721,6 +780,8 @@ local function themes_menu()
                                 setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, true, true)
                                 setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, true, false)
                                 setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, true, true)
+                                setLinkColor(theme_list.DEFAULT_DAY_THEME.link, true, false)
+                                setLinkColor(theme_list.DEFAULT_NIGHT_THEME.link, true, true)
 
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
@@ -790,6 +851,7 @@ local function SelectTheme(_, args)
 
     setBackgroundColor(theme.bg, book, night)
     setForegroundColor(theme.fg, book, night)
+    setLinkColor(theme.link, book, night)
     UIManager:broadcastEvent(Event:new("ApplyTheme"))
 end
 
