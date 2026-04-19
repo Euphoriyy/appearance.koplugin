@@ -120,7 +120,9 @@ local function set_color_menu(touchmenu_instance, type, original_hex, callback)
 
                             callback(text)
 
-                            touchmenu_instance:updateItems()
+                            if touchmenu_instance then
+                                touchmenu_instance:updateItems()
+                            end
                             UIManager:close(input_dialog)
                         end
                     end,

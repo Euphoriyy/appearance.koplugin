@@ -120,7 +120,9 @@ local function set_color_menu()
                                     setBackgroundColor(text)
                                     refresh()
 
-                                    touchmenu_instance:updateItems()
+                                    if touchmenu_instance then
+                                        touchmenu_instance:updateItems()
+                                    end
                                     UIManager:close(input_dialog)
                                 end
                             end,
