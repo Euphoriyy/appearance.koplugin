@@ -5,7 +5,6 @@ local InputDialog = require("ui/widget/inputdialog")
 local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local ReaderHighlight = require("apps/reader/modules/readerhighlight")
 local ReaderUI = require("apps/reader/readerui")
-local ReaderView = require("apps/reader/modules/readerview")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
@@ -63,20 +62,13 @@ local function getHighlightColorHex(color, i)
     return HighlightColorHexes.get()[i]
 end
 
-local function getHighlightColorRGB(color)
-    local hex = getHighlightColorHex(color)
-    if hex then
-        return Blitbuffer.colorFromString(hex)
-    else
-        return Blitbuffer.gray(G_reader_settings:readSetting("highlight_lighten_factor") or 0.2):getColorRGB32()
-    end
-end
-
 local function setHighlightColorHex(color, hex, i)
     i = getHighlightColorIndex(color) or i
     local hexes = HighlightColorHexes.get()
     hexes[i] = hex
     HighlightColorHexes.set(hexes)
+
+    Blitbuffer.HIGHLIGHT_COLORS[color] = hex
 
     if common.has_document_open() then
         ReaderUI.instance.view:resetHighlightBoxesCache()
@@ -106,12 +98,13 @@ function ReaderHighlight:getHighlightColor(color, i)
     return Blitbuffer.gray(G_reader_settings:readSetting("highlight_lighten_factor") or 0.2)
 end
 
--- Updates the highlight color k-v pair table (responsible for shown color names)
+-- Updates the highlight color k-v pair tables (responsible for shown color names and values)
 local function update_highlight_color_pairs(self)
     self.highlight_colors = {}
     local color_names = HighlightColorNames.get()
     for i, color in ipairs(highlight_color_keys) do
         self.highlight_colors[i] = { color_names[i], color }
+        Blitbuffer.HIGHLIGHT_COLORS[color] = getHighlightColorHex(color, i)
     end
 end
 
@@ -129,137 +122,6 @@ function ReaderHighlight:editHighlightColor(index)
     update_highlight_color_pairs(self)
 
     original_ReaderHighlight_editHighlightColor(self, index)
-end
-
--- Draw page highlights with custom colors (paging)
-function ReaderView:drawPageSavedHighlight(bb, x, y)
-    local do_cache = not self.page_scroll and self.document.configurable.text_wrap == 0
-    local colorful
-    local pages = self:getCurrentPageList()
-    for _, page in ipairs(pages) do
-        if self.highlight.page_boxes[page] ~= nil then -- cached
-            for _, box in ipairs(self.highlight.page_boxes[page]) do
-                local rect = self:pageToScreenTransform(page, box.rect)
-                if rect then
-                    table.insert(self.highlight.visible_boxes, box)
-                    self:drawHighlightRect(bb, x, y, rect, box.drawer, box.color, box.draw_mark)
-                    if box.colorful then
-                        colorful = true
-                    end
-                end
-            end
-        else -- not cached
-            if do_cache then
-                self.highlight.page_boxes[page] = {}
-            end
-            local items, idx_offset = self.ui.highlight:getPageSavedHighlights(page)
-            for index, item in ipairs(items) do
-                local boxes = self.document:getPageBoxesFromPositions(page, item.pos0, item.pos1)
-                if boxes then
-                    local drawer = item.drawer
-                    local color = item.color and getHighlightColorRGB(item.color)
-                    if not colorful and color and not Blitbuffer.isColor8(color) then
-                        colorful = true
-                    end
-                    local draw_note_mark = item.note and true or nil
-                    for _, box in ipairs(boxes) do
-                        local rect = self:pageToScreenTransform(page, box)
-                        if rect then
-                            local hl_box = {
-                                index     = item.parent or (index + idx_offset), -- index in annotations
-                                rect      = box,
-                                drawer    = drawer,
-                                color     = color,
-                                draw_mark = draw_note_mark,
-                                colorful  = colorful,
-                            }
-                            if do_cache then
-                                table.insert(self.highlight.page_boxes[page], hl_box)
-                            end
-                            table.insert(self.highlight.visible_boxes, hl_box)
-                            self:drawHighlightRect(bb, x, y, rect, drawer, color, draw_note_mark)
-                            draw_note_mark = draw_note_mark and false -- side mark in the first line only
-                        else
-                            -- some boxes are not displayed in the currently visible part of the page,
-                            -- the page boxes cannot be cached
-                            do_cache = false
-                            self.highlight.page_boxes[page] = nil
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return colorful
-end
-
--- Draw page highlights with custom colors (rolling)
-function ReaderView:drawXPointerSavedHighlight(bb, x, y)
-    local do_cache = self.view_mode == "page"
-    local colorful
-    local page = self.document:getCurrentPage()
-    if self.highlight.page_boxes[page] ~= nil then -- cached
-        for _, box in ipairs(self.highlight.page_boxes[page]) do
-            table.insert(self.highlight.visible_boxes, box)
-            self:drawHighlightRect(bb, x, y, box.rect, box.drawer, box.color, box.draw_mark)
-            if box.colorful then
-                colorful = true
-            end
-        end
-    else -- not cached
-        if do_cache then
-            self.highlight.page_boxes[page] = {}
-        end
-        -- Even in page mode, it's safer to use pos and ui.dimen.h
-        -- than pages' xpointers pos, even if ui.dimen.h is a bit
-        -- larger than pages' heights
-        local cur_view_top = self.document:getCurrentPos()
-        local cur_view_bottom
-        if self.view_mode == "page" and self.document:getVisiblePageCount() > 1 then
-            cur_view_bottom = cur_view_top + 2 * self.ui.dimen.h
-        else
-            cur_view_bottom = cur_view_top + self.ui.dimen.h
-        end
-        for index, item in ipairs(self.ui.annotation.annotations) do
-            if item.drawer then
-                -- document:getScreenBoxesFromPositions() is expensive, so we
-                -- first check if this item is on current page
-                local start_pos = self.document:getPosFromXPointer(item.pos0)
-                if start_pos > cur_view_bottom then break end -- this and all next highlights are after the current page
-                local end_pos = self.document:getPosFromXPointer(item.pos1)
-                if end_pos >= cur_view_top then
-                    local boxes = self.document:getScreenBoxesFromPositions(item.pos0, item.pos1, true) -- get_segments=true
-                    if boxes then
-                        local drawer = item.drawer
-                        local color = item.color and getHighlightColorRGB(item.color)
-                        if not colorful and color and not Blitbuffer.isColor8(color) then
-                            colorful = true
-                        end
-                        local draw_note_mark = item.note and true or nil
-                        for _, box in ipairs(boxes) do
-                            if box.h ~= 0 then
-                                local hl_box = {
-                                    index     = index,
-                                    rect      = box,
-                                    drawer    = drawer,
-                                    color     = color,
-                                    draw_mark = draw_note_mark,
-                                    colorful  = colorful,
-                                }
-                                if do_cache then
-                                    table.insert(self.highlight.page_boxes[page], hl_box)
-                                end
-                                table.insert(self.highlight.visible_boxes, hl_box)
-                                self:drawHighlightRect(bb, x, y, box, drawer, color, draw_note_mark)
-                                draw_note_mark = draw_note_mark and false -- side mark in the first line only
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return colorful
 end
 
 -- Menus
