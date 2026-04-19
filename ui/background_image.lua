@@ -525,7 +525,16 @@ function ReaderView:onSetDimensions(dimen)
     reload_background_image()
 end
 
--- Register background image selection & toggling as dispatcher actions
+-- Register background image toggling & selection as dispatcher actions
+local function SetLastBackgroundImage()
+    local last_background_image = LastBackgroundImage.get()
+    if last_background_image then
+        LastBackgroundImage.set(BackgroundImage.get())
+        BackgroundImage.set(last_background_image)
+        reload_background_image()
+    end
+end
+
 local function SelectBackgroundImage(action_num)
     save_last_background_image()
 
@@ -544,33 +553,24 @@ local function getBackgroundImageActions()
     return action_nums, action_texts
 end
 
-local function SetLastBackgroundImage()
-    local last_background_image = LastBackgroundImage.get()
-    if last_background_image then
-        LastBackgroundImage.set(BackgroundImage.get())
-        BackgroundImage.set(last_background_image)
-        reload_background_image()
-    end
-end
+FileManager.onSetLastBackgroundImage = SetLastBackgroundImage
+ReaderUI.onSetLastBackgroundImage = SetLastBackgroundImage
 
 FileManager.onSelectBackgroundImage = SelectBackgroundImage
 ReaderUI.onSelectBackgroundImage = SelectBackgroundImage
 
-FileManager.onSetLastBackgroundImage = SetLastBackgroundImage
-ReaderUI.onSetLastBackgroundImage = SetLastBackgroundImage
+Dispatcher:registerAction("ui_background_image_set_last", {
+    category = "none",
+    event = "SetLastBackgroundImage",
+    title = _("Set last background image"),
+    general = true,
+})
 
 Dispatcher:registerAction("ui_background_image_select", {
     category = "string",
     event = "SelectBackgroundImage",
     title = _("Select background image"),
     args_func = getBackgroundImageActions,
-    general = true,
-})
-
-Dispatcher:registerAction("ui_background_image_set_last", {
-    category = "none",
-    event = "SetLastBackgroundImage",
-    title = _("Set last background image"),
     general = true,
 })
 
