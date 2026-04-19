@@ -10,8 +10,8 @@ local function book_menu()
         sub_item_table = {
             background_color_menu(),
             font_color_menu(),
-            highlight_colors_menu(),
             link_color_menu(),
+            highlight_colors_menu(),
             progress_bar_colors_menu(),
         }
     }
