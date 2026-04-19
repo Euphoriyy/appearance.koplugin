@@ -106,18 +106,29 @@ function ReaderHighlight:getHighlightColor(color, i)
     return Blitbuffer.gray(G_reader_settings:readSetting("highlight_lighten_factor") or 0.2)
 end
 
--- Patch method responsible for showing highlight color names (removed in nightly)
-local original_ReaderHighlight_showHighlightColorDialog = ReaderHighlight.showHighlightColorDialog
-if original_ReaderHighlight_showHighlightColorDialog then
-    function ReaderHighlight:showHighlightColorDialog(caller_callback, curr_color)
-        local highlight_color_pairs = {}
-        local color_names = HighlightColorNames.get()
-        for i, color in ipairs(highlight_color_keys) do
-            highlight_color_pairs[i] = { color_names[i], color }
-        end
-        self.highlight_colors = highlight_color_pairs
-        original_ReaderHighlight_showHighlightColorDialog(self, caller_callback, curr_color)
+-- Updates the highlight color k-v pair table (responsible for shown color names)
+local function update_highlight_color_pairs(self)
+    self.highlight_colors = {}
+    local color_names = HighlightColorNames.get()
+    for i, color in ipairs(highlight_color_keys) do
+        self.highlight_colors[i] = { color_names[i], color }
     end
+end
+
+-- Update highlight color pairs on reader highlight init
+local original_ReaderHighlight_init = ReaderHighlight.init
+function ReaderHighlight:init()
+    update_highlight_color_pairs(self)
+
+    original_ReaderHighlight_init(self)
+end
+
+-- Update highlight color pairs on editing highlight color
+local original_ReaderHighlight_editHighlightColor = ReaderHighlight.editHighlightColor
+function ReaderHighlight:editHighlightColor(index)
+    update_highlight_color_pairs(self)
+
+    original_ReaderHighlight_editHighlightColor(self, index)
 end
 
 -- Draw page highlights with custom colors (paging)
