@@ -1,6 +1,7 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Device = require("device")
+local Dispatcher = require("dispatcher")
 local Document = require("document/document")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
@@ -19,7 +20,7 @@ local HexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
 local InvertBackgroundColor = Setting("book_background_color_inverted", true)
 local AltNightBackgroundColor = Setting("book_background_color_alt_night", false)
 local NightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
-local FixedBackgroundColor = Setting("book_background_color_reader_fixed", true) -- Whether the background color of fixed pages should be changed (default: true)
+local FixedBackgroundColor = Setting("book_background_color_fixed", true) -- Whether the background color of fixed pages should be changed (default: true)
 
 -- Cache
 local bg_cached = {
@@ -421,5 +422,38 @@ function ReaderUI:onApplyTheme()
     recomputeColors()
     refresh()
 end
+
+-- Register toggling/setting application of background color to fixed document pages as dispatcher actions
+local function ToggleBookBackgroundColorFixed()
+    FixedBackgroundColor.toggle()
+    bg_cached.set_fixed_color = FixedBackgroundColor.get()
+end
+
+local function SetBookBackgroundColorFixed(apply_on)
+    FixedBackgroundColor.set(apply_on)
+    bg_cached.set_fixed_color = apply_on
+end
+
+FileManager.onToggleBookBackgroundColorFixed = ToggleBookBackgroundColorFixed
+ReaderUI.onToggleBookBackgroundColorFixed = ToggleBookBackgroundColorFixed
+
+FileManager.onSetBookBackgroundColorFixed = SetBookBackgroundColorFixed
+ReaderUI.onSetBookBackgroundColorFixed = SetBookBackgroundColorFixed
+
+Dispatcher:registerAction("toggle_book_background_color_fixed", {
+    category = "none",
+    event = "ToggleBookBackgroundColorFixed",
+    title = _("Toggle background color application for reader pages (pdf, djvu, cbz...)"),
+    general = true,
+})
+
+Dispatcher:registerAction("set_book_background_color_fixed", {
+    category = "string",
+    event = "SetBookBackgroundColorFixed",
+    title = _("Set background color application for reader pages (pdf, djvu, cbz...)"),
+    args = { true, false },
+    toggle = { _("on"), _("off") },
+    general = true,
+})
 
 return { menu = background_color_menu, bgcolor = function() return bg_cached.bgcolor end }
