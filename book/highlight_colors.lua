@@ -120,7 +120,7 @@ if original_ReaderHighlight_showHighlightColorDialog then
     end
 end
 
--- Draw page highlights with custom colors
+-- Draw page highlights with custom colors (paging)
 function ReaderView:drawPageSavedHighlight(bb, x, y)
     local do_cache = not self.page_scroll and self.document.configurable.text_wrap == 0
     local colorful
@@ -173,6 +173,75 @@ function ReaderView:drawPageSavedHighlight(bb, x, y)
                             -- the page boxes cannot be cached
                             do_cache = false
                             self.highlight.page_boxes[page] = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return colorful
+end
+
+-- Draw page highlights with custom colors (rolling)
+function ReaderView:drawXPointerSavedHighlight(bb, x, y)
+    local do_cache = self.view_mode == "page"
+    local colorful
+    local page = self.document:getCurrentPage()
+    if self.highlight.page_boxes[page] ~= nil then -- cached
+        for _, box in ipairs(self.highlight.page_boxes[page]) do
+            table.insert(self.highlight.visible_boxes, box)
+            self:drawHighlightRect(bb, x, y, box.rect, box.drawer, box.color, box.draw_mark)
+            if box.colorful then
+                colorful = true
+            end
+        end
+    else -- not cached
+        if do_cache then
+            self.highlight.page_boxes[page] = {}
+        end
+        -- Even in page mode, it's safer to use pos and ui.dimen.h
+        -- than pages' xpointers pos, even if ui.dimen.h is a bit
+        -- larger than pages' heights
+        local cur_view_top = self.document:getCurrentPos()
+        local cur_view_bottom
+        if self.view_mode == "page" and self.document:getVisiblePageCount() > 1 then
+            cur_view_bottom = cur_view_top + 2 * self.ui.dimen.h
+        else
+            cur_view_bottom = cur_view_top + self.ui.dimen.h
+        end
+        for index, item in ipairs(self.ui.annotation.annotations) do
+            if item.drawer then
+                -- document:getScreenBoxesFromPositions() is expensive, so we
+                -- first check if this item is on current page
+                local start_pos = self.document:getPosFromXPointer(item.pos0)
+                if start_pos > cur_view_bottom then break end -- this and all next highlights are after the current page
+                local end_pos = self.document:getPosFromXPointer(item.pos1)
+                if end_pos >= cur_view_top then
+                    local boxes = self.document:getScreenBoxesFromPositions(item.pos0, item.pos1, true) -- get_segments=true
+                    if boxes then
+                        local drawer = item.drawer
+                        local color = item.color and getHighlightColorRGB(item.color)
+                        if not colorful and color and not Blitbuffer.isColor8(color) then
+                            colorful = true
+                        end
+                        local draw_note_mark = item.note and true or nil
+                        for _, box in ipairs(boxes) do
+                            if box.h ~= 0 then
+                                local hl_box = {
+                                    index     = index,
+                                    rect      = box,
+                                    drawer    = drawer,
+                                    color     = color,
+                                    draw_mark = draw_note_mark,
+                                    colorful  = colorful,
+                                }
+                                if do_cache then
+                                    table.insert(self.highlight.page_boxes[page], hl_box)
+                                end
+                                table.insert(self.highlight.visible_boxes, hl_box)
+                                self:drawHighlightRect(bb, x, y, box, drawer, color, draw_note_mark)
+                                draw_note_mark = draw_note_mark and false -- side mark in the first line only
+                            end
                         end
                     end
                 end
