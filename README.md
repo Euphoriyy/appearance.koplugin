@@ -11,7 +11,7 @@ The ultimate plugin to customize [<img src="img/koreader.png" width="24" /> KORe
 | Category | What you can change |
 |---|---|
 | **Themes** | Apply full UI & book themes with one tap |
-| **Colors** | Customize background, font colors, and progress bar colors |
+| **Colors** | Customize background, font, highlight, and progress bar colors |
 | **Color wheel** | Choose colors with a visual RGB color wheel |
 | **Font** | Customize your own unique UI font |
 | **Page style** | Adjust page colors for a comfortable reading experience (both reflowable & fixed-layout documents such as EPUBs, PDFs, DJVUs, & CBZs) |
@@ -81,6 +81,7 @@ Under **🞂 Appearance 🞂 Book**:
  
 - **Background color** - the color of the page background
 - **Font color** - the color of the page text
+- **Highlight colors** - the colors used when annotating (each name can also be edited)
 - **Progress bar colors** - the read/unread colors of the book progress bar in the footer
  
 Each color can be chosen by color picker and code. Changes apply live so you can preview as you go. There are **Advanced settings** as well that allow you to experiment with more fine-tuned tweaking.
