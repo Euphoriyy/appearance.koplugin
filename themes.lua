@@ -381,9 +381,9 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
 
     local button_bg_colors = {
         Blitbuffer.colorFromString("#BA8E23"),
-        Blitbuffer.colorFromName("blue"),
-        Blitbuffer.colorFromName("green"),
-        Blitbuffer.colorFromName("red"),
+        Blitbuffer.colorFromString("#2D728F"),
+        Blitbuffer.colorFromString("#60AB9A"),
+        Blitbuffer.colorFromString("#FF5964"),
     }
 
     for i, color in ipairs(button_bg_colors) do
