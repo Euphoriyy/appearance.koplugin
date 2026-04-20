@@ -45,9 +45,9 @@ recomputeLinkColor()
 
 local function getLinkColor()
     if Screen.night_mode and link_cached.alt_night_color then
-        return NightHexLinkColor.get() or "default"
+        return NightHexLinkColor.get()
     else
-        return HexLinkColor.get() or "default"
+        return HexLinkColor.get()
     end
 end
 
@@ -82,7 +82,7 @@ local function set_color_menu()
             local input_dialog
             input_dialog = InputDialog:new({
                 title = "Enter custom color code",
-                input = getLinkColor(),
+                input = getLinkColor() or "#0066FF",
                 input_hint = "#000000",
                 buttons = {
                     {
@@ -126,7 +126,7 @@ local function pick_color_menu()
         text = _("Pick color visually"),
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local h, s, v = common.hexToHSV(getLinkColor())
+            local h, s, v = common.hexToHSV(getLinkColor() or "#0066FF")
             local wheel
             local should_invert_wheel = AltNightLinkColor.get() or not InvertLinkColor.get()
             wheel = ColorWheelWidget:new({
@@ -156,12 +156,12 @@ end
 local function link_color_menu()
     return {
         text_func = function()
-            return T(_("Link color: %1"), getLinkColor())
+            return T(_("Link color: %1"), getLinkColor() or "default")
         end,
         sub_item_table = {
             {
                 text_func = function()
-                    return T(_("Current color: %1"), getLinkColor())
+                    return T(_("Current color: %1"), getLinkColor() or "default")
                 end,
             },
             set_color_menu(),
