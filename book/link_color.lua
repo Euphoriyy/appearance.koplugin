@@ -218,9 +218,8 @@ function ReaderStyleTweak:getCssText()
             }
         ]]
         return util.trim(link_css .. original_css)
-    else
-        return original_css
     end
+    return original_css
 end
 
 -- Hook into night mode state changes and update cache

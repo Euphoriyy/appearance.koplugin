@@ -213,10 +213,10 @@ function ReaderStyleTweak:getCssText()
     end
 
     local fg_css = [[
-            body {
-                color: ]] .. fg_hex .. [[ !important;
-            }
-        ]]
+        body {
+            color: ]] .. fg_hex .. [[ !important;
+        }
+    ]]
     return util.trim(fg_css .. original_css)
 end
 
