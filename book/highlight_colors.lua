@@ -23,20 +23,22 @@ local DEFAULT_HIGHLIGHT_COLOR_NAMES = {
     _("Gray"),
 }
 
+-- Sourced from ffi/blitbuffer
+local DEFAULT_HIGHLIGHT_COLOR_HEXES = {
+    "#FF3300",
+    "#FF8800",
+    "#FFFF33",
+    "#00AA66",
+    "#88FF77",
+    "#00FFEE",
+    "#0066FF",
+    "#EE00FF",
+}
+
 -- Settings
 local HighlightColorNames = Setting("highlight_color_names", DEFAULT_HIGHLIGHT_COLOR_NAMES)
-local HighlightColorHexes = Setting("highlight_color_hexes", {
-    Blitbuffer.HIGHLIGHT_COLORS["red"],
-    Blitbuffer.HIGHLIGHT_COLORS["orange"],
-    Blitbuffer.HIGHLIGHT_COLORS["yellow"],
-    Blitbuffer.HIGHLIGHT_COLORS["green"],
-    Blitbuffer.HIGHLIGHT_COLORS["olive"],
-    Blitbuffer.HIGHLIGHT_COLORS["cyan"],
-    Blitbuffer.HIGHLIGHT_COLORS["blue"],
-    Blitbuffer.HIGHLIGHT_COLORS["purple"],
-})
+local HighlightColorHexes = Setting("highlight_color_hexes", DEFAULT_HIGHLIGHT_COLOR_HEXES)
 
--- Highlight color keys
 local highlight_color_keys = {
     "red",
     "orange",
@@ -325,7 +327,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             background = common.EXCLUSION_COLOR,
             callback = function()
                 setHighlightColorString(color, DEFAULT_HIGHLIGHT_COLOR_NAMES[getHighlightColorIndex(color)])
-                setHighlightColorHex(color, Blitbuffer.HIGHLIGHT_COLORS[color])
+                setHighlightColorHex(color, DEFAULT_HIGHLIGHT_COLOR_HEXES[getHighlightColorIndex(color)])
 
                 UIManager:close(dialog)
 
