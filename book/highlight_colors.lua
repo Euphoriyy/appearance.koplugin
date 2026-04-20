@@ -53,7 +53,7 @@ for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
 end
 
 -- Settings
-local HighlightColors = Setting("highlight_colors", DEFAULT_HIGHLIGHT_COLORS)
+local HighlightColors = Setting("book_highlight_colors", DEFAULT_HIGHLIGHT_COLORS)
 
 local function getHighlightColorIndex(color)
     for i, key in ipairs(HIGHLIGHT_COLOR_KEYS) do

@@ -18,8 +18,8 @@ local INITIAL_MARKER_HEIGHT_THRESHOLD = Screen:scaleBySize(12)
 
 -- Settings
 local Settings = {}
-local InvertReadColor = Setting("progress_bar_color_invert_read", false)
-local InvertUnreadColor = Setting("progress_bar_color_invert_unread", true)
+local InvertReadColor = Setting("book_progress_bar_colors_invert_read", false)
+local InvertUnreadColor = Setting("book_progress_bar_colors_invert_unread", true)
 
 local function colorAttrib(read)
     return read and "fillcolor" or "bgcolor"
