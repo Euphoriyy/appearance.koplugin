@@ -189,8 +189,7 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
 end
 
 -- Menu to select method for choosing color
-local function color_menu(touchmenu_instance, type, original_hex, callback)
-    local skippable = type == ColorType.LINK
+local function color_menu(touchmenu_instance, type, original_hex, callback, skippable)
     local VariableConfirmBox = skippable and TripleConfirmBox or MultiConfirmBox
 
     local dialog = VariableConfirmBox:new({
@@ -712,17 +711,17 @@ local function themes_menu()
                                             local text = input_dialog:getInputText()
 
                                             if text ~= "" then
-                                                UIManager:show(color_menu(touchmenu_instance, ColorType.BACKGROUND,
-                                                    nil,
+                                                UIManager:show(color_menu(touchmenu_instance,
+                                                    ColorType.BACKGROUND, nil,
                                                     function(bg_hex)
                                                         UIManager:show(color_menu(touchmenu_instance,
-                                                            ColorType.FOREGROUND,
-                                                            nil,
+                                                            ColorType.FOREGROUND, nil,
                                                             function(fg_hex)
                                                                 UIManager:show(color_menu(touchmenu_instance,
-                                                                    ColorType.LINK, nil, function(link_hex)
+                                                                    ColorType.LINK, nil,
+                                                                    function(link_hex)
                                                                         select_mode(text, bg_hex, fg_hex, link_hex)
-                                                                    end))
+                                                                    end, true))
                                                             end))
                                                     end))
 
