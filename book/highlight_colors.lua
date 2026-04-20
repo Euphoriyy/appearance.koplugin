@@ -11,6 +11,18 @@ local UIManager = require("ui/uimanager")
 local _ = require("gettext")
 local common = require("lib/common")
 
+local HIGHLIGHT_COLOR_KEYS = {
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "olive",
+    "cyan",
+    "blue",
+    "purple",
+    "gray",
+}
+
 local DEFAULT_HIGHLIGHT_COLOR_NAMES = {
     _("Red"),
     _("Orange"),
@@ -35,40 +47,40 @@ local DEFAULT_HIGHLIGHT_COLOR_HEXES = {
     "#EE00FF",
 }
 
--- Settings
-local HighlightColorNames = Setting("highlight_color_names", DEFAULT_HIGHLIGHT_COLOR_NAMES)
-local HighlightColorHexes = Setting("highlight_color_hexes", DEFAULT_HIGHLIGHT_COLOR_HEXES)
+local DEFAULT_HIGHLIGHT_COLORS = {}
+for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
+    DEFAULT_HIGHLIGHT_COLORS[color] = { DEFAULT_HIGHLIGHT_COLOR_NAMES[i], DEFAULT_HIGHLIGHT_COLOR_HEXES[i] }
+end
 
-local highlight_color_keys = {
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "olive",
-    "cyan",
-    "blue",
-    "purple",
-    "gray",
-}
+-- Settings
+local HighlightColors = Setting("highlight_colors", DEFAULT_HIGHLIGHT_COLORS)
 
 local function getHighlightColorIndex(color)
-    for i, key in ipairs(highlight_color_keys) do
+    for i, key in ipairs(HIGHLIGHT_COLOR_KEYS) do
         if key == color then
             return i
         end
     end
 end
 
-local function getHighlightColorHex(color, i)
-    i = getHighlightColorIndex(color) or i
-    return HighlightColorHexes.get()[i]
+function ReaderHighlight:getHighlightColorString(color)
+    return HighlightColors.get()[color][1]
 end
 
-local function setHighlightColorHex(color, hex, i)
-    i = getHighlightColorIndex(color) or i
-    local hexes = HighlightColorHexes.get()
-    hexes[i] = hex
-    HighlightColorHexes.set(hexes)
+local function setHighlightColorString(color, color_string)
+    local colors = HighlightColors.get()
+    colors[color][1] = color_string
+    HighlightColors.set(colors)
+end
+
+local function getHighlightColorHex(color)
+    return HighlightColors.get()[color][2]
+end
+
+local function setHighlightColorHex(color, hex)
+    local colors = HighlightColors.get()
+    colors[color][2] = hex
+    HighlightColors.set(colors)
 
     Blitbuffer.HIGHLIGHT_COLORS[color] = hex
 
@@ -77,20 +89,8 @@ local function setHighlightColorHex(color, hex, i)
     end
 end
 
-function ReaderHighlight:getHighlightColorString(color, i)
-    i = getHighlightColorIndex(color) or i
-    return HighlightColorNames.get()[i]
-end
-
-local function setHighlightColorString(color, color_string, i)
-    i = getHighlightColorIndex(color) or i
-    local names = HighlightColorNames.get()
-    names[i] = color_string
-    HighlightColorNames.set(names)
-end
-
-function ReaderHighlight:getHighlightColor(color, i)
-    local hex = getHighlightColorHex(color, i)
+function ReaderHighlight:getHighlightColor(color)
+    local hex = getHighlightColorHex(color)
     if hex then
         if Screen.night_mode then
             hex = common.invertColor(hex)
@@ -103,10 +103,10 @@ end
 -- Updates the highlight color k-v pair tables (responsible for shown color names and values)
 local function update_highlight_color_pairs(self)
     self.highlight_colors = {}
-    local color_names = HighlightColorNames.get()
-    for i, color in ipairs(highlight_color_keys) do
-        self.highlight_colors[i] = { color_names[i], color }
-        Blitbuffer.HIGHLIGHT_COLORS[color] = getHighlightColorHex(color, i)
+    local colors = HighlightColors.get()
+    for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
+        self.highlight_colors[i] = { colors[color][1], color }
+        Blitbuffer.HIGHLIGHT_COLORS[color] = colors[color][2]
     end
 end
 
@@ -217,12 +217,12 @@ local edit_menu
 local function highlightColorDialog(touchmenu_instance)
     local dialog
     local buttons = {}
-    for i, color in ipairs(highlight_color_keys) do
-        local color_name = ReaderHighlight.getHighlightColorString(nil, color, i)
+    for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
+        local color_name = ReaderHighlight.getHighlightColorString(nil, color)
         buttons[i] = { {
             text = color_name,
             menu_style = true,
-            background = ReaderHighlight.getHighlightColor(nil, color, i),
+            background = ReaderHighlight.getHighlightColor(nil, color),
             callback = function()
                 local original_hex = getHighlightColorHex(color)
                 UIManager:show(color_menu(touchmenu_instance, original_hex, function(hex)
@@ -269,7 +269,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             callback = function()
                 local input_dialog
                 input_dialog = InputDialog:new({
-                    title = "Enter the theme's new name:",
+                    title = "Enter the color's new name:",
                     input = ReaderHighlight.getHighlightColorString(nil, color),
                     buttons = {
                         {
