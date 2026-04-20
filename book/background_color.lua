@@ -80,9 +80,12 @@ local function setBackgroundColor(hex)
 end
 
 local function refresh()
-    -- Reapply page CSS
-    if common.has_document_open() and ReaderUI.instance.rolling then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+    if common.has_document_open() then
+        if ReaderUI.instance.rolling then
+            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        elseif ReaderUI.instance.paging then
+            UIManager:broadcastEvent(Event:new("RedrawCurrentPage"))
+        end
     end
 end
 
@@ -193,9 +196,7 @@ local function background_color_menu()
                     if Screen.night_mode then
                         recomputeColors()
 
-                        if common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
+                        refresh()
                     end
                 end,
             },
@@ -209,9 +210,7 @@ local function background_color_menu()
                     recomputeColors()
 
                     if Screen.night_mode then
-                        if common.has_document_open() then
-                            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-                        end
+                        refresh()
                     end
                 end,
                 separator = true,
@@ -375,9 +374,7 @@ function UIManager:ToggleNightMode()
     recomputeColors()
 
     if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-        if common.has_document_open() then
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        end
+        refresh()
     end
 end
 
@@ -389,9 +386,7 @@ function UIManager:SetNightMode(night_mode)
         recomputeColors()
 
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            if common.has_document_open() then
-                UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-            end
+            refresh()
         end
     end
 end
@@ -427,11 +422,13 @@ end
 local function ToggleBookBackgroundColorFixed()
     FixedBackgroundColor.toggle()
     bg_cached.set_fixed_color = FixedBackgroundColor.get()
+    refresh()
 end
 
 local function SetBookBackgroundColorFixed(apply_on)
     FixedBackgroundColor.set(apply_on)
     bg_cached.set_fixed_color = apply_on
+    refresh()
 end
 
 FileManager.onToggleBookBackgroundColorFixed = ToggleBookBackgroundColorFixed
