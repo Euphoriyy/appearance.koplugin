@@ -13,7 +13,7 @@ The ultimate plugin to customize [<img src="img/koreader.png" width="24" /> KORe
 | **Themes** | Apply full UI & book themes with one tap |
 | **Colors** | Customize background, font, link, highlight, and progress bar colors |
 | **Color wheel** | Choose colors with a visual RGB color wheel |
-| **Font** | Customize your own unique UI font |
+| **Font** | Customize your own unique UI and dictionary fonts |
 | **Page style** | Adjust page colors for a comfortable reading experience (both reflowable & fixed-layout documents such as EPUBs, PDFs, DJVUs, & CBZs) |
 | **Backgrounds** | Set custom background images (like a wallpaper) |
 
@@ -90,11 +90,11 @@ Each color can be chosen by color picker and code. Changes apply live so you can
 </details>
 
 <details>
-<summary><strong>Changing the UI Font</strong></summary>
+<summary><strong>Changing the UI/Dictionary Font</strong></summary>
 
 <br>
 
-Go to **🞂 Appearance 🞂 User interface 🞂 Font**. From there you will see a list of the fonts found (the exact same as the ones for books), and you can select whatever font you would like.
+Go to **🞂 Appearance 🞂 User interface 🞂 Font** or **🞂 Appearance 🞂 User interface 🞂 Dictionary font**. From there you will see a list of the fonts found (the exact same as the ones for books), and you can select whatever font you would like.
 
 If at any time, you would like the original look, you can toggle **Enable font replacement** to disable your changes.
 
@@ -122,6 +122,7 @@ For rounded book & folder covers to work properly with the background color, [my
 - Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko).
 - The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin).
 - UI font replacement based on the based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
+- Dictionary font replacement based on the patch [2-custom-ui-fonts.lua](https://github.com/gennaro-tedesco/KOReader.patches/blob/master/patches/2-custom-ui-fonts.lua) by [@gennaro-tedesco](https://github.com/gennaro-tedesco).
 
 ## Support
 If you want to support me, you can star this repository or buy me a coffee. :)
