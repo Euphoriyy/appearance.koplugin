@@ -894,7 +894,7 @@ end
 -- Add background color CSS to HTML dictionary
 local original_DictQuickLookup_getHtmlDictionaryCss = DictQuickLookup.getHtmlDictionaryCss
 function DictQuickLookup:getHtmlDictionaryCss()
-    local original_css = original_DictQuickLookup_getHtmlDictionaryCss(self)
+    local original_css = original_DictQuickLookup_getHtmlDictionaryCss(self) or ""
 
     local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then

@@ -101,38 +101,38 @@ end
 local original_DictQuickLookup_instantiateScrollWidget = DictQuickLookup._instantiateScrollWidget
 
 function DictQuickLookup:_instantiateScrollWidget()
-	original_DictQuickLookup_instantiateScrollWidget(self)
+    original_DictQuickLookup_instantiateScrollWidget(self)
 
-	local selected_font = DictFontEnabled.get() and DictFontName.get()
-	if not selected_font then
-		return
-	end
+    local selected_font = DictFontEnabled.get() and DictFontName.get()
+    if not selected_font then
+        return
+    end
 
-	local font_filename = cre.getFontFaceFilenameAndFaceIndex(selected_font)
-	if not font_filename then
-		return
-	end
+    local font_filename = cre.getFontFaceFilenameAndFaceIndex(selected_font)
+    if not font_filename then
+        return
+    end
 
-	if self.dict_title then
-		local font_size = Font.sizemap.x_smallinfofont
-		self.dict_title.title_face = Font:getFace(font_filename, font_size)
-		self.dict_title:clear()
-		self.dict_title:init()
-		UIManager:setDirty(self.dict_title.show_parent, "ui", self.dict_title.dimen)
-	end
+    if self.dict_title then
+        local font_size = Font.sizemap.x_smallinfofont
+        self.dict_title.title_face = Font:getFace(font_filename, font_size)
+        self.dict_title:clear()
+        self.dict_title:init()
+        UIManager:setDirty(self.dict_title.show_parent, "ui", self.dict_title.dimen)
+    end
 
-	if self.lookup_word_text and self.lookup_word_text.face then
-		self.lookup_word_text.face = Font:getFace(font_filename, self.lookup_word_text.face.orig_size)
-		self.lookup_word_text._face_adjusted = false
-		self.lookup_word_text:free()
-	end
+    if self.lookup_word_text and self.lookup_word_text.face then
+        self.lookup_word_text.face = Font:getFace(font_filename, self.lookup_word_text.face.orig_size)
+        self.lookup_word_text._face_adjusted = false
+        self.lookup_word_text:free()
+    end
 end
 
 -- Change font of dictionary body
 local original_DictQuickLookup_getHtmlDictionaryCss = DictQuickLookup.getHtmlDictionaryCss
 
 function DictQuickLookup:getHtmlDictionaryCss()
-    local original_css = original_DictQuickLookup_getHtmlDictionaryCss(self)
+    local original_css = original_DictQuickLookup_getHtmlDictionaryCss(self) or ""
 
     local selected_font = DictFontEnabled.get() and DictFontName.get()
     if selected_font then

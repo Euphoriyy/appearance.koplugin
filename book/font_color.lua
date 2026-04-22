@@ -203,7 +203,7 @@ end
 -- Add font color to reader style tweak CSS if enabled
 local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
-    local original_css = original_ReaderStyleTweak_getCssText(self)
+    local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
     local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
     if Screen.night_mode then

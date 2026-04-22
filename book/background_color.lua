@@ -230,7 +230,7 @@ end
 -- Add background color to reader style tweak CSS if enabled
 local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
-    local original_css = original_ReaderStyleTweak_getCssText(self)
+    local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
     local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then

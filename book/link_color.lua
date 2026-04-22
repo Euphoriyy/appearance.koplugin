@@ -209,7 +209,7 @@ end
 -- Add link color to reader style tweak CSS if enabled
 local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
-    local original_css = original_ReaderStyleTweak_getCssText(self)
+    local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
     if link_cached.computed_hex then
         local link_css = [[
