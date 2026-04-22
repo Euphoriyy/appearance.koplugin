@@ -224,29 +224,23 @@ function ReaderStyleTweak:getCssText()
     return original_css
 end
 
--- Hook into night mode state changes and update cache
-local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+-- Recompute colors upon event call
+local original_FileManager_onRecomputeAllColors = FileManager.onRecomputeAllColors
+function FileManager:onRecomputeAllColors()
+    if original_FileManager_onRecomputeAllColors then
+        original_FileManager_onRecomputeAllColors(self)
+    end
 
     recomputeLinkColor()
-
-    if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
-        refresh()
-    end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        recomputeLinkColor()
-
-        if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
-            refresh()
-        end
+local original_ReaderUI_onRecomputeAllColors = ReaderUI.onRecomputeAllColors
+function ReaderUI:onRecomputeAllColors()
+    if original_ReaderUI_onRecomputeAllColors then
+        original_ReaderUI_onRecomputeAllColors(self)
     end
+
+    recomputeLinkColor()
 end
 
 -- Event handlers for when a theme is applied
@@ -260,7 +254,6 @@ function FileManager:onApplyTheme()
     link_cached.night_hex = NightHexLinkColor.get()
     link_cached.alt_night_color = AltNightLinkColor.get()
     recomputeLinkColor()
-    refresh()
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -273,7 +266,6 @@ function ReaderUI:onApplyTheme()
     link_cached.night_hex = NightHexLinkColor.get()
     link_cached.alt_night_color = AltNightLinkColor.get()
     recomputeLinkColor()
-    refresh()
 end
 
 return link_color_menu

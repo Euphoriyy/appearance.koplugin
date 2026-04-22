@@ -220,29 +220,23 @@ function ReaderStyleTweak:getCssText()
     return util.trim(fg_css .. original_css)
 end
 
--- Hook into night mode state changes and update cache
-local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+-- Recompute colors upon event call
+local original_FileManager_onRecomputeAllColors = FileManager.onRecomputeAllColors
+function FileManager:onRecomputeAllColors()
+    if original_FileManager_onRecomputeAllColors then
+        original_FileManager_onRecomputeAllColors(self)
+    end
 
     recomputeFGColor()
-
-    if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-        refresh()
-    end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        recomputeFGColor()
-
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-            refresh()
-        end
+local original_ReaderUI_onRecomputeAllColors = ReaderUI.onRecomputeAllColors
+function ReaderUI:onRecomputeAllColors()
+    if original_ReaderUI_onRecomputeAllColors then
+        original_ReaderUI_onRecomputeAllColors(self)
     end
+
+    recomputeFGColor()
 end
 
 -- Event handlers for when a theme is applied
@@ -256,7 +250,6 @@ function FileManager:onApplyTheme()
     fg_cached.night_hex = NightHexFontColor.get()
     fg_cached.alt_night_color = AltNightFontColor.get()
     recomputeFGColor()
-    refresh()
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -269,7 +262,6 @@ function ReaderUI:onApplyTheme()
     fg_cached.night_hex = NightHexFontColor.get()
     fg_cached.alt_night_color = AltNightFontColor.get()
     recomputeFGColor()
-    refresh()
 end
 
 return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }

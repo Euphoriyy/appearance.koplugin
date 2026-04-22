@@ -33,9 +33,9 @@ local bg_cached = {
     bgcolor = nil,
 }
 
--- Recompute and cache the final colors based on current settings
+-- Recompute and cache the final bgcolor based on current settings
 -- Applies night mode inversion if enabled, and updates bg_cached.bgcolor only if it has changed
-local function recomputeColors()
+local function recomputeBGColor()
     local hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
@@ -46,16 +46,10 @@ local function recomputeColors()
         bg_cached.bgcolor = Blitbuffer.colorFromString(hex)
         bg_cached.last_hex = hex
     end
-
-    bg_cached.fgcolor = Blitbuffer.ColorRGB32(
-        bg_cached.bgcolor:getR() * 0.6,
-        bg_cached.bgcolor:getG() * 0.6,
-        bg_cached.bgcolor:getB() * 0.6
-    )
 end
 
--- Compute and cache the initial bgcolor/fgcolor based on current settings
-recomputeColors()
+-- Compute and cache the initial bgcolor based on current settings
+recomputeBGColor()
 
 local function getBackgroundColor()
     if Screen.night_mode and bg_cached.alt_night_color then
@@ -76,7 +70,7 @@ local function setBackgroundColor(hex)
         bg_cached.hex = hex
     end
 
-    recomputeColors()
+    recomputeBGColor()
 end
 
 local function refresh()
@@ -194,7 +188,7 @@ local function background_color_menu()
                     bg_cached.alt_night_color = AltNightBackgroundColor.get()
 
                     if Screen.night_mode then
-                        recomputeColors()
+                        recomputeBGColor()
 
                         refresh()
                     end
@@ -207,7 +201,7 @@ local function background_color_menu()
                 callback = function()
                     InvertBackgroundColor.toggle()
                     bg_cached.invert_in_night_mode = InvertBackgroundColor.get()
-                    recomputeColors()
+                    recomputeBGColor()
 
                     if Screen.night_mode then
                         refresh()
@@ -366,29 +360,23 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     end
 end
 
--- Hook into night mode state changes and update cache
-local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
-
-    recomputeColors()
-
-    if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-        refresh()
+-- Recompute colors upon event call
+local original_FileManager_onRecomputeAllColors = FileManager.onRecomputeAllColors
+function FileManager:onRecomputeAllColors()
+    if original_FileManager_onRecomputeAllColors then
+        original_FileManager_onRecomputeAllColors(self)
     end
+
+    recomputeBGColor()
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        recomputeColors()
-
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            refresh()
-        end
+local original_ReaderUI_onRecomputeAllColors = ReaderUI.onRecomputeAllColors
+function ReaderUI:onRecomputeAllColors()
+    if original_ReaderUI_onRecomputeAllColors then
+        original_ReaderUI_onRecomputeAllColors(self)
     end
+
+    recomputeBGColor()
 end
 
 -- Event handlers for when a theme is applied
@@ -401,8 +389,7 @@ function FileManager:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
-    recomputeColors()
-    refresh()
+    recomputeBGColor()
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -414,8 +401,7 @@ function ReaderUI:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
-    recomputeColors()
-    refresh()
+    recomputeBGColor()
 end
 
 -- Register toggling/setting application of background color to fixed document pages as dispatcher actions
