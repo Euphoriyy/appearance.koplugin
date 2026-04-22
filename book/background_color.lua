@@ -83,7 +83,7 @@ local function refresh()
     if common.has_document_open() then
         if ReaderUI.instance.rolling then
             UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        elseif ReaderUI.instance.paging then
+        elseif ReaderUI.instance.paging and bg_cached.set_fixed_color then
             UIManager:broadcastEvent(Event:new("RedrawCurrentPage"))
         end
     end
