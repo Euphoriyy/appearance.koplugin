@@ -275,34 +275,23 @@ local function font_color_menu()
     }
 end
 
--- Hook into night mode state changes and update cache
-local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+-- Recompute colors upon event call
+local original_FileManager_onRecomputeAllColors = FileManager.onRecomputeAllColors
+function FileManager:onRecomputeAllColors()
+    if original_FileManager_onRecomputeAllColors then
+        original_FileManager_onRecomputeAllColors(self)
+    end
 
     recomputeFGColor()
-
-    if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-        -- Refresh files if CoverBrowser is affected and night mode inversion is not enabled
-        if fg_cached.set_textbox_color then
-            refreshFileManager()
-        end
-    end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        recomputeFGColor()
-
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-            if fg_cached.set_textbox_color then
-                refreshFileManager()
-            end
-        end
+local original_ReaderUI_onRecomputeAllColors = ReaderUI.onRecomputeAllColors
+function ReaderUI:onRecomputeAllColors()
+    if original_ReaderUI_onRecomputeAllColors then
+        original_ReaderUI_onRecomputeAllColors(self)
     end
+
+    recomputeFGColor()
 end
 
 local band = bit.band
@@ -709,8 +698,6 @@ function FileManager:onApplyTheme()
     fg_cached.hex = HexFontColor.get()
     fg_cached.night_hex = NightHexFontColor.get()
     fg_cached.alt_night_color = AltNightFontColor.get()
-    recomputeFGColor()
-    refresh()
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -722,8 +709,20 @@ function ReaderUI:onApplyTheme()
     fg_cached.hex = HexFontColor.get()
     fg_cached.night_hex = NightHexFontColor.get()
     fg_cached.alt_night_color = AltNightFontColor.get()
-    recomputeFGColor()
-    refresh()
 end
 
-return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }
+local function needsFileManagerRefresh(night_mode)
+    if night_mode then
+        return fg_cached.set_textbox_color and
+            (fg_cached.alt_night_color or not fg_cached.invert_in_night_mode)
+    else
+        return fg_cached.set_textbox_color
+    end
+end
+
+return {
+    menu = font_color_menu,
+    fgcolor = function() return fg_cached.fgcolor end,
+    needsFileManagerRefresh =
+        needsFileManagerRefresh
+}

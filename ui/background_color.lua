@@ -181,8 +181,6 @@ local function refresh()
     if bg_cached.set_textbox_color then
         refreshFileManager()
     end
-
-    reloadIcons()
 end
 
 -- Menus
@@ -726,19 +724,31 @@ function IconWidget:onSetNightMode(night_mode)
     end
 end
 
+-- Recompute colors upon event call
+local original_FileManager_onRecomputeAllColors = FileManager.onRecomputeAllColors
+function FileManager:onRecomputeAllColors()
+    if original_FileManager_onRecomputeAllColors then
+        original_FileManager_onRecomputeAllColors(self)
+    end
+
+    recomputeColors()
+end
+
+local original_ReaderUI_onRecomputeAllColors = ReaderUI.onRecomputeAllColors
+function ReaderUI:onRecomputeAllColors()
+    if original_ReaderUI_onRecomputeAllColors then
+        original_ReaderUI_onRecomputeAllColors(self)
+    end
+
+    recomputeColors()
+end
+
 -- Hook into night mode state changes and update cache
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
     original_UIManager_ToggleNightMode(self)
 
-    recomputeColors()
-
     if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-        -- Refresh files if CoverBrowser is affected and night mode inversion is not enabled
-        if bg_cached.set_textbox_color then
-            refreshFileManager()
-        end
-
         ImageCache:clear()
     end
 end
@@ -748,13 +758,7 @@ function UIManager:SetNightMode(night_mode)
     original_UIManager_SetNightMode(self)
 
     if Screen.night_mode ~= night_mode then
-        recomputeColors()
-
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            if bg_cached.set_textbox_color then
-                refreshFileManager()
-            end
-
             ImageCache:clear()
         end
     end
@@ -1210,8 +1214,8 @@ function FileManager:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
-    recomputeColors()
-    refresh()
+    recomputeColors() -- Recompute again anyways so icons match
+    reloadIcons()
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -1223,12 +1227,23 @@ function ReaderUI:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
-    recomputeColors()
-    refresh()
+    recomputeColors() -- Recompute again anyways so icons match
+    reloadIcons()
+end
+
+local function needsFileManagerRefresh(night_mode)
+    if night_mode then
+        return bg_cached.set_textbox_color and
+            (bg_cached.alt_night_color or not bg_cached.invert_in_night_mode)
+    else
+        return bg_cached.set_textbox_color
+    end
 end
 
 return {
     menu = background_color_menu,
     bgcolor = function() return bg_cached.bgcolor end,
     reloadIcons = reloadIcons,
+    needsFileManagerRefresh =
+        needsFileManagerRefresh
 }
