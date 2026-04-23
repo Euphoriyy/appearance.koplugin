@@ -39,7 +39,7 @@ local function background_image_name(path)
     return path:match("^.+/(.+)$")
 end
 
--- Helper: save the last background image to the current one if one is set
+-- Helper: set the last background image to the current one if one is set
 local function save_last_background_image()
     local current_background_image = BackgroundImage.get()
     if current_background_image then
@@ -213,6 +213,17 @@ local function background_image_menu()
                     save_last_background_image()
 
                     BackgroundImage.set(nil)
+                    touchmenu_instance:updateItems()
+                    reload_background_image()
+                end,
+            },
+            {
+                text = _("Set last image"),
+                enabled_func = LastBackgroundImage.get,
+                callback = function(touchmenu_instance)
+                    local last_image = LastBackgroundImage.get()
+                    save_last_background_image()
+                    BackgroundImage.set(last_image)
                     touchmenu_instance:updateItems()
                     reload_background_image()
                 end,
