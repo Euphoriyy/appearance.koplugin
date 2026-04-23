@@ -1,7 +1,13 @@
 local Blitbuffer = require("ffi/blitbuffer")
+local Setting = require("lib/setting")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local UIManager = require("ui/uimanager")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
+local common = require("lib/common")
+
+-- Settings for UI font color
+local TextBoxFontColor = Setting("ui_font_color_textbox", true)
+local ReaderOnlyFontColor = Setting("ui_font_color_reader_only", false)
 
 --------------------------------------------
 -- Lazy Loading
@@ -66,12 +72,16 @@ function AlphaTextBoxWidget:paintTo(bb, x, y)
         end
     end
 
-    -- Render black text on black background
+    -- Render white text on black background
     local tmp_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BB8)
     tmp_bb:fill(Blitbuffer.COLOR_WHITE)
     self._textbox:paintTo(tmp_bb, 0, 0)
     tmp_bb:invertRect(0, 0, w, h)
-    bb:colorblitFromRGB32(tmp_bb, x, y, 0, 0, w, h, get_font_fgcolor() or self.fgcolor)
+
+    local should_use_font_color = TextBoxFontColor.get() and
+        not (ReaderOnlyFontColor.get() and not common.has_document_open())
+    bb:colorblitFromRGB32(tmp_bb, x, y, 0, 0, w, h,
+        should_use_font_color and get_font_fgcolor() or self.fgcolor)
 
     tmp_bb:free()
 end
