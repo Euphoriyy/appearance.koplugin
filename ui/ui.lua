@@ -80,10 +80,6 @@ function ReaderUI:onApplyTheme()
     end
 
     recomputeAllColors()
-
-    if background_color.needsFileManagerRefresh(false) or font_color.needsFileManagerRefresh(false) then
-        refreshFileManager()
-    end
 end
 
 return ui_menu
