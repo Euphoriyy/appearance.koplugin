@@ -19,6 +19,8 @@ local logger                 = require("logger")
 local pic                    = require("ffi/pic")
 local userpatch              = require("userpatch")
 
+local MAX_HISTORY_SIZE       = 20
+
 -- Settings
 local BackgroundImage        = Setting("ui_background_image_path", nil)         -- Path for UI background image (default: nil)
 local StretchImage           = Setting("ui_background_image_stretch", true)     -- Whether the background image should be stretched to fit the screen (default: true)
@@ -134,6 +136,19 @@ local function in_history(history, path)
     end
     return false
 end
+
+-- Helper: prune the history to match the maximum size
+local function prune_history()
+    local history = BackgroundImageHistory.get()
+    if #history <= MAX_HISTORY_SIZE then return end
+    while #history > MAX_HISTORY_SIZE do
+        table.remove(history, 1)
+    end
+    BackgroundImageHistory.set(history)
+end
+
+-- Prune once on startup
+prune_history()
 
 -- Menus
 local _ = require("gettext")
