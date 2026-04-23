@@ -127,6 +127,14 @@ local function get_bg_widget()
     return background_image
 end
 
+-- Helper: check if an image path is in the history
+local function in_history(history, path)
+    for _, v in ipairs(history) do
+        if v == path then return true end
+    end
+    return false
+end
+
 -- Menus
 local _ = require("gettext")
 local T = require("ffi/util").template
@@ -177,8 +185,10 @@ local function background_image_menu()
 
                         -- Append to history
                         local history = BackgroundImageHistory.get()
-                        table.insert(history, path)
-                        BackgroundImageHistory.set(history)
+                        if not in_history(history, path) then
+                            table.insert(history, path)
+                            BackgroundImageHistory.set(history)
+                        end
                     end
                     filemanagerutil.showChooseDialog(
                         title_header, caller_callback, current_path, nil, file_filter
