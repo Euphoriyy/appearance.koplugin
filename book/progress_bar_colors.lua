@@ -20,6 +20,8 @@ local INITIAL_MARKER_HEIGHT_THRESHOLD = Screen:scaleBySize(12)
 local Settings = {}
 local InvertReadColor = Setting("book_progress_bar_colors_invert_read", false)
 local InvertUnreadColor = Setting("book_progress_bar_colors_invert_unread", true)
+-- Progress bar roundness setting
+local ProgressBarRoundFill = Setting("book_progress_bar_round_fill", false)
 
 local function colorAttrib(read)
     return read and "fillcolor" or "bgcolor"
@@ -431,13 +433,24 @@ function ProgressWidget:paintTo(bb, x, y)
             fill_x = math.floor(fill_x)
         end
 
-        bb:paintRectRGB32(
-            fill_x,
-            fill_y,
-            math.ceil(fill_width * self.percentage),
-            math.ceil(fill_height),
-            self.fillcolor
-        )
+        if ProgressBarRoundFill.get() then
+            bb:paintRoundedRectRGB32(
+                fill_x,
+                fill_y,
+                math.ceil(fill_width * self.percentage),
+                math.ceil(fill_height),
+                self.fillcolor,
+                self.radius
+            )
+        else
+            bb:paintRectRGB32(
+                fill_x,
+                fill_y,
+                math.ceil(fill_width * self.percentage),
+                math.ceil(fill_height),
+                self.fillcolor
+            )
+        end
 
         -- Overlay the initial position marker on top of that
         if self.initial_pos_marker and self.initial_percentage >= 0 then
