@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.4.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.7...v1.4.0) (2026-04-25)
+
+
+### Features
+
+* add book link color setting and integrate it into the theme system ([18c8d63](https://github.com/Euphoriyy/appearance.koplugin/commit/18c8d636a0b82d11dd26b6484a579c9a1de25192))
+* **background-image:** add menu item to switch to last background image ([1995de4](https://github.com/Euphoriyy/appearance.koplugin/commit/1995de4eb501b66bde5c2a626914409bc801bb8f))
+* **book/background_color:** add dispatcher actions for toggling fixed page background color ([ad5d9cd](https://github.com/Euphoriyy/appearance.koplugin/commit/ad5d9cd8631abd2f18e71c831813249d523d3a99))
+* **book:** add highlight color customization menu to book settings ([d06f3a8](https://github.com/Euphoriyy/appearance.koplugin/commit/d06f3a84938610a1c639931006314eda6937c3d6)), closes [#27](https://github.com/Euphoriyy/appearance.koplugin/issues/27)
+* **book:** add progress bar roundness settings with adjustable radius and rounded fill toggle ([fcce0a6](https://github.com/Euphoriyy/appearance.koplugin/commit/fcce0a6758eb9b86a61e7267f273128739173780))
+* **ui/background_image:** cap image history to 20 entries with startup prune ([aec1db2](https://github.com/Euphoriyy/appearance.koplugin/commit/aec1db2c36f3f7e10a0ec9168794e21712540adf))
+* **ui:** add dictionary font replacement setting ([af8de5d](https://github.com/Euphoriyy/appearance.koplugin/commit/af8de5dad635138af095402aa5453cc36823063d))
+* **widgets:** apply UI font color settings to AlphaTextBoxWidget ([5f690f8](https://github.com/Euphoriyy/appearance.koplugin/commit/5f690f8687238ec675e56ed9c6af6c5dee711e3d))
+
+
+### Bug Fixes
+
+* **book/background_color:** refresh fixed-layout pages and consolidate refresh calls ([67f6027](https://github.com/Euphoriyy/appearance.koplugin/commit/67f6027dfa926e93f690ca05d7703625d2a8bab9))
+* **book/background_color:** skip RedrawCurrentPage when set_fixed_color is disabled ([7dced54](https://github.com/Euphoriyy/appearance.koplugin/commit/7dced541bea46dac6acf5cacc60c760e19cda539))
+* **book/highlight_colors:** add reflowable document support ([f085716](https://github.com/Euphoriyy/appearance.koplugin/commit/f085716b15396a31b4c35de782a6410112b590ac))
+* **book/highlight_colors:** use static default hex values instead of Blitbuffer.HIGHLIGHT_COLORS ([2deebed](https://github.com/Euphoriyy/appearance.koplugin/commit/2deebed7bf89ea5558348fafeb0e9626f51ce984))
+* **book/link_color:** guard against nil hex when using default link color ([b66aed3](https://github.com/Euphoriyy/appearance.koplugin/commit/b66aed3ec2a2457d4967a671cd5e8d6271edd2b4))
+* guard touchmenu_instance before calling updateItems in color menus ([3244749](https://github.com/Euphoriyy/appearance.koplugin/commit/3244749f1500b323d4fd6ddf3f2a3ed7f73cb1fb))
+* handle nil from getCssText and getHtmlDictionaryCss ([90687ab](https://github.com/Euphoriyy/appearance.koplugin/commit/90687abd9d4e3bfa6b4e80e46644a0f74635fe2d)), closes [#35](https://github.com/Euphoriyy/appearance.koplugin/issues/35)
+* replace named colors with hex values for edit menu button backgrounds ([9df9b97](https://github.com/Euphoriyy/appearance.koplugin/commit/9df9b978bceb8793959cb6c42363402480ec954e))
+* restore custom highlight color name display on nightly by hooking init and editHighlightColor ([56bfb72](https://github.com/Euphoriyy/appearance.koplugin/commit/56bfb7285e0df3d70f4fa5fd94eef7a18e26068b))
+* **themes:** prevent skipping link color when editing existing theme ([574c2f2](https://github.com/Euphoriyy/appearance.koplugin/commit/574c2f2158a55478b59712231dafd9f4b58744e9))
+* **ui/background_image:** skip adding duplicate entries to image history ([8ba183c](https://github.com/Euphoriyy/appearance.koplugin/commit/8ba183c6a1c28a79e1745d6911803eda44e0a8cd))
+
 ## [1.3.7](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.6...v1.3.7) (2026-04-17)
 
 
