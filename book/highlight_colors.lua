@@ -321,7 +321,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ✖ Reset§r "),
+            text = _("§white ⟳ Reset§r "),
             menu_style = true,
             original_background = button_bg_colors[3],
             background = common.EXCLUSION_COLOR,
