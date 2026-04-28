@@ -339,7 +339,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
 
     dialog = ButtonDialog:new {
         buttons = edit_buttons,
-        width_factor = 0.6,
+        width_factor = 0.3,
         colorful = true,
         dithered = true,
     }

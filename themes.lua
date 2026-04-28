@@ -550,7 +550,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
 
     dialog = ButtonDialog:new {
         buttons = edit_buttons,
-        width_factor = 0.6,
+        width_factor = 0.5,
         colorful = true,
         dithered = true,
     }
