@@ -422,6 +422,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
         Blitbuffer.colorFromString("#BA8E23"),
         Blitbuffer.colorFromString("#2D728F"),
         Blitbuffer.colorFromString("#60AB9A"),
+        Blitbuffer.colorFromString("#9B5DE5"),
         Blitbuffer.colorFromString("#700548"),
         Blitbuffer.colorFromString("#FF5964"),
     }
@@ -521,9 +522,22 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ✖ Delete§r "),
+            text = T(_("§white ⟳ Reset link color§r ")),
             menu_style = true,
             original_background = button_bg_colors[5],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                theme.link = nil
+                replace_theme(theme, theme)
+
+                UIManager:close(dialog)
+                refreshThemeButtons()
+            end,
+        } },
+        { {
+            text = _("§white ✖ Delete§r "),
+            menu_style = true,
+            original_background = button_bg_colors[6],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 remove_theme(theme)
