@@ -947,7 +947,11 @@ function Button:_doFeedbackHighlight()
     if self.text then
         if self[1].radius == nil or self.background then
             self[1].radius = Size.radius.button
-            self[1].background = bg_cached.bgcolor:invert()
+            if self.background then
+                self[1].background = self.background:invert()
+            else
+                self[1].background = bg_cached.bgcolor:invert()
+            end
             self.label_widget.fgcolor = self.label_widget.fgcolor:invert()
         else
             self[1].invert = true
