@@ -52,8 +52,11 @@ for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
     DEFAULT_HIGHLIGHT_COLORS[color] = { DEFAULT_HIGHLIGHT_COLOR_NAMES[i], DEFAULT_HIGHLIGHT_COLOR_HEXES[i] }
 end
 
+local FALLBACK_COLOR = Screen:isColorEnabled() and "yellow" or "gray"
+
 -- Settings
 local HighlightColors = Setting("book_highlight_colors", DEFAULT_HIGHLIGHT_COLORS)
+local DefaultHighlightColor = Setting("highlight_color", FALLBACK_COLOR)
 
 local function getHighlightColorIndex(color)
     for i, key in ipairs(HIGHLIGHT_COLOR_KEYS) do
@@ -217,10 +220,14 @@ local edit_menu
 local function highlightColorDialog(touchmenu_instance)
     local dialog
     local buttons = {}
+    local default_highlight_color = DefaultHighlightColor.get()
     for i, color in ipairs(HIGHLIGHT_COLOR_KEYS) do
-        local color_name = ReaderHighlight.getHighlightColorString(nil, color)
+        local text = ReaderHighlight.getHighlightColorString(nil, color)
+        if color == default_highlight_color then
+            text = text .. " ★"
+        end
         buttons[i] = { {
-            text = color_name,
+            text = text,
             menu_style = true,
             background = ReaderHighlight.getHighlightColor(nil, color),
             callback = function()
@@ -249,6 +256,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
     local button_bg_colors = {
         Blitbuffer.colorFromString("#BA8E23"),
         Blitbuffer.colorFromString("#2D728F"),
+        Blitbuffer.colorFromString("#DC6BAD"),
         Blitbuffer.colorFromString("#FF5964"),
     }
 
@@ -321,9 +329,23 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ⟳ Reset§r "),
+            text = _("§white ★ Make default color§r "),
             menu_style = true,
             original_background = button_bg_colors[3],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                DefaultHighlightColor.set(color)
+
+                UIManager:close(dialog)
+
+                UIManager:close(updialog_ref.dialog)
+                UIManager:show(highlightColorDialog(touchmenu_instance))
+            end,
+        } },
+        { {
+            text = _("§white ⟳ Reset§r "),
+            menu_style = true,
+            original_background = button_bg_colors[4],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 setHighlightColorString(color, DEFAULT_HIGHLIGHT_COLOR_NAMES[getHighlightColorIndex(color)])
