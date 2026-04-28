@@ -311,7 +311,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ● Edit highlight color§r "),
+            text = _("§white ● Edit color§r "),
             menu_style = true,
             original_background = button_bg_colors[2],
             background = common.EXCLUSION_COLOR,
@@ -329,7 +329,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ★ Make default color§r "),
+            text = _("§white ★ Make default§r "),
             menu_style = true,
             original_background = button_bg_colors[3],
             background = common.EXCLUSION_COLOR,
