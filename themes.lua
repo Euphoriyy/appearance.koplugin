@@ -522,19 +522,6 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = T(_("§white ⟳ Reset link color§r ")),
-            menu_style = true,
-            original_background = button_bg_colors[5],
-            background = common.EXCLUSION_COLOR,
-            callback = function()
-                theme.link = nil
-                replace_theme(theme, theme)
-
-                UIManager:close(dialog)
-                refreshThemeButtons()
-            end,
-        } },
-        { {
             text = _("§white ✖ Delete§r "),
             menu_style = true,
             original_background = button_bg_colors[6],
@@ -547,6 +534,22 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
     }
+
+    if theme.link then
+        table.insert(edit_buttons, 5, { {
+            text = T(_("§white ⟳ Reset link color§r ")),
+            menu_style = true,
+            original_background = button_bg_colors[5],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                theme.link = nil
+                replace_theme(theme, theme)
+
+                UIManager:close(dialog)
+                refreshThemeButtons()
+            end,
+        } })
+    end
 
     dialog = ButtonDialog:new {
         buttons = edit_buttons,
