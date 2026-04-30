@@ -275,11 +275,12 @@ function Document:drawPage(target, x, y, rect, pageno, zoom, rotation, gamma)
     end
 
     -- Manually replace white background in software-inverted night mode where multiplication would fail
-    -- (Note that this doesn't work on Android due to the way it inverts during night mode)
+    -- (Note that this doesn't work with the C blitter on Android due to the way it inverts during night mode)
     -- Or to have an idempotent effect when dual pages are enabled
     -- Otherwise, the right side of the screen becomes more saturated due to repeated multiplication
     local sw_invert = Screen.night_mode and not Device:canHWInvert()
-    if not Device:isAndroid() and (sw_invert or has_dual_pages()) then
+    local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
+    if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
         recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
     else
         target:multiplyRectRGB(x, y, rect.w, rect.h, bg_cached.bgcolor)
@@ -309,8 +310,10 @@ function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, g
         target:invertRect(x, y, rect.w, rect.h)
     else
         original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
-        -- Manually recolor in Android instead of using RGB multiplication
-        if Device:isAndroid() then
+
+        local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
+        -- Manually recolor in Android (when using the C blitter) instead of using RGB multiplication
+        if Device:isAndroid() and is_cbb_enabled then
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
         else
             target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
@@ -326,6 +329,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
         return
     end
 
+    local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
     local bgcolor = nightmode_invert and Blitbuffer.colorFromString(bg_cached.hex) or bg_cached.bgcolor
 
     if nightmode_invert then
@@ -342,7 +346,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
         else
             original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation,
                 nightmode_invert)
-            if Device:isAndroid() then
+            if Device:isAndroid() and is_cbb_enabled then
                 recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
             else
                 target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
@@ -352,7 +356,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
         -- Document:drawPage path
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
         local sw_invert = Screen.night_mode and not Device:canHWInvert()
-        if not Device:isAndroid() and (sw_invert or has_dual_pages()) then
+        if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
             recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
         else
             target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
