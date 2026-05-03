@@ -19,6 +19,17 @@ local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local Font = require("ui/font")
 local Screen = Device.screen
 
+--------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local font_color
+
+local function get_font_fgcolor()
+    font_color = font_color or require("ui/font_color")
+    return font_color.fgcolor()
+end
+
 ------------------------------------------------------------
 
 local ColorWheelWidget = FocusManager:extend {
@@ -169,22 +180,28 @@ function ColorWheel:_renderToBuffer(x, y)
     local bgcolor = Screen.bb:getPixel(x - 1, y - 1)
     buf:paintRectRGB32(0, 0, side, side, bgcolor)
 
-    local cache = getWheelCache(dr)
-    local hue_t = cache.hue
-    local sat_t = cache.sat
-    local v     = self.value
-    local nm    = self.night_mode
-    local idx   = 0
+    local cache       = getWheelCache(dr)
+    local hue_t       = cache.hue
+    local sat_t       = cache.sat
+    local v           = self.value
+    local nm          = self.night_mode
+    local idx         = 0
 
+    local bordercolor = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
     for py = -dr, dr do
         for px = -dr, dr do
             idx = idx + 1
             local s = sat_t[idx]
             if s >= 0 then
-                local r, g, b = hsvToRgb(hue_t[idx], s, v)
-                if nm then r, g, b = 255 - r, 255 - g, 255 - b end
-                buf:setPixel(dr + 1 + px, dr + 1 + py,
-                    Blitbuffer.ColorRGB32(r, g, b, 0xFF))
+                -- Draw border
+                if sat_t[idx] >= 1 - Size.border.window / dr then
+                    buf:setPixel(dr + 1 + px, dr + 1 + py, bordercolor)
+                else -- Draw colors
+                    local r, g, b = hsvToRgb(hue_t[idx], s, v)
+                    if nm then r, g, b = 255 - r, 255 - g, 255 - b end
+                    buf:setPixel(dr + 1 + px, dr + 1 + py,
+                        Blitbuffer.ColorRGB32(r, g, b, 0xFF))
+                end
             end
         end
     end
