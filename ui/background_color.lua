@@ -113,15 +113,21 @@ local bg_cached = {
     bgcolor = nil,
 }
 
--- Recompute and cache the final colors based on current settings
--- Applies night mode inversion if enabled, and updates bg_cached.bgcolor only if it has changed
-local function recomputeColors()
+-- Calculate the current hex value based on night mode and current settings
+local function calculateHex()
     local hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
     end
+    return hex
+end
+
+-- Recompute and cache the final colors based on current settings
+-- Applies night mode inversion if enabled, and updates bg_cached.bgcolor only if it has changed
+local function recomputeColors()
+    local hex = calculateHex()
     if hex ~= bg_cached.last_hex then
         bg_cached.bgcolor = Blitbuffer.colorFromString(hex)
         bg_cached.last_hex = hex
@@ -900,15 +906,9 @@ local original_DictQuickLookup_getHtmlDictionaryCss = DictQuickLookup.getHtmlDic
 function DictQuickLookup:getHtmlDictionaryCss()
     local original_css = original_DictQuickLookup_getHtmlDictionaryCss(self) or ""
 
-    local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
-    if Screen.night_mode then
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            bg_hex = common.invertColor(bg_hex)
-        end
-    end
     local custom_css = [[
         body {
-            background-color: ]] .. bg_hex .. [[;
+            background-color: ]] .. calculateHex() .. [[;
         }
     ]]
 

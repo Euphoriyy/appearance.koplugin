@@ -34,15 +34,21 @@ local bg_cached = {
     bgcolor = nil,
 }
 
--- Recompute and cache the final bgcolor based on current settings
--- Applies night mode inversion if enabled, and updates bg_cached.bgcolor only if it has changed
-local function recomputeBGColor()
+-- Calculate the current hex value based on night mode and current settings
+local function calculateHex()
     local hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
     end
+    return hex
+end
+
+-- Recompute and cache the final bgcolor based on current settings
+-- Applies night mode inversion if enabled, and updates bg_cached.bgcolor only if it has changed
+local function recomputeBGColor()
+    local hex = calculateHex()
     if hex ~= bg_cached.last_hex then
         bg_cached.bgcolor = Blitbuffer.colorFromString(hex)
         bg_cached.last_hex = hex
@@ -227,16 +233,9 @@ local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
-    local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
-    if Screen.night_mode then
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            bg_hex = common.invertColor(bg_hex)
-        end
-    end
-
     local bg_css = [[
         body {
-            background-color: ]] .. bg_hex .. [[ !important;
+            background-color: ]] .. calculateHex() .. [[ !important;
         }
     ]]
     return util.trim(bg_css .. original_css)
@@ -250,16 +249,9 @@ function FootnoteWidget:init()
     local htmlwidget = self.htmlwidget
     local original_css = htmlwidget.css
 
-    local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
-    if Screen.night_mode then
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            bg_hex = common.invertColor(bg_hex)
-        end
-    end
-
     local bg_css = [[
         body {
-            background-color: ]] .. bg_hex .. [[ !important;
+            background-color: ]] .. calculateHex() .. [[ !important;
         }
     ]]
     htmlwidget.css = util.trim(bg_css .. original_css)

@@ -27,15 +27,21 @@ local fg_cached = {
     fgcolor = nil,
 }
 
--- Recompute and cache the final fgcolor based on current settings
--- Applies night mode inversion if enabled, and updates fg_cached.fgcolor only if it has changed
-local function recomputeFGColor()
+-- Calculate the current hex value based on night mode and current settings
+local function calculateHex()
     local hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
     if Screen.night_mode then
         if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
     end
+    return hex
+end
+
+-- Recompute and cache the final fgcolor based on current settings
+-- Applies night mode inversion if enabled, and updates fg_cached.fgcolor only if it has changed
+local function recomputeFGColor()
+    local hex = calculateHex()
     if hex ~= fg_cached.last_hex then
         fg_cached.fgcolor = Blitbuffer.colorFromString(hex)
         fg_cached.last_hex = hex
@@ -206,16 +212,9 @@ local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
-    local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
-    if Screen.night_mode then
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-            fg_hex = common.invertColor(fg_hex)
-        end
-    end
-
     local fg_css = [[
         body {
-            color: ]] .. fg_hex .. [[ !important;
+            color: ]] .. calculateHex() .. [[ !important;
         }
     ]]
     return util.trim(fg_css .. original_css)
@@ -229,16 +228,9 @@ function FootnoteWidget:init()
     local htmlwidget = self.htmlwidget
     local original_css = htmlwidget.css
 
-    local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
-    if Screen.night_mode then
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
-            fg_hex = common.invertColor(fg_hex)
-        end
-    end
-
     local fg_css = [[
         body {
-            color: ]] .. fg_hex .. [[ !important;
+            color: ]] .. calculateHex() .. [[ !important;
         }
     ]]
     htmlwidget.css = util.trim(fg_css .. original_css)
