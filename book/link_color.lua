@@ -29,7 +29,10 @@ local link_cached = {
 -- Applies night mode inversion if enabled
 local function recomputeLinkColor()
     local hex = (Screen.night_mode and link_cached.alt_night_color) and link_cached.night_hex or link_cached.hex
-    if not hex then return end -- Hex can be nil if using the default link colors
+    if not hex then -- Hex can be nil if using the default link colors
+        link_cached.computed_hex = nil
+        return
+    end
 
     if Screen.night_mode then
         if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
