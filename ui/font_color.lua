@@ -63,12 +63,6 @@ end
 -- Compute and cache the initial fgcolor based on current settings
 recomputeFGColor()
 
-local function refreshFileManager()
-    if FileManager.instance then
-        FileManager.instance.file_chooser:updateItems(1, true)
-    end
-end
-
 local function getFontColor()
     if Screen.night_mode and fg_cached.alt_night_color then
         return NightHexFontColor.get()
@@ -92,7 +86,7 @@ end
 local function refresh()
     -- If TextBoxWidget colors are enabled, then update the file list
     if fg_cached.set_textbox_color then
-        refreshFileManager()
+        common.refreshFileManager()
     end
 end
 
@@ -203,9 +197,7 @@ local function font_color_menu()
                     if Screen.night_mode then
                         recomputeFGColor()
 
-                        if fg_cached.set_textbox_color then
-                            refreshFileManager()
-                        end
+                        refresh()
                     end
                 end,
             },
@@ -219,9 +211,7 @@ local function font_color_menu()
                     recomputeFGColor()
 
                     if Screen.night_mode then
-                        if fg_cached.set_textbox_color then
-                            refreshFileManager()
-                        end
+                        refresh()
                     end
                 end,
                 separator = true,
@@ -237,7 +227,7 @@ local function font_color_menu()
                             fg_cached.set_textbox_color = TextBoxFontColor.get()
 
                             -- Update the file list
-                            refreshFileManager()
+                            common.refreshFileManager()
                         end,
                     },
                     {
@@ -255,9 +245,7 @@ local function font_color_menu()
                             ReaderOnlyFontColor.toggle()
                             fg_cached.reader_only = ReaderOnlyFontColor.get()
 
-                            if fg_cached.set_textbox_color then
-                                refreshFileManager()
-                            end
+                            refresh()
                         end,
                         separator = true,
                     },

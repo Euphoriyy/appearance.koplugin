@@ -5,6 +5,7 @@ local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
 local background_color = require("ui/background_color")
 local background_image_menu = require("ui/background_image")
+local common = require("lib/common")
 local font_color = require("ui/font_color")
 local font_face_menu = require("ui/font_face")
 local dict_font_face_menu = require("ui/dict_font_face")
@@ -29,12 +30,6 @@ local function recomputeAllColors()
     UIManager:broadcastEvent(Event:new("RecomputeAllColors"))
 end
 
-local function refreshFileManager()
-    if FileManager.instance then
-        FileManager.instance.file_chooser:updateItems(1, true)
-    end
-end
-
 -- Hook into night mode state changes and refresh page
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
@@ -43,7 +38,7 @@ function UIManager:ToggleNightMode()
     recomputeAllColors()
 
     if background_color.needsFileManagerRefresh(true) or font_color.needsFileManagerRefresh(true) then
-        refreshFileManager()
+        common.refreshFileManager()
     end
 end
 
@@ -55,7 +50,7 @@ function UIManager:SetNightMode(night_mode)
         recomputeAllColors()
 
         if background_color.needsFileManagerRefresh(true) or font_color.needsFileManagerRefresh(true) then
-            refreshFileManager()
+            common.refreshFileManager()
         end
     end
 end
@@ -69,7 +64,7 @@ function FileManager:onApplyTheme()
     recomputeAllColors()
 
     if background_color.needsFileManagerRefresh(false) or font_color.needsFileManagerRefresh(false) then
-        refreshFileManager()
+        common.refreshFileManager()
     end
 end
 

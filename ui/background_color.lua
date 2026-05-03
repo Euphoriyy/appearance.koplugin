@@ -143,12 +143,6 @@ end
 -- Compute and cache the initial bgcolor/fgcolor based on current settings
 recomputeColors()
 
-local function refreshFileManager()
-    if FileManager.instance then
-        FileManager.instance.file_chooser:updateItems(1, true)
-    end
-end
-
 local function reloadIcons()
     ImageCache:clear()
     UIManager:broadcastEvent(Event:new("ChangeBackgroundColor"))
@@ -185,7 +179,7 @@ end
 local function refresh()
     -- If TextBoxWidget colors are enabled, then update the file list
     if bg_cached.set_textbox_color then
-        refreshFileManager()
+        common.refreshFileManager()
     end
 end
 
@@ -298,9 +292,7 @@ local function background_color_menu()
 
                         reloadIcons()
 
-                        if bg_cached.set_textbox_color then
-                            refreshFileManager()
-                        end
+                        refresh()
                     end
                 end,
             },
@@ -329,9 +321,7 @@ local function background_color_menu()
                     if Screen.night_mode then
                         reloadIcons()
 
-                        if bg_cached.set_textbox_color then
-                            refreshFileManager()
-                        end
+                        refresh()
                     end
                 end,
                 separator = true,
@@ -384,8 +374,7 @@ local function background_color_menu()
                             TextBoxBackgroundColor.toggle()
                             bg_cached.set_textbox_color = TextBoxBackgroundColor.get()
 
-                            -- Update the file list
-                            refreshFileManager()
+                            common.refreshFileManager()
                         end,
                     },
                     {

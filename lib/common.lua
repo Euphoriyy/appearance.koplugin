@@ -1,5 +1,7 @@
 local Blitbuffer = require("ffi/blitbuffer")
+local Event = require("ui/event")
 local ReaderUI = require("apps/reader/readerui")
+local UIManager = require("ui/uimanager")
 
 local common = {}
 
@@ -89,6 +91,7 @@ function common.contrast(c1, c2)
     return math.abs(common.luminance(c1) - common.luminance(c2))
 end
 
+-- Helper: lighten a color by a set percent
 function common.lightenColor(c, amount)
     local r = c:getR()
     local g = c:getG()
@@ -104,6 +107,11 @@ end
 -- Helper: check if we have a document open
 function common.has_document_open()
     return ReaderUI.instance ~= nil and ReaderUI.instance.document ~= nil
+end
+
+-- Helper: refresh the file list
+function common.refreshFileManager()
+    UIManager:broadcastEvent(Event:new("RefreshContent"))
 end
 
 -- Helper: check if a value exists in a table
