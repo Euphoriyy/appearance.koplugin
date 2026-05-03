@@ -10,9 +10,9 @@ local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local cre = require("document/credocument"):engineInit()
 
-local DictFontName = Setting("dict_font_name", "Noto Sans")
-local DictFontEnabled = Setting("dict_font_enabled", true)
-local SystemFonts = Setting("system_fonts", false)
+local DictFontName = Setting("dict_font_name", "Noto Sans", true)
+local DictFontEnabled = Setting("dict_font_enabled", true, true)
+local SystemFonts = Setting("system_fonts", false, true)
 
 local font_list
 local fonts

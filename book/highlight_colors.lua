@@ -56,7 +56,7 @@ local FALLBACK_COLOR = Screen:isColorEnabled() and "yellow" or "gray"
 
 -- Settings
 local HighlightColors = Setting("book_highlight_colors", DEFAULT_HIGHLIGHT_COLORS)
-local DefaultHighlightColor = Setting("highlight_color", FALLBACK_COLOR)
+local DefaultHighlightColor = Setting("highlight_color", FALLBACK_COLOR, true)
 
 local function getHighlightColorIndex(color)
     for i, key in ipairs(HIGHLIGHT_COLOR_KEYS) do

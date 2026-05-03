@@ -11,6 +11,7 @@ local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
+local Settings = require("lib/settings")
 local TripleConfirmBox = require("widgets/tripleconfirmbox")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
@@ -225,7 +226,7 @@ local function add_theme(name, bg_hex, fg_hex, link_hex, night)
         table.insert(cached.nightThemes, theme)
         NightThemes.set(cached.nightThemes)
     end
-    G_reader_settings:flush()
+    Settings:flushSettings()
 
     return theme
 end
@@ -249,7 +250,7 @@ local function replace_theme(theme, val)
         end
         NightThemes.set(cached.nightThemes)
     end
-    G_reader_settings:flush()
+    Settings:flushSettings()
 end
 
 -- Remove theme from the appropriate list
@@ -271,7 +272,7 @@ local function remove_theme(theme)
         end
         NightThemes.set(cached.nightThemes)
     end
-    G_reader_settings:flush()
+    Settings:flushSettings()
 end
 
 -- Declare edit_menu stub
