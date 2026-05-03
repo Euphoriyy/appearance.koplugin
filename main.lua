@@ -20,6 +20,10 @@ function Appearance:onFlushSettings()
     Settings:flushSettings()
 end
 
+function Appearance:deletePluginSettings()
+    Settings.settings:purge()
+end
+
 local submenus = {
     themes_menu(),
     ui_menu(),
