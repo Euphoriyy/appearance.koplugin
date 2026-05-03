@@ -2,6 +2,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
+local FootnoteWidget = require("ui/widget/footnotewidget")
 local InputDialog = require("ui/widget/inputdialog")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
@@ -218,6 +219,41 @@ function ReaderStyleTweak:getCssText()
         }
     ]]
     return util.trim(fg_css .. original_css)
+end
+
+-- Add font color to footnote popup CSS
+local original_FootnoteWidget_init = FootnoteWidget.init
+function FootnoteWidget:init()
+    original_FootnoteWidget_init(self)
+
+    local htmlwidget = self.htmlwidget
+    local original_css = htmlwidget.css
+
+    local fg_hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
+    if Screen.night_mode then
+        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
+            fg_hex = common.invertColor(fg_hex)
+        end
+    end
+
+    local fg_css = [[
+        body {
+            color: ]] .. fg_hex .. [[ !important;
+        }
+    ]]
+    htmlwidget.css = util.trim(fg_css .. original_css)
+    htmlwidget.htmlbox_widget:setContent(htmlwidget.html_body, htmlwidget.css, htmlwidget.default_font_size,
+        htmlwidget.is_xhtml, nil, htmlwidget.html_resource_directory)
+
+    -- Use book foreground color for top border
+    local vgroup = self.container[1]
+    local single_page_height = self.htmlwidget:getSinglePageHeight()
+    if single_page_height then
+        vgroup = vgroup[1]
+    end
+    local linewidget = vgroup[1]
+    linewidget.original_background = fg_cached.fgcolor
+    linewidget.background = common.EXCLUSION_COLOR
 end
 
 -- Recompute colors upon event call

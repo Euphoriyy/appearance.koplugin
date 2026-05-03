@@ -5,6 +5,7 @@ local Dispatcher = require("dispatcher")
 local Document = require("document/document")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
+local FootnoteWidget = require("ui/widget/footnotewidget")
 local InputDialog = require("ui/widget/inputdialog")
 local KoptInterface = require("document/koptinterface")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
@@ -239,6 +240,35 @@ function ReaderStyleTweak:getCssText()
         }
     ]]
     return util.trim(bg_css .. original_css)
+end
+
+-- Add background color to footnote popup CSS
+local original_FootnoteWidget_init = FootnoteWidget.init
+function FootnoteWidget:init()
+    original_FootnoteWidget_init(self)
+
+    local htmlwidget = self.htmlwidget
+    local original_css = htmlwidget.css
+
+    local bg_hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
+    if Screen.night_mode then
+        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
+            bg_hex = common.invertColor(bg_hex)
+        end
+    end
+
+    local bg_css = [[
+        body {
+            background-color: ]] .. bg_hex .. [[ !important;
+        }
+    ]]
+    htmlwidget.css = util.trim(bg_css .. original_css)
+    htmlwidget.htmlbox_widget:setContent(htmlwidget.html_body, htmlwidget.css, htmlwidget.default_font_size,
+        htmlwidget.is_xhtml, nil, htmlwidget.html_resource_directory)
+
+    -- Use book background color for container
+    self.container.original_background = bg_cached.bgcolor
+    self.container.background = common.EXCLUSION_COLOR
 end
 
 -- Helper: check if dual pages are enabled (comicreader.koplugin)
