@@ -170,6 +170,7 @@ local function link_color_menu()
             pick_color_menu(),
             {
                 text = _("Reset color"),
+                enabled_func = function() return getLinkColor() ~= nil end,
                 callback = function()
                     setLinkColor(nil)
                     refresh()
