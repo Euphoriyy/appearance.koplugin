@@ -296,6 +296,12 @@ function Document:drawPage(target, x, y, rect, pageno, zoom, rotation, gamma)
         return
     end
 
+    if (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
+        or (Screen.night_mode and bg_cached.last_hex == "#000000")
+    then
+        return
+    end
+
     -- Manually replace white background in software-inverted night mode where multiplication would fail
     -- (Note that this doesn't work with the C blitter on Android due to the way it inverts during night mode)
     -- Or to have an idempotent effect when dual pages are enabled
@@ -313,7 +319,7 @@ end
 -- Use the day mode bgcolor instead of the one for night mode
 local original_Document_drawPageInverted = Document.drawPageInverted
 function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, gamma)
-    if not bg_cached.set_fixed_color then
+    if not bg_cached.set_fixed_color or bg_cached.hex == "#FFFFFF" then
         original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
         return
     end
@@ -346,7 +352,7 @@ end
 -- Finally, add background color to context pages
 local original_KoptInterface_drawContextPage = KoptInterface.drawContextPage
 function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-    if not bg_cached.set_fixed_color then
+    if not bg_cached.set_fixed_color or (nightmode_invert and bg_cached.hex == "#FFFFFF") then
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
         return
     end
@@ -377,6 +383,13 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     else
         -- Document:drawPage path
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
+
+        if (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
+            or (Screen.night_mode and bg_cached.last_hex == "#000000")
+        then
+            return
+        end
+
         local sw_invert = Screen.night_mode and not Device:canHWInvert()
         if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
             recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
