@@ -12,6 +12,7 @@ local ReaderUI               = require("apps/reader/readerui")
 local ReaderView             = require("apps/reader/modules/readerview")
 local Screen                 = Device.screen
 local Setting                = require("lib/setting")
+local SpinWidget             = require("ui/widget/spinwidget")
 local UIManager              = require("ui/uimanager")
 local VerticalGroup          = require("ui/widget/verticalgroup")
 local lfs                    = require("libs/libkoreader-lfs")
@@ -22,16 +23,29 @@ local userpatch              = require("userpatch")
 local MAX_HISTORY_SIZE       = 20
 
 -- Settings
-local BackgroundImage        = Setting("ui_background_image_path", nil)         -- Path for UI background image (default: nil)
-local StretchImage           = Setting("ui_background_image_stretch", true)     -- Whether the background image should be stretched to fit the screen (default: true)
-local RotateImage            = Setting("ui_background_image_auto_rotate", true) -- Whether the background image should be auto-rotated (default: true)
-local InvertImage            = Setting("ui_background_image_invert", false)     -- Whether the background image should be inverted in night mode (default: false)
-local ShowInFiles            = Setting("ui_background_image_filemanager", true) -- Whether the background image should be shown in the file manager (default: true)
-local ShowInReader           = Setting("ui_background_image_reader", true)      -- Whether the background image should be shown in the reader (default: true)
-local ShowInMenu             = Setting("ui_background_image_menu", false)       -- Whether the background image should be shown in the top menu (default: false)
-local ShowInHomescreen       = Setting("ui_background_image_homescreen", true)  -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
-local BackgroundImageHistory = Setting("ui_background_image_history", {})       -- A history of the past background images selected.
-local LastBackgroundImage    = Setting("ui_background_image_last", nil)         -- The last background images selected.
+local BackgroundImage        = Setting("ui_background_image_path", nil)                   -- Path for UI background image (default: nil)
+local StretchImage           = Setting("ui_background_image_stretch", true)               -- Whether the background image should be stretched to fit the screen (default: true)
+local RotateImage            = Setting("ui_background_image_auto_rotate", true)           -- Whether the background image should be auto-rotated (default: true)
+local InvertImage            = Setting("ui_background_image_invert", false)               -- Whether the background image should be inverted in night mode (default: false)
+local TransparencyLevel      = Setting("ui_background_image_transparency_level", 0)       -- The transparency level of the background image (default: 0)
+local TransparentToColor     = Setting("ui_background_image_transparent_to_color", false) -- Whether the image's transparency should match the background color (default: false)
+local ShowInFiles            = Setting("ui_background_image_filemanager", true)           -- Whether the background image should be shown in the file manager (default: true)
+local ShowInReader           = Setting("ui_background_image_reader", true)                -- Whether the background image should be shown in the reader (default: true)
+local ShowInMenu             = Setting("ui_background_image_menu", false)                 -- Whether the background image should be shown in the top menu (default: false)
+local ShowInHomescreen       = Setting("ui_background_image_homescreen", true)            -- Whether the background image should be shown in the homescreen (SimpleUI) (default: true)
+local BackgroundImageHistory = Setting("ui_background_image_history", {})                 -- A history of the past background images selected.
+local LastBackgroundImage    = Setting("ui_background_image_last", nil)                   -- The last background images selected.
+
+--------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local ui_bgcolor
+
+local function get_ui_bgcolor()
+    ui_bgcolor = ui_bgcolor or require("ui/background_color")
+    return ui_bgcolor.bgcolor()
+end
 
 -- Helper: get the filename for the current background image
 local function background_image_name(path)
@@ -256,6 +270,40 @@ local function background_image_menu()
                 separator = true,
             },
             {
+                text_func = function() return T(_("Transparency level: %1%"), TransparencyLevel.get()) end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    local spin = SpinWidget:new {
+                        title_text = _("Transparency level"),
+                        info_text = _([[
+How transparent the background image is to the UI. Can help with visibility.
+]]),
+                        value = TransparencyLevel.get(),
+                        default_value = TransparencyLevel.default,
+                        value_min = 0,
+                        value_max = 99,
+                        value_step = 1,
+                        value_hold_step = 10,
+                        unit = "%",
+                        callback = function(widget)
+                            TransparencyLevel.set(widget.value)
+                            if touchmenu_instance then touchmenu_instance:updateItems() end
+                            reload_background_image()
+                        end,
+                    }
+                    UIManager:show(spin)
+                end,
+            },
+            {
+                text = _("Transparent to background color (slower)"),
+                checked_func = TransparentToColor.get,
+                callback = function()
+                    TransparentToColor.toggle()
+                    reload_background_image()
+                end,
+                separator = true,
+            },
+            {
                 text = _("Show in file browser"),
                 checked_func = ShowInFiles.get,
                 callback = function()
@@ -297,6 +345,28 @@ local function background_image_menu()
     }
 end
 
+-- Paint the background image onto the UI, using lightenRect or addBlitFrom
+-- depending on the current mode of transparency
+local function paint_bg(bg_widget, bb, x, y, w, h)
+    w = w or Screen:getWidth()
+    h = h or Screen:getHeight()
+
+    local level = TransparencyLevel.get()
+    if level == 0 then
+        bg_widget:paintTo(bb, x, y) -- Fully opaque
+    elseif not TransparentToColor.get() then
+        bg_widget:paintTo(bb, x, y)
+        bb:lightenRect(x, y, w, h, level / 100)
+    else
+        -- Paint to an intermediate buffer, then alpha-blend that onto the target
+        local tmp = Blitbuffer.new(w, h, bb:getType())
+        bg_widget:paintTo(tmp, 0, 0)
+        bb:addblitFrom(tmp, x, y, 0, 0, w, h, (100 - level) / 100)
+        tmp:free()
+    end
+    return true
+end
+
 -- Add background image to FileManager
 local original_FM_setupLayout = FileManager.setupLayout
 function FileManager:setupLayout()
@@ -309,7 +379,7 @@ function FileManager:setupLayout()
 
     local original_paintTo = fm_ui.paintTo
     function fm_ui:paintTo(bb, x, y)
-        bg_widget:paintTo(bb, x, y)
+        paint_bg(bg_widget, bb, x, y)
         original_paintTo(self, bb, x, y)
     end
 end
@@ -322,7 +392,7 @@ function ReaderView:drawPageSurround(bb, x, y)
 
     local bg_widget = get_bg_widget()
     if ShowInReader.get() and bg_widget then
-        bg_widget:paintTo(bb, x, y)
+        paint_bg(bg_widget, bb, x, y)
     end
 end
 
@@ -333,7 +403,7 @@ function ReaderView:drawPageBackground(bb, x, y)
 
     local bg_widget = get_bg_widget()
     if ShowInReader.get() and bg_widget then
-        bg_widget:paintTo(bb, x, y)
+        paint_bg(bg_widget, bb, x, y)
     end
 end
 
@@ -361,7 +431,11 @@ function FileManagerMenu:onShowMenu(tab_index, do_not_show)
     function main_menu:paintTo(bb, x, y)
         local h = self.item_group:getSize().h + self.bordersize * 2 + self.padding
         local sub_bb = bb:viewport(x, y, Screen:getWidth(), h)
-        bg_widget:paintTo(sub_bb, 0, 0)
+        -- It's necessary to paint the current background color for the menus, otherwise transparency breaks
+        if TransparentToColor.get() then
+            sub_bb:paintRectRGB32(0, 0, Screen:getWidth(), h, get_ui_bgcolor())
+        end
+        paint_bg(bg_widget, sub_bb, 1, 0, Screen:getWidth(), h)
         original_paintTo(self, sub_bb, 0, 0)
     end
 
@@ -382,7 +456,11 @@ function ReaderMenu:onShowMenu(tab_index, do_not_show)
     function main_menu:paintTo(bb, x, y)
         local h = self.item_group:getSize().h + self.bordersize * 2 + self.padding
         local sub_bb = bb:viewport(x, y, Screen:getWidth(), h)
-        bg_widget:paintTo(sub_bb, 0, 0)
+        -- It's necessary to paint the current background color for the menus, otherwise transparency breaks
+        if TransparentToColor.get() then
+            sub_bb:paintRectRGB32(0, 0, Screen:getWidth(), h, get_ui_bgcolor())
+        end
+        paint_bg(bg_widget, sub_bb, 0, 0, Screen:getWidth(), h)
         original_paintTo(self, sub_bb, 0, 0)
     end
 
@@ -422,7 +500,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
 
         local original_paintTo = content_widget.paintTo
         function content_widget:paintTo(bb, x, y)
-            bg_widget:paintTo(bb, x, y)
+            paint_bg(bg_widget, bb, x, y)
             original_paintTo(self, bb, x, y)
         end
 
