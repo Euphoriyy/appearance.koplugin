@@ -394,7 +394,7 @@ local COLOR_MAP = {
     cyan     = Blitbuffer.colorFromName("cyan"),
     blue     = Blitbuffer.colorFromName("blue"),
     purple   = Blitbuffer.colorFromName("purple"),
-    pink     = Blitbuffer.colorFromName("#FF8DA1"),
+    pink     = Blitbuffer.colorFromString("#FF8DA1"),
 }
 
 local function parseColor(color_str, default_color)
@@ -711,6 +711,7 @@ end
 return {
     menu = font_color_menu,
     fgcolor = function() return fg_cached.fgcolor end,
+    fg_hex = function() return calculateHex() end,
     needsFileManagerRefresh =
         needsFileManagerRefresh
 }

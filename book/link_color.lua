@@ -272,4 +272,7 @@ function ReaderUI:onApplyTheme()
     recomputeLinkColor()
 end
 
-return link_color_menu
+return {
+    menu = link_color_menu,
+    link_hex = function() return link_cached.computed_hex end,
+}

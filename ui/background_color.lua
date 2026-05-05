@@ -1236,6 +1236,7 @@ end
 return {
     menu = background_color_menu,
     bgcolor = function() return bg_cached.bgcolor end,
+    bg_hex = function() return calculateHex() end,
     reloadIcons = reloadIcons,
     needsFileManagerRefresh =
         needsFileManagerRefresh

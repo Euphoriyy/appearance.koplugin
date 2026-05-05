@@ -110,6 +110,17 @@ These are the folders where you may place your fonts:
 
 </details>
 
+<details>
+<summary><strong>Updating the Plugin</strong></summary>
+
+<br>
+
+Go to **🞂 Appearance 🞂 About 🞂 Check for updates** to fetch and install the latest release of the plugin. Restart KOReader after installing for the changes to apply.
+
+You can also enable automatic checking for updates to be notified when new versions are released.
+
+</details>
+
 ## Compatibility
 Tested fully on e-ink, desktop, and mobile devices. Fully compatible with popular plugins like [Rakuyomi](https://github.com/tachibana-shin/rakuyomi) and [SimpleUI](https://github.com/doctorhetfield-cmd/simpleui.koplugin).
 
@@ -120,9 +131,11 @@ For rounded book & folder covers to work properly with the background color, [my
 ## Acknowledgements
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
 - Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko).
-- The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin).
+- The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin).
 - UI font replacement based on the based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
 - Dictionary font replacement based on the patch [2-custom-ui-fonts.lua](https://github.com/gennaro-tedesco/KOReader.patches/#2-custom-ui-fonts) by [@gennaro-tedesco](https://github.com/gennaro-tedesco).
+- In-plugin updater adapted from [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
+- Markdown implementation for Lua sourced from [markdown.lua](https://github.com/mpeterv/markdown) by [@mpeterv](https://github.com/mpeterv) and [@niklasfrykholm](https://github.com/niklasfrykholm).
 
 ## Support
 If you want to support me, you can star this repository or buy me a coffee. :)
