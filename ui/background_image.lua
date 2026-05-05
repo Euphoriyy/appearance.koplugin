@@ -436,7 +436,7 @@ userpatch.registerPatchPluginFunc("simpleui", function()
     local Config            = require("sui_config")
     if not (currently_reading and SH and UI and Config) then return end
 
-    local _getElemOrder = userpatch.getUpValue(currently_reading.build, "_getElemOrder")
+    local _resolveElemOrder = userpatch.getUpValue(currently_reading.build, "_resolveElemOrder")
 
     if not original_currently_reading_build then
         original_currently_reading_build = currently_reading.build
@@ -449,15 +449,18 @@ userpatch.registerPatchPluginFunc("simpleui", function()
         local meta_centered = row[2]
         local meta          = meta_centered[1]
 
+        local c             = ctx.cfg and ctx.cfg.currently
         local pfx           = ctx.pfx
-        local elem_order    = _getElemOrder(pfx)
+        local elem_order    = _resolveElemOrder(pfx)
 
         for i, elem in ipairs(elem_order) do
             if elem == "title" then
                 local _BASE_COVER_GAP = Screen:scaleBySize(16) -- between cover and text column
-                local scale           = Config.getModuleScale("currently", ctx.pfx)
-                local thumb_scale     = Config.getThumbScale("currently", ctx.pfx)
-                local lbl_scale       = Config.getItemLabelScale("currently", ctx.pfx)
+                -- Use pre-read settings bundle from ctx when available (normal HS path).
+                -- Falls back to direct reads only when called outside the homescreen.
+                local scale           = c and c.scale or Config.getModuleScale("currently", pfx)
+                local thumb_scale     = c and c.thumb_scale or Config.getThumbScale("currently", pfx)
+                local lbl_scale       = c and c.lbl_scale or Config.getItemLabelScale("currently", pfx)
                 local D               = SH.getDims(scale, thumb_scale)
                 local cover_gap       = math.max(1, math.floor(_BASE_COVER_GAP * scale))
                 local tw              = w - UI.PAD - D.COVER_W - cover_gap - UI.PAD
