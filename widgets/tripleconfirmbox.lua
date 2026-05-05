@@ -41,7 +41,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local _ = require("gettext")
 local Screen = require("device").screen
 
-local TripleConfirmBox = InputContainer:extend{
+local TripleConfirmBox = InputContainer:extend {
     modal = true,
     text = _("no text"),
     face = Font:getFace("infofont"),
@@ -69,9 +69,9 @@ function TripleConfirmBox:init()
     if self.dismissable then
         if Device:isTouchDevice() then
             self.ges_events.TapClose = {
-                GestureRange:new{
+                GestureRange:new {
                     ges = "tap",
-                    range = Geom:new{
+                    range = Geom:new {
                         x = 0, y = 0,
                         w = Screen:getWidth(),
                         h = Screen:getHeight(),
@@ -83,21 +83,21 @@ function TripleConfirmBox:init()
             self.key_events.Close = { { Device.input.group.Back } }
         end
     end
-    local content = HorizontalGroup:new{
+    local content = HorizontalGroup:new {
         align = "center",
-        IconWidget:new{
+        IconWidget:new {
             icon = self.icon,
             alpha = true,
         },
-        HorizontalSpan:new{ width = Size.span.horizontal_default },
-        TextBoxWidget:new{
+        HorizontalSpan:new { width = Size.span.horizontal_default },
+        TextBoxWidget:new {
             text = self.text,
             face = self.face,
-            width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 2/3),
+            width = math.floor(math.min(Screen:getWidth(), Screen:getHeight()) * 2 / 3),
         }
     }
 
-    local button_table = ButtonTable:new{
+    local button_table = ButtonTable:new {
         width = content:getSize().w,
         buttons = {
             {
@@ -141,19 +141,19 @@ function TripleConfirmBox:init()
         show_parent = self,
     }
 
-    self[1] = CenterContainer:new{
+    self[1] = CenterContainer:new {
         dimen = Screen:getSize(),
-        MovableContainer:new{
-            FrameContainer:new{
+        MovableContainer:new {
+            FrameContainer:new {
                 background = Blitbuffer.COLOR_WHITE,
                 radius = Size.radius.window,
                 padding = self.padding,
                 padding_bottom = 0, -- no padding below buttontable
-                VerticalGroup:new{
+                VerticalGroup:new {
                     align = "left",
                     content,
                     -- Add same vertical space after than before content
-                    VerticalSpan:new{ width = self.margin + self.padding },
+                    VerticalSpan:new { width = self.margin + self.padding },
                     button_table,
                 }
             }

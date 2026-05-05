@@ -943,7 +943,7 @@ end
 local function cleanup(text)
     -- Standardize line endings
     text = text:gsub("\r\n", "\n") -- DOS to UNIX
-    text = text:gsub("\r", "\n")  -- Mac to UNIX
+    text = text:gsub("\r", "\n")   -- Mac to UNIX
 
     -- Convert all tabs to spaces
     text = detab(text)

@@ -153,7 +153,7 @@ function HtmlViewerWidget:_buildCss()
 
     local link_hex = get_book_link_hex()
     if link_hex then
-        base = base ..[[
+        base = base .. [[
             a {
                 color: ]] .. link_hex .. [[;
             }
