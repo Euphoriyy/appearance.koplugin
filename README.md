@@ -132,9 +132,9 @@ For rounded book & folder covers to work properly with the background color, [my
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
 - Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko).
 - The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin).
-- UI font replacement based on the based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
+- UI font replacement based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
 - Dictionary font replacement based on the patch [2-custom-ui-fonts.lua](https://github.com/gennaro-tedesco/KOReader.patches/#2-custom-ui-fonts) by [@gennaro-tedesco](https://github.com/gennaro-tedesco).
-- In-plugin updater adapted from [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
+- In-plugin updater adapted from the one used in [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
 - Markdown implementation for Lua sourced from [markdown.lua](https://github.com/mpeterv/markdown) by [@mpeterv](https://github.com/mpeterv) and [@niklasfrykholm](https://github.com/niklasfrykholm).
 
 ## Support
