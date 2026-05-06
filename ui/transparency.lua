@@ -1,14 +1,16 @@
-local Button = require("ui/widget/button")
-local Event = require("ui/event")
-local IconWidget = require("ui/widget/iconwidget")
-local ReaderFooter = require("apps/reader/modules/readerfooter")
-local Setting = require("lib/setting")
-local UIManager = require("ui/uimanager")
-local common = require("lib/common")
+local Button                = require("ui/widget/button")
+local Event                 = require("ui/event")
+local IconWidget            = require("ui/widget/iconwidget")
+local ReaderFooter          = require("apps/reader/modules/readerfooter")
+local Setting               = require("lib/setting")
+local UIManager             = require("ui/uimanager")
+local common                = require("lib/common")
+local userpatch             = require("userpatch")
 
-local TransparentIcons = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
-local TransparentButtons = Setting("ui_transparent_buttons", false) -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter = Setting("ui_transparent_footer", true)    -- Whether the ReaderFooter should be fully transparent (default: true)
+local TransparentIcons      = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
+local TransparentButtons    = Setting("ui_transparent_buttons", false)   -- Whether buttons should be fully transparent (default: false)
+local TransparentFooter     = Setting("ui_transparent_footer", true)     -- Whether the ReaderFooter should be fully transparent (default: true)
+local TransparentBottomBar  = Setting("ui_transparent_bottombar", false) -- Whether the SimpleUI bottom bar should be made transparent
 
 -- Background color setting
 local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)
@@ -33,6 +35,7 @@ local cached = {
     transparent_icons = TransparentIcons.get(),
     transparent_buttons = TransparentButtons.get(),
     transparent_footer = TransparentFooter.get(),
+    transparent_bottombar = TransparentBottomBar.get(),
 }
 
 -- Menu
@@ -71,6 +74,14 @@ local function transparency_menu()
                     if common.has_document_open() then
                         UIManager:broadcastEvent(Event:new("RefreshFooterBackground"))
                     end
+                end,
+            },
+            {
+                text = _("Make bottom bar transparent"),
+                checked_func = TransparentBottomBar.get,
+                callback = function()
+                    TransparentBottomBar.toggle()
+                    cached.transparent_bottombar = TransparentBottomBar.get()
                 end,
             },
         },
@@ -113,5 +124,36 @@ function ReaderFooter:updateFooterContainer()
         end
     end
 end
+
+local original_buildBarWidget, original_buildBarWidgetWithKeyFocus
+
+userpatch.registerPatchPluginFunc("simpleui", function()
+    local BottomBar = require("sui_bottombar")
+    if not BottomBar then return end
+
+    if not original_buildBarWidget then
+        original_buildBarWidget = BottomBar.buildBarWidget
+    end
+
+    if not original_buildBarWidgetWithKeyFocus then
+        original_buildBarWidgetWithKeyFocus = BottomBar.buildBarWidgetWithKeyFocus
+    end
+
+    function BottomBar.buildBarWidget(...)
+        local result = original_buildBarWidget(...)
+        if cached.transparent_bottombar then
+            result.background = nil
+        end
+        return result
+    end
+
+    function BottomBar.buildBarWidgetWithKeyFocus(...)
+        local result = original_buildBarWidgetWithKeyFocus(...)
+        if cached.transparent_bottombar then
+            result.background = nil
+        end
+        return result
+    end
+end)
 
 return transparency_menu
