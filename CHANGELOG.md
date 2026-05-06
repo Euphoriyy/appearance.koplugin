@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.5.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.4.0...v1.5.0) (2026-05-06)
+
+
+### Features
+
+* add about menu, in-plugin updater, and background update checks ([93d553b](https://github.com/Euphoriyy/appearance.koplugin/commit/93d553bb828c73d97f64e90d0a17365c956a9a8f)), closes [#41](https://github.com/Euphoriyy/appearance.koplugin/issues/41)
+* **book/highlight_colors:** add option for setting the default color ([d50be25](https://github.com/Euphoriyy/appearance.koplugin/commit/d50be253726d9fedcc520b3a07d8a7f634694df0))
+* **book:** apply background and font colors to footnote popups ([cc27611](https://github.com/Euphoriyy/appearance.koplugin/commit/cc27611d036f466297bf94c148879743f4432840)), closes [#45](https://github.com/Euphoriyy/appearance.koplugin/issues/45)
+* **main:** implement method to delete plugin settings ([d2e22b5](https://github.com/Euphoriyy/appearance.koplugin/commit/d2e22b52410761b53259817d20ca2d5e8a22989b)), closes [#48](https://github.com/Euphoriyy/appearance.koplugin/issues/48)
+* migrate plugin settings and add menu to plugin ([46319df](https://github.com/Euphoriyy/appearance.koplugin/commit/46319dfd7f42d92b264ad2f774c74f704cde8aa6)), closes [#49](https://github.com/Euphoriyy/appearance.koplugin/issues/49)
+* **themes:** add option to reset theme link color ([487e515](https://github.com/Euphoriyy/appearance.koplugin/commit/487e5153073c227be3de1da68637866743661bea))
+* **ui/background_image:** add transparency level and background color blending ([836a259](https://github.com/Euphoriyy/appearance.koplugin/commit/836a2598dd9a09235c421008eab32876a643a2d4)), closes [#42](https://github.com/Euphoriyy/appearance.koplugin/issues/42)
+* **ui/transparency:** add transparent SimpleUI bottom bar setting ([09deecc](https://github.com/Euphoriyy/appearance.koplugin/commit/09deecc071a4e762d86c78010a321aaa59e1aedb)), closes [#32](https://github.com/Euphoriyy/appearance.koplugin/issues/32)
+* **ui:** add optional system fonts support ([e9d6e97](https://github.com/Euphoriyy/appearance.koplugin/commit/e9d6e9766836fa25829de275db02f8f6187db5db))
+* **widgets/colorwheelwidget:** add border to color wheel for better visibility ([c1aecdb](https://github.com/Euphoriyy/appearance.koplugin/commit/c1aecdb9cd3626499287f42fa1ecbf484a192dde))
+
+
+### Bug Fixes
+
+* **book/background_color:** only use Android recolor paths when using the C blitter ([92bf77e](https://github.com/Euphoriyy/appearance.koplugin/commit/92bf77e2c295cae746e04876e888948717ad3c5d))
+* **book/link_color:** clear computed_hex when reverting to default link color ([7d02958](https://github.com/Euphoriyy/appearance.koplugin/commit/7d029587b12f44815f01e9bcc55957c573b2a318))
+* **book/link_color:** disable "Reset color" when no custom link color is set ([915d266](https://github.com/Euphoriyy/appearance.koplugin/commit/915d266a26ee159c89bb4e88e7fd68d31214b056))
+* **themes:** only show reset link color button when theme has a link color set ([e3e94fd](https://github.com/Euphoriyy/appearance.koplugin/commit/e3e94fdaabb4f9d464e3ad09d9a185bfc6bf6389))
+* **ui/background_color:** correct highlight background inversion for buttons ([aad9439](https://github.com/Euphoriyy/appearance.koplugin/commit/aad9439ab0ca84246b91ae035564859ce93b2bf1))
+* **ui/background_image:** restore compatibility with SimpleUI's currently reading module ([3be99bc](https://github.com/Euphoriyy/appearance.koplugin/commit/3be99bc1df114315c372438746d7985218a1c857)), closes [#51](https://github.com/Euphoriyy/appearance.koplugin/issues/51)
+
+
+### Performance Improvements
+
+* **book/background_color:** skip color application for fixed-layout docs when color is default ([f770bb8](https://github.com/Euphoriyy/appearance.koplugin/commit/f770bb800399a53f16c877194d29b5ab406dbe6e))
+
 ## [1.4.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.3.7...v1.4.0) (2026-04-25)
 
 
