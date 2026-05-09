@@ -77,6 +77,10 @@ end
 local function reload_filemanager()
     local fm_ui = FileManager.instance
     if fm_ui then
+        -- SimpleUI caches the inner widget as _navbar_inner to avoid
+        -- rewrapping on repeated setupLayout calls.
+        -- Clear it to pick up the rebuilt widget tree.
+        fm_ui._navbar_inner = nil
         -- Load new background in FileManager
         fm_ui:setupLayout()
         -- Refresh filemanager titlebar if it exists (patch)
