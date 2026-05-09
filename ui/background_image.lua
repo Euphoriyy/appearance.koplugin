@@ -73,15 +73,8 @@ local function get_image_dimen(path)
     return w, h
 end
 
--- Background Image Widget
-local background_image = nil
-
-local function reload_background_image()
-    if background_image then
-        background_image:free()
-        background_image = nil
-    end
-
+-- Helper: reload the file manager UI
+local function reload_filemanager()
     local fm_ui = FileManager.instance
     if fm_ui then
         -- Load new background in FileManager
@@ -92,6 +85,18 @@ local function reload_background_image()
         end
         UIManager:setDirty(FileManager.instance, "ui")
     end
+end
+
+-- Background Image Widget
+local background_image = nil
+
+local function reload_background_image()
+    if background_image then
+        background_image:free()
+        background_image = nil
+    end
+
+    reload_filemanager()
 end
 
 local function get_bg_widget()
@@ -288,7 +293,7 @@ How transparent the background image is to the UI. Can help with visibility.
                         callback = function(widget)
                             TransparencyLevel.set(widget.value)
                             if touchmenu_instance then touchmenu_instance:updateItems() end
-                            reload_background_image()
+                            reload_filemanager()
                         end,
                     }
                     UIManager:show(spin)
@@ -299,7 +304,7 @@ How transparent the background image is to the UI. Can help with visibility.
                 checked_func = TransparentToColor.get,
                 callback = function()
                     TransparentToColor.toggle()
-                    reload_background_image()
+                    reload_filemanager()
                 end,
                 separator = true,
             },
@@ -308,15 +313,7 @@ How transparent the background image is to the UI. Can help with visibility.
                 checked_func = ShowInFiles.get,
                 callback = function()
                     ShowInFiles.toggle()
-                    local fm_ui = FileManager.instance
-                    if FileManager.instance then
-                        fm_ui:setupLayout()
-                        -- Refresh filemanager titlebar if it exists (patch)
-                        if FileManager.updateTitleBarTitle then
-                            fm_ui:updateTitleBarTitle()
-                        end
-                        UIManager:setDirty(FileManager.instance, "ui")
-                    end
+                    reload_filemanager()
                 end,
             },
             {
@@ -371,6 +368,7 @@ end
 local original_FM_setupLayout = FileManager.setupLayout
 function FileManager:setupLayout()
     original_FM_setupLayout(self)
+
     local bg_widget = get_bg_widget()
     if not (ShowInFiles.get() and bg_widget and self[1]) then return end
 
