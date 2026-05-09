@@ -77,7 +77,7 @@ local function transparency_menu()
                 end,
             },
             {
-                text = _("Make bottom bar transparent"),
+                text = _("Make the bottom bar transparent"),
                 checked_func = TransparentBottomBar.get,
                 callback = function()
                     TransparentBottomBar.toggle()
