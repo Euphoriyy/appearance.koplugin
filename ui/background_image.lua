@@ -91,6 +91,31 @@ local function reload_filemanager()
     end
 end
 
+-- Helper: fully reload the SimpleUI homescreen
+local function reload_homescreen()
+    local HS = package.loaded["sui_homescreen"]
+    local hs_inst = HS and HS._instance
+    if not hs_inst then return end
+
+    if hs_inst._navbar_container then
+        local overlap = hs_inst:_initLayout()
+        local old = hs_inst._navbar_container[1]
+        if old and old.overlap_offset then
+            overlap.overlap_offset = old.overlap_offset
+        end
+        hs_inst._navbar_container[1] = overlap
+        hs_inst:_updatePage(true)
+        UIManager:setDirty(hs_inst, "ui")
+    end
+end
+
+-- Helper: repaint the SimpleUI homescreen
+local function repaint_homescreen()
+    local HS = package.loaded["sui_homescreen"]
+    local hs_inst = HS and HS._instance
+    if hs_inst then UIManager:setDirty(hs_inst, "ui") end
+end
+
 -- Background Image Widget
 local background_image = nil
 
@@ -101,6 +126,7 @@ local function reload_background_image()
     end
 
     reload_filemanager()
+    reload_homescreen()
 end
 
 local function get_bg_widget()
@@ -298,6 +324,7 @@ How transparent the background image is to the UI. Can help with visibility.
                             TransparencyLevel.set(widget.value)
                             if touchmenu_instance then touchmenu_instance:updateItems() end
                             reload_filemanager()
+                            repaint_homescreen()
                         end,
                     }
                     UIManager:show(spin)
@@ -309,6 +336,7 @@ How transparent the background image is to the UI. Can help with visibility.
                 callback = function()
                     TransparentToColor.toggle()
                     reload_filemanager()
+                    repaint_homescreen()
                 end,
                 separator = true,
             },
