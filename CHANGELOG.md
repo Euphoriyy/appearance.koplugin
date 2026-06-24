@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.5.1...v1.6.0) (2026-06-24)
+
+
+### Features
+
+* **ui/dict_font_face:** add toggle for changing the titlebar font ([3b173ef](https://github.com/Euphoriyy/appearance.koplugin/commit/3b173efb7f99b59fd431d7d9b2ee223d9029e129))
+
+
+### Bug Fixes
+
+* **meta:** remove deprecated name field ([83850c1](https://github.com/Euphoriyy/appearance.koplugin/commit/83850c14eeb5cb56283483e2b5cf7f66ca24a84c))
+* **ui/font_face:** refresh titlebar font after applying changes ([128189f](https://github.com/Euphoriyy/appearance.koplugin/commit/128189f0f04534271797a910195c357d2befd9e0))
+* **ui:** correct font detection behavior ([d1cd4ad](https://github.com/Euphoriyy/appearance.koplugin/commit/d1cd4addfe672e99e60f60dd2f5751cfb84d6edd))
+
 ## [1.5.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.5.0...v1.5.1) (2026-05-09)
 
 
