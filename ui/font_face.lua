@@ -56,20 +56,16 @@ local function init(font_name)
     -- Get fonts from CRE font list
     for _, name in ipairs(cre.getFontFaces()) do
         local path_regular = cre.getFontFaceFilenameAndFaceIndex(name)
-        if path_regular then
+        if path_regular and path_exists[path_regular] then
             local path_bold = get_bold_path(path_regular)
-
-            local regular_exists = path_exists[path_regular]
             local bold_exists = path_exists[path_bold]
 
             table.insert(font_list, name)
-            -- Add both regular and bold versions if they exist, otherwise default to whatever is left
-            if regular_exists and bold_exists then
+            -- Add both regular and bold versions if they exist, otherwise default to regular
+            if bold_exists then
                 fonts[name] = { regular = path_regular, bold = path_bold }
-            elseif regular_exists then
+            else
                 fonts[name] = { regular = path_regular, bold = path_regular }
-            elseif bold_exists then
-                fonts[name] = { regular = path_bold, bold = path_bold }
             end
         end
     end
