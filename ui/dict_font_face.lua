@@ -12,6 +12,7 @@ local cre = require("document/credocument"):engineInit()
 
 local DictFontName = Setting("dict_font_name", "Noto Sans", true)
 local DictFontEnabled = Setting("dict_font_enabled", true, true)
+local DictFontTitleBar = Setting("dict_font_titlebar", false, false)
 local SystemFonts = Setting("system_fonts", false, true)
 
 local font_list
@@ -75,17 +76,24 @@ local function dict_font_face_menu()
         sub_item_table_func = function()
             local items = {
                 {
-                    text = "Enable font replacement",
+                    text = "Enable dictionary font replacement",
                     checked_func = DictFontEnabled.get,
                     callback = function()
                         DictFontEnabled.toggle()
+                    end,
+                },
+                {
+                    text = "Apply to dictionary titlebar",
+                    checked_func = DictFontTitleBar.get,
+                    callback = function()
+                        DictFontTitleBar.toggle()
                     end,
                     separator = true,
                 },
             }
             -- Add option for toggling system fonts on supported platforms
             if Device:isAndroid() or Device:isDesktop() or Device:isEmulator() or Device:isPocketBook() then
-                items[1].separator = nil
+                items[2].separator = nil
                 table.insert(items, {
                     text = "Enable system fonts",
                     checked_func = SystemFonts.get,
@@ -118,7 +126,7 @@ function DictQuickLookup:_instantiateScrollWidget()
     original_DictQuickLookup_instantiateScrollWidget(self)
 
     local selected_font = DictFontEnabled.get() and DictFontName.get()
-    if not selected_font then
+    if not DictFontTitleBar.get() or not selected_font then
         return
     end
 
