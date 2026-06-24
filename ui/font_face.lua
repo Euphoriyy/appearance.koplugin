@@ -5,6 +5,7 @@ local Device = require("device")
 local Font = require("ui/font")
 local FontList = require("fontlist")
 local Setting = require("lib/setting")
+local TitleBar = require("ui/widget/titlebar")
 local UIManager = require("ui/uimanager")
 local cre = require("document/credocument"):engineInit()
 
@@ -27,12 +28,32 @@ local function get_bold_path(path_regular)
     return n_repl > 0 and path_bold
 end
 
+local function refresh_titlebar_faces()
+    -- These are the four class-level default font types in TitleBar.
+    -- Re-fetching them forces Font to resolve the new fontmap path and cache
+    -- a face under the new hash, then we replace the class default.
+    local slots = {
+        { field = "title_face_fullscreen",     face = "smalltfont"     },
+        { field = "title_face_not_fullscreen", face = "x_smalltfont"   },
+        { field = "subtitle_face",             face = "xx_smallinfofont"},
+        { field = "info_text_face",            face = "x_smallinfofont" },
+    }
+    for _, s in ipairs(slots) do
+        local ok_f, face = pcall(Font.getFace, Font, s.face)
+        if ok_f and face then
+            TitleBar[s.field] = face
+        end
+    end
+end
+
 local function apply_font(name)
     name = name or UIFontName.get()
     if not UIFontEnabled.get() or not fonts[name] then return end
     for font, typ in pairs(to_be_replaced) do
         Font.fontmap[font] = fonts[name][typ]
     end
+
+    refresh_titlebar_faces()
 end
 
 local function set_font(name)
