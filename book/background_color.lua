@@ -289,8 +289,8 @@ end
 
 -- Add background color to PDFs by using RGB multiplication (or replacement)
 local original_Document_drawPage = Document.drawPage
-function Document:drawPage(target, x, y, rect, pageno, zoom, rotation, gamma)
-    original_Document_drawPage(self, target, x, y, rect, pageno, zoom, rotation, gamma)
+function Document:drawPage(target, x, y, rect, ...)
+    original_Document_drawPage(self, target, x, y, rect, ...)
 
     if not bg_cached.set_fixed_color then
         return
@@ -318,9 +318,9 @@ end
 -- Do the same for when "Invert Document" is enabled in night mode
 -- Use the day mode bgcolor instead of the one for night mode
 local original_Document_drawPageInverted = Document.drawPageInverted
-function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, gamma)
+function Document:drawPageInverted(target, x, y, rect, pageno, ...)
     if not bg_cached.set_fixed_color or bg_cached.hex == "#FFFFFF" then
-        original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
+        original_Document_drawPageInverted(self, target, x, y, rect, pageno, ...)
         return
     end
 
@@ -328,7 +328,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, g
 
     -- Multiply against background before inversion when hardware inversion is used
     if Device:canHWInvert() then
-        local tile = self:renderPage(pageno, rect, zoom, rotation, gamma)
+        local tile = self:renderPage(pageno, rect, ...)
         target:blitFrom(tile.bb,
             x, y,
             rect.x - tile.excerpt.x,
@@ -337,7 +337,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, zoom, rotation, g
         target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
         target:invertRect(x, y, rect.w, rect.h)
     else
-        original_Document_drawPageInverted(self, target, x, y, rect, pageno, zoom, rotation, gamma)
+        original_Document_drawPageInverted(self, target, x, y, rect, pageno, ...)
 
         local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
         -- Manually recolor in Android (when using the C blitter) instead of using RGB multiplication
@@ -363,7 +363,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     if nightmode_invert then
         -- Document:drawPageInverted path
         if Device:canHWInvert() then
-            local tile = self:renderPage(doc, pageno, rect, zoom, rotation, 1.0)
+            local tile = self:renderPage(doc, pageno, rect, zoom, rotation, 1.0, 1.0)
             target:blitFrom(tile.bb,
                 x, y,
                 rect.x - tile.excerpt.x,
