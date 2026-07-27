@@ -28,6 +28,38 @@ local _last_check_time = nil -- os.time() of last successful or attempted check
 local _check_in_flight = false
 local CHECK_INTERVAL = 3600  -- 1 hour
 
+-- Unpack a downloaded .zip into `dest`, stripping the archive's single
+-- top-level directory (release/GitHub zips wrap everything in
+-- example.koplugin/ or example.koplugin-<branch>/).
+--
+-- Extract via the core ffi/archiver (libarchive) -- the API KOReader itself
+-- uses (e.g. its dictionary downloader).
+local function unpackStripRoot(zip_path, dest)
+    local ok_req, Archiver = pcall(require, "ffi/archiver")
+    if not (ok_req and Archiver and Archiver.Reader) then
+        return false, "archive extractor unavailable"
+    end
+    local arc = Archiver.Reader:new()
+    if not arc:open(zip_path) then
+        local e = arc.err
+        arc:close()
+        return false, e or "could not open archive"
+    end
+    local extract_err
+    for entry in arc:iterate() do
+        local rel = entry.path and entry.path:match("^[^/]+/(.+)$")
+        if rel and rel ~= "" then
+            if not arc:extractToPath(entry.path, dest .. "/" .. rel) then
+                extract_err = arc.err or "extract failed"
+                break
+            end
+        end
+    end
+    arc:close()
+    if extract_err then return false, extract_err end
+    return true
+end
+
 function Updater.getInstalledVersion()
     local meta_path = PLUGIN_PATH .. "/_meta.lua"
     local ok_meta, meta = pcall(dofile, meta_path)
@@ -365,7 +397,7 @@ function Updater.install(zip_url, old_version, new_version)
         end
 
         -- Extract to plugin directory (strip root folder from ZIP)
-        local ok, err = Device:unpackArchive(zip_path, PLUGIN_PATH, true)
+        local ok, err = unpackStripRoot(zip_path, PLUGIN_PATH)
         pcall(os.remove, zip_path)
 
         if not ok then
