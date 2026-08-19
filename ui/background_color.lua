@@ -800,7 +800,7 @@ local original_TextBoxWidget_renderText = TextBoxWidget._renderText
 function TextBoxWidget:_renderText(start_row_idx, end_row_idx)
     local original_bgcolor = self.bgcolor
 
-    if bg_cached.set_textbox_color and not self.alpha then
+    if bg_cached.set_textbox_color and not self.alpha and original_bgcolor == Blitbuffer.COLOR_WHITE then
         self.bgcolor = bg_cached.bgcolor
     end
 
