@@ -21,7 +21,6 @@ local link_cached = {
     invert_in_night_mode = InvertLinkColor.get(),
     hex = HexLinkColor.get(),
     night_hex = NightHexLinkColor.get(),
-    last_hex = nil,
     computed_hex = nil,
 }
 
@@ -43,10 +42,8 @@ local function recomputeLinkColor()
             hex = common.invertColor(hex)
         end
     end
-    if hex ~= link_cached.last_hex then
-        link_cached.computed_hex = hex
-        link_cached.last_hex = hex
-    end
+
+    link_cached.computed_hex = hex
 end
 
 -- Compute and cache the initial link color based on current settings
