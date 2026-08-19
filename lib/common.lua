@@ -104,6 +104,21 @@ function common.lightenColor(c, amount)
     )
 end
 
+-- Helper: check if a color is grayscale
+function common.isGrayscale(hex)
+    hex = hex:gsub("#", "")
+
+    if #hex ~= 6 then
+        return false
+    end
+
+    local r = tonumber(hex:sub(1, 2), 16)
+    local g = tonumber(hex:sub(3, 4), 16)
+    local b = tonumber(hex:sub(5, 6), 16)
+
+    return r == g and g == b
+end
+
 -- Helper: check if we have a document open
 function common.has_document_open()
     return ReaderUI.instance ~= nil and ReaderUI.instance.document ~= nil

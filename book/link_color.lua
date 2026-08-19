@@ -39,7 +39,7 @@ local function recomputeLinkColor(is_doc_css)
             hex = common.invertColor(hex)
         end
         -- Invert hex again if the reflowable document is inverting it
-        if is_doc_css and common.isColorInversionActive() then
+        if is_doc_css and common.isColorInversionActive() and not common.isGrayscale(hex) then
             hex = common.invertColor(hex)
         end
     end
