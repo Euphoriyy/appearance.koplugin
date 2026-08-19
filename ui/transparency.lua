@@ -5,7 +5,6 @@ local ReaderFooter          = require("apps/reader/modules/readerfooter")
 local Setting               = require("lib/setting")
 local UIManager             = require("ui/uimanager")
 local common                = require("lib/common")
-local userpatch             = require("userpatch")
 
 local TransparentIcons      = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
 local TransparentButtons    = Setting("ui_transparent_buttons", false)   -- Whether buttons should be fully transparent (default: false)
@@ -124,36 +123,5 @@ function ReaderFooter:updateFooterContainer()
         end
     end
 end
-
-local original_buildBarWidget, original_buildBarWidgetWithKeyFocus
-
-userpatch.registerPatchPluginFunc("simpleui", function()
-    local BottomBar = require("sui_bottombar")
-    if not BottomBar then return end
-
-    if not original_buildBarWidget then
-        original_buildBarWidget = BottomBar.buildBarWidget
-    end
-
-    if not original_buildBarWidgetWithKeyFocus then
-        original_buildBarWidgetWithKeyFocus = BottomBar.buildBarWidgetWithKeyFocus
-    end
-
-    function BottomBar.buildBarWidget(...)
-        local result = original_buildBarWidget(...)
-        if cached.transparent_bottombar then
-            result.background = nil
-        end
-        return result
-    end
-
-    function BottomBar.buildBarWidgetWithKeyFocus(...)
-        local result = original_buildBarWidgetWithKeyFocus(...)
-        if cached.transparent_bottombar then
-            result.background = nil
-        end
-        return result
-    end
-end)
 
 return transparency_menu
