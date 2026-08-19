@@ -1,6 +1,7 @@
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
+local FootnoteWidget = require("ui/widget/footnotewidget")
 local InputDialog = require("ui/widget/inputdialog")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
@@ -26,7 +27,7 @@ local link_cached = {
 
 -- Recompute and cache the final link color based on current settings
 -- Applies night mode inversion if enabled
-local function recomputeLinkColor()
+local function recomputeLinkColor(is_doc_css)
     local hex = (Screen.night_mode and link_cached.alt_night_color) and link_cached.night_hex or link_cached.hex
     if not hex then -- Hex can be nil if using the default link colors
         link_cached.computed_hex = nil
@@ -38,7 +39,7 @@ local function recomputeLinkColor()
             hex = common.invertColor(hex)
         end
         -- Invert hex again if the reflowable document is inverting it
-        if common.isColorInversionActive() then
+        if is_doc_css and common.isColorInversionActive() then
             hex = common.invertColor(hex)
         end
     end
@@ -218,7 +219,7 @@ local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self) or ""
 
-    recomputeLinkColor()
+    recomputeLinkColor(true)
 
     if link_cached.computed_hex then
         local link_css = [[
@@ -229,6 +230,28 @@ function ReaderStyleTweak:getCssText()
         return util.trim(link_css .. original_css)
     end
     return original_css
+end
+
+-- Add font color to footnote popup CSS
+local original_FootnoteWidget_init = FootnoteWidget.init
+function FootnoteWidget:init()
+    original_FootnoteWidget_init(self)
+
+    local htmlwidget = self.htmlwidget
+    local original_css = htmlwidget.css
+
+    recomputeLinkColor()
+
+    if link_cached.computed_hex then
+        local link_css = [[
+            a {
+                color: ]] .. link_cached.computed_hex .. [[ !important;
+            }
+        ]]
+        htmlwidget.css = util.trim(link_css .. original_css)
+        htmlwidget.htmlbox_widget:setContent(htmlwidget.html_body, htmlwidget.css, htmlwidget.default_font_size,
+            htmlwidget.is_xhtml, nil, htmlwidget.html_resource_directory)
+    end
 end
 
 -- Recompute colors upon event call
