@@ -35,10 +35,14 @@ local bg_cached = {
 }
 
 -- Calculate the current hex value based on night mode and current settings
-local function calculateHex()
+local function calculateHex(is_css)
     local hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then
         if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
+            hex = common.invertColor(hex)
+        end
+        -- Invert hex again if the reflowable document is inverting it
+        if is_css and common.isColorInversionActive() then
             hex = common.invertColor(hex)
         end
     end
@@ -235,7 +239,7 @@ function ReaderStyleTweak:getCssText()
 
     local bg_css = [[
         body {
-            background-color: ]] .. calculateHex() .. [[ !important;
+            background-color: ]] .. calculateHex(true) .. [[ !important;
         }
     ]]
     return util.trim(bg_css .. original_css)

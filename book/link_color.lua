@@ -38,6 +38,10 @@ local function recomputeLinkColor()
         if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
+        -- Invert hex again if the reflowable document is inverting it
+        if common.isColorInversionActive() then
+            hex = common.invertColor(hex)
+        end
     end
     if hex ~= link_cached.last_hex then
         link_cached.computed_hex = hex
@@ -216,6 +220,8 @@ end
 local original_ReaderStyleTweak_getCssText = ReaderStyleTweak.getCssText
 function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self) or ""
+
+    recomputeLinkColor()
 
     if link_cached.computed_hex then
         local link_css = [[

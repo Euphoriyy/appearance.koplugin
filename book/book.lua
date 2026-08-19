@@ -1,9 +1,12 @@
 local Event = require("ui/event")
+local ReaderRolling = require("apps/reader/modules/readerrolling")
+local ReaderTypeset = require("apps/reader/modules/readertypeset")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local background_color_menu = require("book/background_color").menu
+local common = require("lib/common")
 local font_color_menu = require("book/font_color").menu
 local highlight_colors_menu = require("book/highlight_colors")
 local link_color_menu = require("book/link_color").menu
@@ -81,6 +84,31 @@ function ReaderUI:onApplyTheme()
     refreshCSS()
     if FixedBackgroundColor.get() then
         redrawPage()
+    end
+end
+
+-- Refresh CSS after initialization when color inversion is enabled (invert images)
+-- Prevents inverted colors from being shown on opening documents
+local original_ReaderRolling_init = ReaderRolling.init
+function ReaderRolling:init()
+    original_ReaderRolling_init(self)
+
+    self.ui:registerPostInitCallback(function()
+        UIManager:nextTick(function()
+            if Screen.night_mode and common.isColorInversionActive() then
+                refreshCSS()
+            end
+        end)
+    end)
+end
+
+-- Refresh CSS when toggling color inversion in reflowable documents (invert images)
+local original_ReaderTypeset_onToggleNightmodeImages = ReaderTypeset.onToggleNightmodeImages
+function ReaderTypeset:onToggleNightmodeImages(toggle)
+    original_ReaderTypeset_onToggleNightmodeImages(self, toggle)
+
+    if Screen.night_mode then
+        refreshCSS()
     end
 end
 
