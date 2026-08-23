@@ -456,7 +456,9 @@ end
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
     original_UIManager_ToggleNightMode(self)
-    reload_background_image()
+    if BackgroundImage.get() and (FileManager.instance and ShowInFiles.get() or ReaderUI.instance and ShowInReader.get()) then
+        reload_background_image()
+    end
 end
 
 local original_UIManager_SetNightMode = UIManager.SetNightMode
