@@ -52,11 +52,13 @@ local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode()
     original_UIManager_ToggleNightMode(self)
 
-    recomputeAllColors()
+    if common.has_document_open() then
+        recomputeAllColors()
 
-    refreshCSS()
-    if FixedBackgroundColor.get() then
-        redrawPage()
+        refreshCSS()
+        if FixedBackgroundColor.get() then
+            redrawPage()
+        end
     end
 end
 
