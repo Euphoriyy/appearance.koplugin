@@ -28,11 +28,11 @@ theme_list.DEFAULT_DAY_THEMES = {
     { key = "butterscotch",     label = "Butterscotch",     bg = "#F5DFA0", fg = "#3D2000", night = false },
     { key = "caramel",          label = "Caramel",          bg = "#E8C888", fg = "#2A1000", night = false },
     { key = "almonds",          label = "Almonds",          bg = "#F1DAC4", fg = "#3A3080", night = false },
-    -- Warm tinted
-    { key = "rose_tint",        label = "Rose Tint",        bg = "#FAF0F0", fg = "#2A1A1A", night = false },
+    -- Warm tinted,
     { key = "dyslexia",         label = "Dyslexia",         bg = "#F8F0D8", fg = "#3D2B1F", night = false },
     { key = "solarized_light",  label = "Solarized Light",  bg = "#FDF6E3", fg = "#657B83", night = false },
     -- Green
+    { key = "golden_green",     label = "Golden Green",     bg = "#E1FFE3", fg = "#8A9229", night = false },
     { key = "green_tea",        label = "Green Tea",        bg = "#D4E8D0", fg = "#1A3320", night = false },
     { key = "sage",             label = "Sage",             bg = "#EAF0E8", fg = "#1A2E1A", night = false },
     { key = "mint",             label = "Mint",             bg = "#E8F5F0", fg = "#0A2E1E", night = false },
@@ -49,6 +49,9 @@ theme_list.DEFAULT_DAY_THEMES = {
     { key = "blue_fields",      label = "Blue Fields",      bg = "#CBFCFF", fg = "#373598", night = false },
     -- Purple
     { key = "lavender_mist",    label = "Lavender Mist",    bg = "#F0EEF8", fg = "#2A2040", night = false },
+    -- Pink
+    { key = "rose_tint",        label = "Rose Tint",        bg = "#FAF0F0", fg = "#2A1A1A", night = false },
+    { key = "pastel_pink",      label = "Pastel Pink",      bg = "#FFDDE2", fg = "#DE369D", night = false },
     -- Programming themes
     { key = "github_light",     label = "GitHub Light",     bg = "#FFFFFF", fg = "#24292F", night = false },
     { key = "one_light",        label = "One Light",        bg = "#FAFAFA", fg = "#383A42", night = false },
