@@ -38,17 +38,18 @@ local util = require("util")
 
 -- Settings
 local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")            -- RGB hex for UI background color (default: #FFFFFF)
-local InvertBackgroundColor = Setting("ui_background_color_inverted", true)         -- Whether the UI background color should be inverted in night mode (default: true)
-local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)     -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
+local InvertBackgroundColor = Setting("ui_background_color_inverted", true)           -- Whether the UI background color should be inverted in night mode (default: true)
+local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)       -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
 local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000") -- RGB hex for the alternative UI background color in night mode (default: #000000)
-local InvertIcons = Setting("ui_background_color_invert_icons", true)               -- Whether icons should be inverted when an alternative night mode color is set
-local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)         -- Whether the background color of TextBoxWidgets should be changed (default: true)
-local BookBackgroundColor = Setting("ui_background_color_book", true)               -- Whether the book's background color should be used for the reader UI
-local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)   -- Whether the background color of the ReaderFooter should be changed (default: false)
-local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)      -- Whether the background color of the reader sides should be changed (default: true)
-local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)          -- Whether the background color of the page gap should be changed (default: true)
-local OutlineColor = Setting("ui_background_color_lines", true)                     -- Whether the UI outline should be set to the chosen foreground color (default: true)
-local BorderColor = Setting("ui_background_color_border", true)                     -- Whether the UI borders should be set to the chosen foreground color (default: true)
+local InvertIcons = Setting("ui_background_color_invert_icons", true)                 -- Whether icons should be inverted when an alternative night mode color is set
+local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)           -- Whether the background color of TextBoxWidgets should be changed (default: true)
+local BookBackgroundColor = Setting("ui_background_color_book", true)                 -- Whether the book's background color should be used for the reader UI
+local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)     -- Whether the background color of the ReaderFooter should be changed (default: false)
+local SidesBackgroundColor = Setting("ui_background_color_reader_sides", true)        -- Whether the background color of the reader sides should be changed (default: true)
+local GapBackgroundColor = Setting("ui_background_color_reader_gap", true)            -- Whether the background color of the page gap should be changed (default: true)
+local OutlineColor = Setting("ui_background_color_lines", true)                       -- Whether the UI outline should be set to the chosen foreground color (default: true)
+local BorderColor = Setting("ui_background_color_border", true)                       -- Whether the UI borders should be set to the chosen foreground color (default: true)
+local AccurateRefreshes = Setting("ui_background_color_accurate_refreshes", true)     -- Whether color-accurate flashing refreshes should be used (default: true)
 
 ------------------------------------------------------------
 -- ImageWidget specific code
@@ -107,6 +108,7 @@ local bg_cached = {
     set_gap_color = GapBackgroundColor.get(),
     set_outline_color = OutlineColor.get(),
     set_border_color = BorderColor.get(),
+    accurate_refreshes = AccurateRefreshes.get(),
     hex = HexBackgroundColor.get(),
     night_hex = NightHexBackgroundColor.get(),
     last_hex = nil,
@@ -393,6 +395,17 @@ local function background_color_menu()
                             bg_cached.set_border_color = BorderColor.get()
                         end,
                     },
+                    {
+                        text = _("Use color-accurate flashing refreshes"),
+                        enabled_func = function()
+                            return Screen:isColorEnabled() and Device:hasKaleidoWfm()
+                        end,
+                        checked_func = AccurateRefreshes.get,
+                        callback = function()
+                            AccurateRefreshes.toggle()
+                            bg_cached.accurate_refreshes = AccurateRefreshes.get()
+                        end,
+                    },
                 },
             },
         },
@@ -434,6 +447,41 @@ function FrameContainer:paintTo(bb, x, y)
 
     self.background = original_background
     self.color = original_color
+end
+
+-- Ensure dithered waveforms are used for colored backgrounds when desirable
+local pending_color_refresh = false
+
+local function accurate_refresh()
+    if pending_color_refresh then return end
+    if not bg_cached.accurate_refreshes then return end
+    if not (Screen:isColorEnabled() and Device:hasKaleidoWfm()) then return end
+    if common.isGrayscale(bg_cached.last_hex) then return end
+
+    pending_color_refresh = true
+    UIManager:nextTick(function()
+        pending_color_refresh = false
+        -- Set refreshdither to true
+        UIManager:setDirty("all", "full", nil, true)
+    end)
+end
+
+local original_FrameContainer_onShow = FrameContainer.onShow
+function FrameContainer:onShow()
+    if original_FrameContainer_onShow then
+        original_FrameContainer_onShow(self)
+    end
+
+    accurate_refresh()
+end
+
+local original_DictQuickLookup_onClose = DictQuickLookup.onClose
+function DictQuickLookup:onClose()
+    if original_DictQuickLookup_onClose then
+        original_DictQuickLookup_onClose(self)
+    end
+
+    accurate_refresh()
 end
 
 -- Exclude footer background color changes if option is not set
