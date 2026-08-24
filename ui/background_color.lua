@@ -41,7 +41,8 @@ local HexBackgroundColor = Setting("ui_background_color_hex", "#FFFFFF")        
 local InvertBackgroundColor = Setting("ui_background_color_inverted", true)           -- Whether the UI background color should be inverted in night mode (default: true)
 local AltNightBackgroundColor = Setting("ui_background_color_alt_night", false)       -- Whether the UI background color should be changed to an alternative color in night mode (default: false)
 local NightHexBackgroundColor = Setting("ui_background_color_night_hex", "#000000") -- RGB hex for the alternative UI background color in night mode (default: #000000)
-local InvertIcons = Setting("ui_background_color_invert_icons", true)                 -- Whether icons should be inverted when an alternative night mode color is set
+local InvertIconsDay = Setting("ui_background_color_invert_icons_day", false)         -- Whether icons should be inverted in day mode
+local InvertIconsNight = Setting("ui_background_color_invert_icons_night", true)      -- Whether icons should be inverted when an alternative night mode color is set
 local TextBoxBackgroundColor = Setting("ui_background_color_textbox", true)           -- Whether the background color of TextBoxWidgets should be changed (default: true)
 local BookBackgroundColor = Setting("ui_background_color_book", true)                 -- Whether the book's background color should be used for the reader UI
 local FooterBackgroundColor = Setting("ui_background_color_reader_footer", false)     -- Whether the background color of the ReaderFooter should be changed (default: false)
@@ -100,7 +101,8 @@ end
 local bg_cached = {
     alt_night_color = AltNightBackgroundColor.get(),
     invert_in_night_mode = InvertBackgroundColor.get(),
-    invert_icons_in_night_mode = InvertIcons.get(),
+    invert_icons_in_day_mode = InvertIconsDay.get(),
+    invert_icons_in_night_mode = InvertIconsNight.get(),
     set_textbox_color = TextBoxBackgroundColor.get(),
     use_book_bgcolor = BookBackgroundColor.get(),
     set_footer_color = FooterBackgroundColor.get(),
@@ -283,6 +285,21 @@ local function background_color_menu()
             set_color_menu(),
             pick_color_menu(),
             {
+                text = _("Invert icons in day mode"),
+                checked_func = InvertIconsDay.get,
+                callback = function()
+                    InvertIconsDay.toggle()
+                    bg_cached.invert_icons_in_day_mode = InvertIconsDay.get()
+
+                    if not Screen.night_mode then
+                        reloadIcons()
+
+                        refresh()
+                    end
+                end,
+                separator = true,
+            },
+            {
                 text = _("Alternative night mode color"),
                 checked_func = AltNightBackgroundColor.get,
                 callback = function()
@@ -301,13 +318,15 @@ local function background_color_menu()
             {
                 text = _("Invert icons in night mode"),
                 enabled_func = function() return AltNightBackgroundColor.get() end,
-                checked_func = InvertIcons.get,
+                checked_func = InvertIconsNight.get,
                 callback = function()
-                    InvertIcons.toggle()
-                    bg_cached.invert_icons_in_night_mode = InvertIcons.get()
+                    InvertIconsNight.toggle()
+                    bg_cached.invert_icons_in_night_mode = InvertIconsNight.get()
 
                     if Screen.night_mode then
                         reloadIcons()
+
+                        refresh()
                     end
                 end,
             },
@@ -505,7 +524,7 @@ function ScreenSaverWidget:init()
     end
 end
 
-local function should_invert_icons()
+local function should_invert_icons_in_night_mode()
     if bg_cached.alt_night_color then
         return bg_cached.invert_icons_in_night_mode
     end
@@ -590,7 +609,7 @@ function ImageWidget:_loadfile()
                     local bbtype = self._bb:getType()
                     if bbtype == Blitbuffer.TYPE_BB8A or bbtype == Blitbuffer.TYPE_BBRGB32 then
                         -- Invert so that icons stay the same
-                        if Screen.night_mode and not should_invert_icons() then
+                        if (not Screen.night_mode and bg_cached.invert_icons_in_day_mode) or (Screen.night_mode and not should_invert_icons_in_night_mode()) then
                             self._bb:invert()
                         end
 
@@ -618,7 +637,7 @@ function ImageWidget:_loadfile()
                         end
 
                         -- Reinvert back to original
-                        if Screen.night_mode and not should_invert_icons() then
+                        if not should_invert_icons_in_night_mode() then
                             self._bb:invert()
                         end
 
@@ -629,7 +648,7 @@ function ImageWidget:_loadfile()
                         -- There's no longer an alpha channel ;)
                         self._is_straight_alpha = nil
                     end
-                elseif Screen.night_mode and not should_invert_icons() then
+                elseif (not Screen.night_mode and bg_cached.invert_icons_in_day_mode) or (Screen.night_mode and not should_invert_icons_in_night_mode()) then
                     -- Invert icons with alpha so they stay the same
                     self._bb:invert()
                 end
@@ -726,7 +745,7 @@ function ImageWidget:paintTo(bb, x, y)
         -- Then, use it as an alpha mask with a fg color set at the middle point of the eInk palette
         -- (much like black after the default dim)
         local fgcolor = Blitbuffer.COLOR_DARK_GRAY
-        if Screen.night_mode and not should_invert_icons() then
+        if (not Screen.night_mode and bg_cached.invert_icons_in_day_mode) or (Screen.night_mode and not should_invert_icons_in_night_mode()) then
             fgcolor = fgcolor:invert()
         end
         bb:colorblitFromRGB32(icon_bb, x, y, self._offset_x, self._offset_y, size.w, size.h, fgcolor)
