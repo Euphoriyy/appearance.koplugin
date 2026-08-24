@@ -1215,6 +1215,8 @@ function FileManager:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
+    bg_cached.invert_icons_in_day_mode = InvertIconsDay.get()
+    bg_cached.invert_icons_in_night_mode = InvertIconsNight.get()
     recomputeColors() -- Recompute again anyways so icons match
     reloadIcons()
 end
@@ -1228,6 +1230,8 @@ function ReaderUI:onApplyTheme()
     bg_cached.hex = HexBackgroundColor.get()
     bg_cached.night_hex = NightHexBackgroundColor.get()
     bg_cached.alt_night_color = AltNightBackgroundColor.get()
+    bg_cached.invert_icons_in_day_mode = InvertIconsDay.get()
+    bg_cached.invert_icons_in_night_mode = InvertIconsNight.get()
     recomputeColors() -- Recompute again anyways so icons match
     reloadIcons()
 end
