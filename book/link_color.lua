@@ -81,83 +81,75 @@ end
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local function set_color_menu()
-    return {
-        text = _("Enter color code"),
-        keep_menu_open = true,
-        callback = function(touchmenu_instance)
-            local input_dialog
-            input_dialog = InputDialog:new({
-                title = "Enter custom color code",
-                input = getLinkColor() or "#0066FF",
-                input_hint = "#000000",
-                buttons = {
+local function set_color_callback()
+    return function(touchmenu_instance)
+        local input_dialog
+        input_dialog = InputDialog:new({
+            title = "Enter custom color code",
+            input = getLinkColor() or "#0066FF",
+            input_hint = "#000000",
+            buttons = {
+                {
                     {
-                        {
-                            text = "Cancel",
-                            callback = function()
-                                UIManager:close(input_dialog)
-                            end,
-                        },
-                        {
-                            text = "Save",
-                            callback = function()
-                                local text = input_dialog:getInputText()
+                        text = "Cancel",
+                        callback = function()
+                            UIManager:close(input_dialog)
+                        end,
+                    },
+                    {
+                        text = "Save",
+                        callback = function()
+                            local text = input_dialog:getInputText()
 
-                                if text ~= "" then
-                                    if not text:match("^#%x%x%x%x%x%x$") then
-                                        return
-                                    end
-
-                                    setLinkColor(string.upper(text))
-                                    refresh()
-
-                                    if touchmenu_instance then
-                                        touchmenu_instance:updateItems()
-                                    end
-                                    UIManager:close(input_dialog)
+                            if text ~= "" then
+                                if not text:match("^#%x%x%x%x%x%x$") then
+                                    return
                                 end
-                            end,
-                        },
+
+                                setLinkColor(string.upper(text))
+                                refresh()
+
+                                if touchmenu_instance then
+                                    touchmenu_instance:updateItems()
+                                end
+                                UIManager:close(input_dialog)
+                            end
+                        end,
                     },
                 },
-            })
-            UIManager:show(input_dialog)
-            input_dialog:onShowKeyboard()
-        end,
-    }
+            },
+        })
+        UIManager:show(input_dialog)
+        input_dialog:onShowKeyboard()
+    end
 end
 
-local function pick_color_menu()
-    return {
-        text = _("Pick color visually"),
-        keep_menu_open = true,
-        callback = function(touchmenu_instance)
-            local h, s, v = common.hexToHSV(getLinkColor() or "#0066FF")
-            local wheel
-            local should_invert_wheel = AltNightLinkColor.get() or not InvertLinkColor.get()
-            wheel = ColorWheelWidget:new({
-                title_text = "Pick link color",
-                hue = h,
-                saturation = s,
-                value = v,
-                invert_in_night_mode = should_invert_wheel,
-                callback = function(hex)
-                    setLinkColor(hex)
-                    refresh()
+local function pick_color_callback()
+    return function(touchmenu_instance)
+        local h, s, v = common.hexToHSV(getLinkColor() or "#0066FF")
+        local wheel
+        local should_invert_wheel = AltNightLinkColor.get() or not InvertLinkColor.get()
+        wheel = ColorWheelWidget:new({
+            title_text = "Pick link color",
+            hue = h,
+            saturation = s,
+            value = v,
+            invert_in_night_mode = should_invert_wheel,
+            callback = function(hex)
+                setLinkColor(hex)
+                refresh()
 
-                    if touchmenu_instance then
-                        touchmenu_instance:updateItems()
-                    end
-                    UIManager:setDirty(nil, "ui")
-                end,
-                cancel_callback = function()
-                    UIManager:setDirty(nil, "ui")
-                end,
-            })
-            UIManager:show(wheel)
-        end,
-    }
+                if touchmenu_instance then
+                    touchmenu_instance:updateItems()
+                end
+                UIManager:setDirty(nil, "ui")
+            end,
+            cancel_callback = function()
+                UIManager:setDirty(nil, "ui")
+            end,
+        })
+        UIManager:show(wheel)
+    end
 end
 
 local function link_color_menu()
@@ -168,14 +160,16 @@ local function link_color_menu()
         sub_item_table = {
             {
                 text_func = function()
-                    return T(_("Current color: %1"), getLinkColor() or "default")
+                    return T(_("Link color: %1 (hold to pick)"), getLinkColor() or "default")
                 end,
+                keep_menu_open = true,
+                callback = set_color_callback(),
+                hold_callback = pick_color_callback(),
             },
-            set_color_menu(),
-            pick_color_menu(),
             {
                 text = _("Reset color"),
                 enabled_func = function() return getLinkColor() ~= nil end,
+                keep_menu_open = true,
                 callback = function()
                     setLinkColor(nil)
                     refresh()
