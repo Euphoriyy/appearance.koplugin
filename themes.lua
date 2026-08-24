@@ -804,7 +804,8 @@ local function themes_menu()
                             end,
                         },
                         {
-                            text = _("Reset all themes"),
+                            text = _("Reset themes list"),
+                            keep_menu_open = true,
                             callback = function()
                                 DayThemes.set(theme_list.DEFAULT_DAY_THEMES)
                                 cached.dayThemes = DayThemes.get()
