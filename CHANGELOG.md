@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.6.1...v1.6.2) (2026-08-24)
+
+
+### Performance Improvements
+
+* optimize toggling night mode ([3d18e98](https://github.com/Euphoriyy/appearance.koplugin/commit/3d18e98b9c6f2c59c05fdf1101c45d04e784512f))
+
 ## [1.6.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.6.0...v1.6.1) (2026-08-19)
 
 
