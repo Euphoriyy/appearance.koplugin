@@ -14,9 +14,11 @@ local Geom = require("ui/geometry")
 local HtmlBoxWidget = require("ui/widget/htmlboxwidget")
 local IconWidget = require("ui/widget/iconwidget")
 local ImageWidget = require("ui/widget/imagewidget")
+local InfoMessage = require("ui/widget/infomessage")
 local InputDialog = require("ui/widget/inputdialog")
 local InputText = require("ui/widget/inputtext")
 local LineWidget = require("ui/widget/linewidget")
+local Notification = require("ui/widget/notification")
 local ProgressWidget = require("ui/widget/progresswidget")
 local ReaderFooter = require("apps/reader/modules/readerfooter")
 local ReaderUI = require("apps/reader/readerui")
@@ -463,18 +465,38 @@ end
 -- Ensure dithered waveforms are used for colored backgrounds when desirable
 local pending_color_refresh = false
 
-local function accurate_refresh()
+local function accurate_refresh(frame)
     if pending_color_refresh then return end
     if not bg_cached.accurate_refreshes then return end
     if not (Screen:isColorEnabled() and Device:hasKaleidoWfm()) then return end
     if common.isGrayscale(bg_cached.last_hex) then return end
+    -- Don't refresh after messages or notifications
+    if frame and frame.is_msg_or_notif then return end
 
     pending_color_refresh = true
     UIManager:nextTick(function()
-        pending_color_refresh = false
+        -- Prevent back-to-back refreshes
+        UIManager:scheduleIn(0.1, function()
+            pending_color_refresh = false
+        end)
         -- Set refreshdither to true
         UIManager:setDirty("all", "full", nil, true)
     end)
+end
+
+local original_InfoMessage_init = InfoMessage.init
+function InfoMessage:init()
+    original_InfoMessage_init(self)
+
+    local frame = self.movable[1]
+    frame.is_msg_or_notif = true
+end
+
+local original_Notification_init = Notification.init
+function Notification:init()
+    original_Notification_init(self)
+
+    self.frame.is_msg_or_notif = true
 end
 
 local original_FrameContainer_onShow = FrameContainer.onShow
@@ -483,7 +505,7 @@ function FrameContainer:onShow()
         original_FrameContainer_onShow(self)
     end
 
-    accurate_refresh()
+    accurate_refresh(self)
 end
 
 local original_DictQuickLookup_onClose = DictQuickLookup.onClose
@@ -492,7 +514,7 @@ function DictQuickLookup:onClose()
         original_DictQuickLookup_onClose(self)
     end
 
-    accurate_refresh()
+    accurate_refresh(self.dict_frame)
 end
 
 -- Exclude footer background color changes if option is not set
