@@ -803,7 +803,7 @@ local function themes_menu()
                                 if not current_ui_night_theme.night then
                                     UIInvertIconsNight.set(false)
                                 else
-                                    UIInvertIconsNight.set(UIInvertIconsDay.default)
+                                    UIInvertIconsNight.set(UIInvertIconsNight.default)
                                 end
 
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
