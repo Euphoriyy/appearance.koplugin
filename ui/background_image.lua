@@ -72,8 +72,22 @@ end
 local function reload_filemanager()
     local fm_ui = FileManager.instance
     if fm_ui then
+        -- Preserve current browse location and scroll/pagination state
+        local file_chooser = fm_ui.file_chooser
+        fm_ui.root_path = file_chooser.path
+        fm_ui.focused_file = nil
+
+        local path_items_backup = {}
+        for k, v in pairs(file_chooser.path_items) do
+            path_items_backup[k] = v
+        end
+
         -- Load new background in FileManager
         fm_ui:setupLayout()
+
+        -- Restore scroll/pagination state
+        fm_ui.file_chooser.path_items = path_items_backup
+
         -- Refresh filemanager titlebar if it exists (patch)
         if FileManager.updateTitleBarTitle then
             fm_ui:updateTitleBarTitle()
