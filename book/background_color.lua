@@ -21,7 +21,7 @@ local HexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
 local InvertBackgroundColor = Setting("book_background_color_inverted", true)
 local AltNightBackgroundColor = Setting("book_background_color_alt_night", false)
 local NightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
-local FixedBackgroundColor = Setting("book_background_color_fixed", true) -- Whether the background color of fixed pages should be changed (default: true)
+local FixedBackgroundColor = Setting("book_background_color_fixed", true)
 
 --------------------------------------------
 -- Lazy Loading
@@ -37,6 +37,11 @@ end
 local function get_book_fghex()
     font_color = font_color or require("book/font_color")
     return font_color.hex()
+end
+
+local function get_book_fixed_fgcolor()
+    font_color = font_color or require("book/font_color")
+    return font_color.set_fixed_color()
 end
 
 -- Cache
@@ -281,8 +286,17 @@ local function has_dual_pages()
     return ui.paging.isDualPageEnabled and ui.paging:isDualPageEnabled()
 end
 
+-- Helper: wraps Blitbuffer:multiplyRectRGB with a setting check
+local function multiplyRectRGB(bb, x, y, w, h, c)
+    if not bg_cached.set_fixed_color then return end
+
+    bb:multiplyRectRGB(x, y, w, h, c)
+end
+
 -- Helper: recolor light pixels as an alternative to RGB multiplication
-local function recolorLightPixels(bb, x, y, w, h, c)
+local function recolorLightPixels(bb, x, y, w, h, c, override_setting)
+    if not bg_cached.set_fixed_color and not override_setting then return end
+
     local thres = 200
     local bb_w = bb:getWidth()
     local bb_h = bb:getHeight()
@@ -302,6 +316,8 @@ end
 
 -- Helper: recolor dark pixels (i.e. text)
 local function recolorDarkPixels(bb, x, y, w, h, c)
+    if not get_book_fixed_fgcolor() then return end
+
     local thres = 50
     local bb_w = bb:getWidth()
     local bb_h = bb:getHeight()
@@ -324,7 +340,7 @@ local original_Document_drawPage = Document.drawPage
 function Document:drawPage(target, x, y, rect, ...)
     original_Document_drawPage(self, target, x, y, rect, ...)
 
-    if not bg_cached.set_fixed_color then
+    if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() then
         return
     end
 
@@ -344,7 +360,7 @@ function Document:drawPage(target, x, y, rect, ...)
         recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     else
-        target:multiplyRectRGB(x, y, rect.w, rect.h, bg_cached.bgcolor)
+        multiplyRectRGB(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     end
 end
@@ -353,7 +369,7 @@ end
 -- Use the day mode bgcolor instead of the one for night mode
 local original_Document_drawPageInverted = Document.drawPageInverted
 function Document:drawPageInverted(target, x, y, rect, pageno, ...)
-    if not bg_cached.set_fixed_color or bg_cached.hex == "#FFFFFF" then
+    if (not bg_cached.set_fixed_color and not get_book_fixed_fgcolor()) or bg_cached.hex == "#FFFFFF" then
         original_Document_drawPageInverted(self, target, x, y, rect, pageno, ...)
         return
     end
@@ -369,7 +385,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
             rect.x - tile.excerpt.x,
             rect.y - tile.excerpt.y,
             rect.w, rect.h)
-        target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+        multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         target:invertRect(x, y, rect.w, rect.h)
     else
@@ -381,8 +397,10 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
-            recolorLightPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
+            multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor:invert())
+            if get_book_fixed_fgcolor() then
+                recolorLightPixels(target, x, y, rect.w, rect.h, fgcolor:invert(), true)
+            end
         end
     end
 end
@@ -390,7 +408,7 @@ end
 -- Finally, add background color to context pages
 local original_KoptInterface_drawContextPage = KoptInterface.drawContextPage
 function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-    if not bg_cached.set_fixed_color or (nightmode_invert and bg_cached.hex == "#FFFFFF") then
+    if (not bg_cached.set_fixed_color and not get_book_fixed_fgcolor()) and (nightmode_invert and bg_cached.hex == "#FFFFFF") then
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
         return
     end
@@ -408,7 +426,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
                 rect.x - tile.excerpt.x,
                 rect.y - tile.excerpt.y,
                 rect.w, rect.h)
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+            multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             target:invertRect(x, y, rect.w, rect.h)
         else
@@ -418,7 +436,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
                 recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
                 recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             else
-                target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
+                multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor:invert())
                 recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
             end
         end
@@ -437,7 +455,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
-            target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+            multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         end
     end

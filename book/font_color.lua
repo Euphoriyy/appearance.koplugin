@@ -16,11 +16,13 @@ local HexFontColor = Setting("book_font_color_hex", "#000000")
 local InvertFontColor = Setting("book_font_color_inverted", true)
 local AltNightFontColor = Setting("book_font_color_alt_night", false)
 local NightHexFontColor = Setting("book_font_color_night_hex", "#FFFFFF")
+local FixedFontColor = Setting("book_font_color_fixed", true)
 
 -- Cache
 local fg_cached = {
     alt_night_color = AltNightFontColor.get(),
     invert_in_night_mode = InvertFontColor.get(),
+    set_fixed_color = FixedFontColor.get(),
     hex = HexFontColor.get(),
     night_hex = NightHexFontColor.get(),
     last_hex = nil,
@@ -199,6 +201,14 @@ local function font_color_menu()
                     end
                 end,
             },
+            {
+                text = _("Apply to reader pages (pdf, djvu, cbz...)"),
+                checked_func = FixedFontColor.get,
+                callback = function()
+                    FixedFontColor.toggle()
+                    fg_cached.set_fixed_color = FixedFontColor.get()
+                end,
+            },
         },
     }
 end
@@ -291,5 +301,6 @@ end
 return {
     menu = font_color_menu,
     fgcolor = function() return fg_cached.fgcolor end,
-    hex = function() return fg_cached.hex end
+    hex = function() return fg_cached.hex end,
+    set_fixed_color = function() return fg_cached.set_fixed_color end
 }
