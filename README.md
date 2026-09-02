@@ -125,7 +125,7 @@ You can also enable automatic checking for updates to be notified when new versi
 ## Compatibility
 Tested fully on e-ink, desktop, and mobile devices. Fully compatible with popular plugins like [Rakuyomi](https://github.com/tachibana-shin/rakuyomi) and [SimpleUI](https://github.com/doctorhetfield-cmd/simpleui.koplugin).
 
-PDF background color customization is compatible with the dual pages feature introduced by [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin).
+Fixed-layout document background and font color customization is compatible with the dual pages feature introduced by [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin).
 
 For rounded book & folder covers to work properly with the background color, [my special rounded cover patches](https://github.com/Euphoriyy/KOReader.patches#-2-rounded-coverslua) should be used.
 
