@@ -23,6 +23,22 @@ local AltNightBackgroundColor = Setting("book_background_color_alt_night", false
 local NightHexBackgroundColor = Setting("book_background_color_night_hex", "#000000")
 local FixedBackgroundColor = Setting("book_background_color_fixed", true) -- Whether the background color of fixed pages should be changed (default: true)
 
+--------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local font_color
+
+local function get_book_fgcolor()
+    font_color = font_color or require("book/font_color")
+    return font_color.fgcolor()
+end
+
+local function get_book_fghex()
+    font_color = font_color or require("book/font_color")
+    return font_color.hex()
+end
+
 -- Cache
 local bg_cached = {
     alt_night_color = AltNightBackgroundColor.get(),
@@ -267,6 +283,7 @@ end
 
 -- Helper: recolor light pixels as an alternative to RGB multiplication
 local function recolorLightPixels(bb, x, y, w, h, c)
+    local thres = 200
     local bb_w = bb:getWidth()
     local bb_h = bb:getHeight()
     local x0 = math.max(x, 0)
@@ -276,7 +293,26 @@ local function recolorLightPixels(bb, x, y, w, h, c)
     for py = y0, y1 do
         for px = x0, x1 do
             local pixel = bb:getPixel(px, py)
-            if pixel:getR() > 200 and pixel:getG() > 200 and pixel:getB() > 200 then
+            if pixel:getR() > thres and pixel:getG() > thres and pixel:getB() > thres then
+                bb:setPixel(px, py, c)
+            end
+        end
+    end
+end
+
+-- Helper: recolor dark pixels (i.e. text)
+local function recolorDarkPixels(bb, x, y, w, h, c)
+    local thres = 50
+    local bb_w = bb:getWidth()
+    local bb_h = bb:getHeight()
+    local x0 = math.max(x, 0)
+    local y0 = math.max(y, 0)
+    local x1 = math.min(x + w - 1, bb_w - 1)
+    local y1 = math.min(y + h - 1, bb_h - 1)
+    for py = y0, y1 do
+        for px = x0, x1 do
+            local pixel = bb:getPixel(px, py)
+            if pixel:getR() <= thres and pixel:getG() <= thres and pixel:getB() <= thres then
                 bb:setPixel(px, py, c)
             end
         end
@@ -306,8 +342,10 @@ function Document:drawPage(target, x, y, rect, ...)
     local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
     if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
         recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
+        recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     else
         target:multiplyRectRGB(x, y, rect.w, rect.h, bg_cached.bgcolor)
+        recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     end
 end
 
@@ -321,6 +359,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
     end
 
     local bgcolor = Blitbuffer.colorFromString(bg_cached.hex)
+    local fgcolor = Blitbuffer.colorFromString(get_book_fghex())
 
     -- Multiply against background before inversion when hardware inversion is used
     if Device:canHWInvert() then
@@ -331,6 +370,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
             rect.y - tile.excerpt.y,
             rect.w, rect.h)
         target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+        recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         target:invertRect(x, y, rect.w, rect.h)
     else
         original_Document_drawPageInverted(self, target, x, y, rect, pageno, ...)
@@ -339,8 +379,10 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
         -- Manually recolor in Android (when using the C blitter) instead of using RGB multiplication
         if Device:isAndroid() and is_cbb_enabled then
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
+            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
             target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
+            recolorLightPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
         end
     end
 end
@@ -355,6 +397,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
 
     local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
     local bgcolor = nightmode_invert and Blitbuffer.colorFromString(bg_cached.hex) or bg_cached.bgcolor
+    local fgcolor = nightmode_invert and Blitbuffer.colorFromString(get_book_fghex()) or get_book_fgcolor()
 
     if nightmode_invert then
         -- Document:drawPageInverted path
@@ -366,14 +409,17 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
                 rect.y - tile.excerpt.y,
                 rect.w, rect.h)
             target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             target:invertRect(x, y, rect.w, rect.h)
         else
             original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation,
                 nightmode_invert)
             if Device:isAndroid() and is_cbb_enabled then
                 recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
+                recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             else
                 target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor:invert())
+                recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
             end
         end
     else
@@ -388,9 +434,11 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
 
         local sw_invert = Screen.night_mode and not Device:canHWInvert()
         if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
-            recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
+            recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
+            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
             target:multiplyRectRGB(x, y, rect.w, rect.h, bgcolor)
+            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         end
     end
 end

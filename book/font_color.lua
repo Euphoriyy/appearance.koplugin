@@ -288,4 +288,8 @@ function ReaderUI:onApplyTheme()
     recomputeFGColor()
 end
 
-return { menu = font_color_menu, fgcolor = function() return fg_cached.fgcolor end }
+return {
+    menu = font_color_menu,
+    fgcolor = function() return fg_cached.fgcolor end,
+    hex = function() return fg_cached.hex end
+}
