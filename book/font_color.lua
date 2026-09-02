@@ -200,6 +200,7 @@ local function font_color_menu()
                         refresh()
                     end
                 end,
+                separator = true,
             },
             {
                 text = _("Apply to reader pages (pdf, djvu, cbz...)"),
