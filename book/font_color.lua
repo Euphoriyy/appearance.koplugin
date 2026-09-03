@@ -1,5 +1,6 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
+local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local FootnoteWidget = require("ui/widget/footnotewidget")
@@ -298,6 +299,41 @@ function ReaderUI:onApplyTheme()
     fg_cached.alt_night_color = AltNightFontColor.get()
     recomputeFGColor()
 end
+
+-- Register toggling/setting application of font color to fixed document pages as dispatcher actions
+local function ToggleBookFontColorFixed()
+    FixedFontColor.toggle()
+    fg_cached.set_fixed_color = FixedFontColor.get()
+    refresh()
+end
+
+local function SetBookFontColorFixed(apply_on)
+    FixedFontColor.set(apply_on)
+    fg_cached.set_fixed_color = apply_on
+    refresh()
+end
+
+FileManager.onToggleBookFontColorFixed = ToggleBookFontColorFixed
+ReaderUI.onToggleBookFontColorFixed = ToggleBookFontColorFixed
+
+FileManager.onSetBookFontColorFixed = SetBookFontColorFixed
+ReaderUI.onSetBookFontColorFixed = SetBookFontColorFixed
+
+Dispatcher:registerAction("toggle_book_font_color_fixed", {
+    category = "none",
+    event = "ToggleBookFontColorFixed",
+    title = _("Toggle font color application for reader pages (pdf, djvu, cbz...)"),
+    general = true,
+})
+
+Dispatcher:registerAction("set_book_font_color_fixed", {
+    category = "string",
+    event = "SetBookFontColorFixed",
+    title = _("Set font color application for reader pages (pdf, djvu, cbz...)"),
+    args = { true, false },
+    toggle = { _("on"), _("off") },
+    general = true,
+})
 
 return {
     menu = font_color_menu,
