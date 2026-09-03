@@ -156,4 +156,53 @@ local function font_face_menu()
     }
 end
 
+-- Override the font for widgets that have already been loaded
+local ButtonDialog = require("ui/widget/buttondialog")
+local ConfirmBox = require("ui/widget/confirmbox")
+local MultiConfirmBox = require("ui/widget/multiconfirmbox")
+local InfoMessage = require("ui/widget/infomessage")
+local InputDialog = require("ui/widget/inputdialog")
+
+local original_ButtonDialog_init = ButtonDialog.init
+function ButtonDialog:init()
+     if self.title_face then
+        local orig_size = self.title_face.orig_size or 20
+        self.title_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    end
+    if self.info_face then
+        local orig_size = self.info_face.orig_size or 22
+        self.info_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    end
+    original_ButtonDialog_init(self)
+end
+
+local original_ConfirmBox_init = ConfirmBox.init
+function ConfirmBox:init()
+    local orig_size = self.face.orig_size or 22
+    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    original_ConfirmBox_init(self)
+end
+
+local original_MultiConfirmBox_init = MultiConfirmBox.init
+function MultiConfirmBox:init()
+    local orig_size = self.face.orig_size or 22
+    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    original_MultiConfirmBox_init(self)
+end
+
+local original_InfoMessage_init = InfoMessage.init
+function InfoMessage:init()
+    local def_face = Font:getFace("infofont")
+    local orig_size = def_face.orig_size or 22
+    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    original_InfoMessage_init(self)
+end
+
+local original_InputDialog_init = InputDialog.init
+function InputDialog:init()
+    local orig_size = self.input_face.orig_size or 16
+    InputDialog.input_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
+    original_InputDialog_init(self)
+end
+
 return font_face_menu
