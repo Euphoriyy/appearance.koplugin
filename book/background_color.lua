@@ -335,18 +335,31 @@ local function recolorDarkPixels(bb, x, y, w, h, c)
     end
 end
 
+-- Helper: decides when to fully skip color replacement
+local function shouldSkipColorReplacement()
+    -- If both settings are disabled, skip
+    if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() then
+        return true
+    end
+
+    -- Check if background color is at default for the current mode
+    local is_default_bg = (Screen.night_mode and bg_cached.last_hex == "#000000") or
+        (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
+
+    -- Check if font color is at default for the current mode
+    local is_default_fg = (Screen.night_mode and get_book_fghex() == "#FFFFFF") or
+        (not Screen.night_mode and get_book_fghex() == "#000000")
+
+    -- Skip if both colors are at defaults
+    return is_default_bg and is_default_fg
+end
+
 -- Add background color to PDFs by using RGB multiplication (or replacement)
 local original_Document_drawPage = Document.drawPage
 function Document:drawPage(target, x, y, rect, ...)
     original_Document_drawPage(self, target, x, y, rect, ...)
 
-    if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() then
-        return
-    end
-
-    if (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
-        or (Screen.night_mode and bg_cached.last_hex == "#000000")
-    then
+    if shouldSkipColorReplacement() then
         return
     end
 
@@ -369,7 +382,7 @@ end
 -- Use the day mode bgcolor instead of the one for night mode
 local original_Document_drawPageInverted = Document.drawPageInverted
 function Document:drawPageInverted(target, x, y, rect, pageno, ...)
-    if (not bg_cached.set_fixed_color and not get_book_fixed_fgcolor()) or bg_cached.hex == "#FFFFFF" then
+    if shouldSkipColorReplacement() then
         original_Document_drawPageInverted(self, target, x, y, rect, pageno, ...)
         return
     end
@@ -408,7 +421,7 @@ end
 -- Finally, add background color to context pages
 local original_KoptInterface_drawContextPage = KoptInterface.drawContextPage
 function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-    if (not bg_cached.set_fixed_color and not get_book_fixed_fgcolor()) and (nightmode_invert and bg_cached.hex == "#FFFFFF") then
+    if shouldSkipColorReplacement() then
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
         return
     end
@@ -443,13 +456,6 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     else
         -- Document:drawPage path
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
-
-        if (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
-            or (Screen.night_mode and bg_cached.last_hex == "#000000")
-        then
-            return
-        end
-
         local sw_invert = Screen.night_mode and not Device:canHWInvert()
         if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
