@@ -370,6 +370,13 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
 
                                 setBackgroundColor(theme.bg, false, false)
                                 setForegroundColor(theme.fg, false, false)
+
+                                if theme.night then
+                                    UIInvertIconsDay.set(true)
+                                else
+                                    UIInvertIconsDay.set(UIInvertIconsDay.default)
+                                end
+
                                 setBackgroundColor(theme.bg, true, false)
                                 setForegroundColor(theme.fg, true, false)
                                 setLinkColor(theme.link, true, false)
@@ -382,6 +389,13 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
 
                                 setBackgroundColor(theme.bg, false, true)
                                 setForegroundColor(theme.fg, false, true)
+
+                                if not theme.night then
+                                    UIInvertIconsNight.set(false)
+                                else
+                                    UIInvertIconsNight.set(UIInvertIconsNight.default)
+                                end
+
                                 setBackgroundColor(theme.bg, true, true)
                                 setForegroundColor(theme.fg, true, true)
                                 setLinkColor(theme.link, true, true)
