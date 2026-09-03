@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.7.0...v1.7.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* **themes:** correct icon inversion when applying themes to "Both" ([1635526](https://github.com/Euphoriyy/appearance.koplugin/commit/16355262bc537beb6d3ce01b12ec0f05394e96aa))
+
 ## [1.7.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.6.1...v1.7.0) (2026-09-03)
 
 
