@@ -114,7 +114,7 @@ local function set_color_menu(touchmenu_instance, type, original_hex, callback)
         elseif type == ColorType.FOREGROUND then
             original_hex = theme_list.DEFAULT_DAY_THEME.fg
         elseif type == ColorType.LINK then
-            original_hex = "#0066FF"
+            original_hex = "#0000EE"
         end
     end
 
@@ -163,7 +163,7 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
         elseif type == ColorType.FOREGROUND then
             original_hex = theme_list.DEFAULT_DAY_THEME.fg
         elseif type == ColorType.LINK then
-            original_hex = "#0066FF"
+            original_hex = "#0000EE"
         end
     end
 

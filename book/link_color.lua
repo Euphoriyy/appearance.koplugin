@@ -91,7 +91,7 @@ local function set_color_callback()
         local input_dialog
         input_dialog = InputDialog:new({
             title = "Enter custom color code",
-            input = getLinkColor() or "#0066FF",
+            input = getLinkColor() or "#0000EE",
             input_hint = "#000000",
             buttons = {
                 {
