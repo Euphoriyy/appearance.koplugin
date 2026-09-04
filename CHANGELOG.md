@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.7.0...v1.8.0) (2026-09-04)
+
+
+### Features
+
+* **book/font_color:** add dispatcher actions for toggling fixed page font color ([075f2ba](https://github.com/Euphoriyy/appearance.koplugin/commit/075f2baf0b620473a26f510b07490445bcd7ec19))
+* **book:** apply link color to fixed-layout docs ([96937ac](https://github.com/Euphoriyy/appearance.koplugin/commit/96937ac0bec17225b87d3a11282b98707c6f4e16)), closes [#94](https://github.com/Euphoriyy/appearance.koplugin/issues/94)
+
+
+### Bug Fixes
+
+* **themes:** correct icon inversion when applying themes to "Both" ([1635526](https://github.com/Euphoriyy/appearance.koplugin/commit/16355262bc537beb6d3ce01b12ec0f05394e96aa))
+
 ## [1.7.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.6.1...v1.7.0) (2026-09-03)
 
 
