@@ -774,10 +774,10 @@ local function themes_menu()
                 },
                 {
                     text = _("Reset themes"),
-                    keep_menu_open = true,
                     sub_item_table = {
                         {
                             text = _("Reset to current themes"),
+                            keep_menu_open = true,
                             callback = function()
                                 local current_ui_day_theme = CurrentUIDayTheme.get()
                                 local current_ui_night_theme = CurrentUINightTheme.get()
