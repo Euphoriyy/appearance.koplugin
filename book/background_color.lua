@@ -27,7 +27,7 @@ local FixedBackgroundColor = Setting("book_background_color_fixed", true)
 -- Lazy Loading
 --------------------------------------------
 
-local font_color
+local font_color, link_color
 
 local function get_book_fgcolor()
     font_color = font_color or require("book/font_color")
@@ -39,9 +39,34 @@ local function get_book_fghex()
     return font_color.hex()
 end
 
+local function get_book_fghex_night()
+    font_color = font_color or require("book/font_color")
+    return font_color.hex()
+end
+
 local function get_book_fixed_fgcolor()
     font_color = font_color or require("book/font_color")
     return font_color.set_fixed_color()
+end
+
+local function get_book_linkcolor()
+    link_color = link_color or require("book/link_color")
+    return link_color.linkcolor()
+end
+
+local function get_book_linkhex()
+    link_color = link_color or require("book/link_color")
+    return link_color.hex()
+end
+
+local function get_book_link_is_default()
+    link_color = link_color or require("book/link_color")
+    return link_color.is_default()
+end
+
+local function get_book_fixed_linkcolor()
+    link_color = link_color or require("book/link_color")
+    return link_color.set_fixed_color()
 end
 
 -- Cache
@@ -295,7 +320,13 @@ end
 
 -- Helper: recolor light pixels as an alternative to RGB multiplication
 local function recolorLightPixels(bb, x, y, w, h, c, override_setting)
-    if not bg_cached.set_fixed_color and not override_setting then return end
+    if not override_setting then
+        -- Check if background color is at default for the current mode
+        local is_default_bg = (Screen.night_mode and bg_cached.last_hex == "#000000") or
+            (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
+        if not bg_cached.set_fixed_color or is_default_bg then return end
+    end
+
 
     local thres = 200
     local bb_w = bb:getWidth()
@@ -315,8 +346,13 @@ local function recolorLightPixels(bb, x, y, w, h, c, override_setting)
 end
 
 -- Helper: recolor dark pixels (i.e. text)
-local function recolorDarkPixels(bb, x, y, w, h, c)
-    if not get_book_fixed_fgcolor() then return end
+local function recolorDarkPixels(bb, x, y, w, h, c, override_setting)
+    if not override_setting then
+        -- Check if font color is at default for the current mode
+        local is_default_fg = (Screen.night_mode and get_book_fghex_night() == "#FFFFFF") or
+            (not Screen.night_mode and get_book_fghex() == "#000000")
+        if not get_book_fixed_fgcolor() or is_default_fg then return end
+    end
 
     local thres = 50
     local bb_w = bb:getWidth()
@@ -335,10 +371,38 @@ local function recolorDarkPixels(bb, x, y, w, h, c)
     end
 end
 
+-- Helper: recolor blue link pixels (yellow when inverted)
+local function recolorLinks(bb, x, y, w, h, c, invert)
+    if not get_book_fixed_linkcolor() then return end
+    if not c or get_book_link_is_default() then return end
+
+    local bb_w = bb:getWidth()
+    local bb_h = bb:getHeight()
+    local x0 = math.max(x, 0)
+    local y0 = math.max(y, 0)
+    local x1 = math.min(x + w - 1, bb_w - 1)
+    local y1 = math.min(y + h - 1, bb_h - 1)
+    for py = y0, y1 do
+        for px = x0, x1 do
+            local pixel = bb:getPixel(px, py)
+            local r, g, b = pixel:getR(), pixel:getG(), pixel:getB()
+            if invert then
+                -- Inverted blue links appear yellow (high R, high G, low B)
+                if r >= 120 and g >= 120 and r - b >= 60 and g - b >= 60 then
+                    bb:setPixel(px, py, c)
+                end
+            elseif b >= 120 and b - r >= 60 and b - g >= 40 then
+                -- Standard blue hyperlink text (e.g. #0000EE, #1155CC, #0645AD style blues)
+                bb:setPixel(px, py, c)
+            end
+        end
+    end
+end
+
 -- Helper: decides when to fully skip color replacement
 local function shouldSkipColorReplacement()
-    -- If both settings are disabled, skip
-    if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() then
+    -- If all settings are disabled, skip
+    if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() and not get_book_fixed_linkcolor() then
         return true
     end
 
@@ -347,11 +411,14 @@ local function shouldSkipColorReplacement()
         (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
 
     -- Check if font color is at default for the current mode
-    local is_default_fg = (Screen.night_mode and get_book_fghex() == "#FFFFFF") or
+    local is_default_fg = (Screen.night_mode and get_book_fghex_night() == "#FFFFFF") or
         (not Screen.night_mode and get_book_fghex() == "#000000")
 
-    -- Skip if both colors are at defaults
-    return is_default_bg and is_default_fg
+    -- Check if link color is at default
+    local is_default_linkcolor = get_book_link_is_default()
+
+    -- Skip if all colors are at defaults
+    return is_default_bg and is_default_fg and is_default_linkcolor
 end
 
 -- Add background color to PDFs by using RGB multiplication (or replacement)
@@ -370,9 +437,12 @@ function Document:drawPage(target, x, y, rect, ...)
     local sw_invert = Screen.night_mode and not Device:canHWInvert()
     local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
     if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
+        recolorLinks(target, x, y, rect.w, rect.h, get_book_linkcolor())
         recolorLightPixels(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     else
+        -- Recolor links before multiply
+        recolorLinks(target, x, y, rect.w, rect.h, get_book_linkcolor())
         multiplyRectRGB(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
     end
@@ -387,6 +457,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
         return
     end
 
+    local linkcolor = get_book_linkhex() and Blitbuffer.colorFromString(get_book_linkhex())
     local bgcolor = Blitbuffer.colorFromString(bg_cached.hex)
     local fgcolor = Blitbuffer.colorFromString(get_book_fghex())
 
@@ -398,6 +469,7 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
             rect.x - tile.excerpt.x,
             rect.y - tile.excerpt.y,
             rect.w, rect.h)
+        recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
         multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
         recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         target:invertRect(x, y, rect.w, rect.h)
@@ -407,9 +479,14 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
         local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
         -- Manually recolor in Android (when using the C blitter) instead of using RGB multiplication
         if Device:isAndroid() and is_cbb_enabled then
+            recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
+            -- Link color can be nil which can't be inverted
+            if linkcolor then
+                recolorLinks(target, x, y, rect.w, rect.h, linkcolor:invert(), true)
+            end
             multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor:invert())
             if get_book_fixed_fgcolor() then
                 recolorLightPixels(target, x, y, rect.w, rect.h, fgcolor:invert(), true)
@@ -427,6 +504,8 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     end
 
     local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
+    local linkcolor = nightmode_invert and (get_book_linkhex() and Blitbuffer.colorFromString(get_book_linkhex())) or
+        get_book_linkcolor()
     local bgcolor = nightmode_invert and Blitbuffer.colorFromString(bg_cached.hex) or bg_cached.bgcolor
     local fgcolor = nightmode_invert and Blitbuffer.colorFromString(get_book_fghex()) or get_book_fgcolor()
 
@@ -439,6 +518,7 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
                 rect.x - tile.excerpt.x,
                 rect.y - tile.excerpt.y,
                 rect.w, rect.h)
+            recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             target:invertRect(x, y, rect.w, rect.h)
@@ -446,9 +526,14 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
             original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation,
                 nightmode_invert)
             if Device:isAndroid() and is_cbb_enabled then
+                recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
                 recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
                 recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
             else
+                -- Link color can be nil which can't be inverted
+                if linkcolor then
+                    recolorLinks(target, x, y, rect.w, rect.h, linkcolor:invert())
+                end
                 multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor:invert())
                 recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
             end
@@ -458,9 +543,11 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
         original_KoptInterface_drawContextPage(self, doc, target, x, y, rect, pageno, zoom, rotation, nightmode_invert)
         local sw_invert = Screen.night_mode and not Device:canHWInvert()
         if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
+            recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         else
+            recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
             recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
         end

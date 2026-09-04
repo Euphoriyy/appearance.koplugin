@@ -339,5 +339,6 @@ return {
     menu = font_color_menu,
     fgcolor = function() return fg_cached.fgcolor end,
     hex = function() return fg_cached.hex end,
+    night_hex = function() return fg_cached.night_hex end,
     set_fixed_color = function() return fg_cached.set_fixed_color end
 }

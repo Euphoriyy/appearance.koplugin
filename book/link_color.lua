@@ -1,3 +1,4 @@
+local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
@@ -15,14 +16,17 @@ local HexLinkColor = Setting("book_link_color_hex", nil)
 local InvertLinkColor = Setting("book_link_color_inverted", true)
 local AltNightLinkColor = Setting("book_link_color_alt_night", false)
 local NightHexLinkColor = Setting("book_link_color_night_hex", nil)
+local FixedLinkColor = Setting("book_link_color_fixed", true)
 
 -- Cache
 local link_cached = {
     alt_night_color = AltNightLinkColor.get(),
     invert_in_night_mode = InvertLinkColor.get(),
+    set_fixed_color = FixedLinkColor.get(),
     hex = HexLinkColor.get(),
     night_hex = NightHexLinkColor.get(),
     computed_hex = nil,
+    linkcolor = nil,
 }
 
 -- Recompute and cache the final link color based on current settings
@@ -45,6 +49,7 @@ local function recomputeLinkColor(is_doc_css)
     end
 
     link_cached.computed_hex = hex
+    link_cached.linkcolor = Blitbuffer.colorFromString(hex)
 end
 
 -- Compute and cache the initial link color based on current settings
@@ -203,6 +208,15 @@ local function link_color_menu()
                         refresh()
                     end
                 end,
+                separator = true,
+            },
+            {
+                text = _("Apply to reader pages (pdf, djvu, cbz...)"),
+                checked_func = FixedLinkColor.get,
+                callback = function()
+                    FixedLinkColor.toggle()
+                    link_cached.set_fixed_color = FixedLinkColor.get()
+                end,
             },
         },
     }
@@ -294,5 +308,8 @@ end
 
 return {
     menu = link_color_menu,
-    link_hex = function() return link_cached.computed_hex end,
+    linkcolor = function() return link_cached.linkcolor end,
+    hex = function() return link_cached.hex end,
+    is_default = function() return link_cached.computed_hex == nil end,
+    set_fixed_color = function() return link_cached.set_fixed_color end
 }
