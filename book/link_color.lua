@@ -1,5 +1,6 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
+local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local FootnoteWidget = require("ui/widget/footnotewidget")
@@ -305,6 +306,41 @@ function ReaderUI:onApplyTheme()
     link_cached.alt_night_color = AltNightLinkColor.get()
     recomputeLinkColor()
 end
+
+-- Register toggling/setting application of link color to fixed document pages as dispatcher actions
+local function ToggleBookLinkColorFixed()
+    FixedLinkColor.toggle()
+    link_cached.set_fixed_color = FixedLinkColor.get()
+    refresh()
+end
+
+local function SetBookLinkColorFixed(apply_on)
+    FixedLinkColor.set(apply_on)
+    link_cached.set_fixed_color = apply_on
+    refresh()
+end
+
+FileManager.onToggleBookLinkColorFixed = ToggleBookLinkColorFixed
+ReaderUI.onToggleBookLinkColorFixed = ToggleBookLinkColorFixed
+
+FileManager.onSetBookLinkColorFixed = SetBookLinkColorFixed
+ReaderUI.onSetBookLinkColorFixed = SetBookLinkColorFixed
+
+Dispatcher:registerAction("toggle_book_link_color_fixed", {
+    category = "none",
+    event = "ToggleBookLinkColorFixed",
+    title = _("Toggle link color application for reader pages (pdf, djvu, cbz...)"),
+    general = true,
+})
+
+Dispatcher:registerAction("set_book_link_color_fixed", {
+    category = "string",
+    event = "SetBookLinkColorFixed",
+    title = _("Set link color application for reader pages (pdf, djvu, cbz...)"),
+    args = { true, false },
+    toggle = { _("on"), _("off") },
+    general = true,
+})
 
 return {
     menu = link_color_menu,
