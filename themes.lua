@@ -277,6 +277,12 @@ local function remove_theme(theme)
     Settings:flushSettings()
 end
 
+local function setTheme(theme, book, night)
+    setBackgroundColor(theme.bg, book, night)
+    setForegroundColor(theme.fg, book, night)
+    setLinkColor(theme.link, book, night)
+end
+
 -- Declare edit_menu stub
 local edit_menu
 
@@ -307,8 +313,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                             choice1_callback = function()
                                 CurrentUIDayTheme.set(theme)
 
-                                setBackgroundColor(theme.bg, false, false)
-                                setForegroundColor(theme.fg, false, false)
+                                setTheme(theme, false, false)
 
                                 if theme.night then
                                     UIInvertIconsDay.set(true)
@@ -322,8 +327,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                             choice2_callback = function()
                                 CurrentUINightTheme.set(theme)
 
-                                setBackgroundColor(theme.bg, false, true)
-                                setForegroundColor(theme.fg, false, true)
+                                setTheme(theme, false, true)
 
                                 if not theme.night then
                                     UIInvertIconsNight.set(false)
@@ -343,18 +347,14 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                             choice1_callback = function()
                                 CurrentBookDayTheme.set(theme)
 
-                                setBackgroundColor(theme.bg, true, false)
-                                setForegroundColor(theme.fg, true, false)
-                                setLinkColor(theme.link, true, false)
+                                setTheme(theme, true, false)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                             choice2_text = _("§blue ⏾ Night mode§r "),
                             choice2_callback = function()
                                 CurrentBookNightTheme.set(theme)
 
-                                setBackgroundColor(theme.bg, true, true)
-                                setForegroundColor(theme.fg, true, true)
-                                setLinkColor(theme.link, true, true)
+                                setTheme(theme, true, true)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         }))
@@ -368,8 +368,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                                 CurrentUIDayTheme.set(theme)
                                 CurrentBookDayTheme.set(theme)
 
-                                setBackgroundColor(theme.bg, false, false)
-                                setForegroundColor(theme.fg, false, false)
+                                setTheme(theme, false, false)
 
                                 if theme.night then
                                     UIInvertIconsDay.set(true)
@@ -377,18 +376,14 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                                     UIInvertIconsDay.set(UIInvertIconsDay.default)
                                 end
 
-                                setBackgroundColor(theme.bg, true, false)
-                                setForegroundColor(theme.fg, true, false)
-                                setLinkColor(theme.link, true, false)
+                                setTheme(theme, true, false)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                             choice2_text = _("§blue ⏾ Night mode§r "),
                             choice2_callback = function()
                                 CurrentUINightTheme.set(theme)
                                 CurrentBookNightTheme.set(theme)
-
-                                setBackgroundColor(theme.bg, false, true)
-                                setForegroundColor(theme.fg, false, true)
+                                setTheme(theme, false, true)
 
                                 if not theme.night then
                                     UIInvertIconsNight.set(false)
@@ -396,9 +391,7 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
                                     UIInvertIconsNight.set(UIInvertIconsNight.default)
                                 end
 
-                                setBackgroundColor(theme.bg, true, true)
-                                setForegroundColor(theme.fg, true, true)
-                                setLinkColor(theme.link, true, true)
+                                setTheme(theme, true, true)
                                 UIManager:broadcastEvent(Event:new("ApplyTheme"))
                             end,
                         }))
@@ -604,11 +597,8 @@ local function ask_to_apply(theme, reapply, book)
                 CurrentBookNightTheme.set(theme)
             end
 
-            setBackgroundColor(theme.bg, false, theme.night)
-            setForegroundColor(theme.fg, false, theme.night)
-            setBackgroundColor(theme.bg, true, theme.night)
-            setForegroundColor(theme.fg, true, theme.night)
-            setLinkColor(theme.link, true, theme.night)
+            setTheme(theme, false, theme.night)
+            setTheme(theme, true, theme.night)
             UIManager:broadcastEvent(Event:new("ApplyTheme"))
         else
             if not theme.night then
@@ -625,9 +615,7 @@ local function ask_to_apply(theme, reapply, book)
                 end
             end
 
-            setBackgroundColor(theme.bg, book, theme.night)
-            setForegroundColor(theme.fg, book, theme.night)
-            setLinkColor(theme.link, book, theme.night)
+            setTheme(theme, book, theme.night)
             UIManager:broadcastEvent(Event:new("ApplyTheme"))
         end
     end
@@ -796,17 +784,10 @@ local function themes_menu()
                                 local current_book_day_theme = CurrentBookDayTheme.get()
                                 local current_book_night_theme = CurrentBookNightTheme.get()
 
-                                setBackgroundColor(current_ui_day_theme.bg, false, false)
-                                setBackgroundColor(current_ui_night_theme.bg, false, true)
-                                setForegroundColor(current_ui_day_theme.fg, false, false)
-                                setForegroundColor(current_ui_night_theme.fg, false, true)
-
-                                setBackgroundColor(current_book_day_theme.bg, true, false)
-                                setBackgroundColor(current_book_night_theme.bg, true, true)
-                                setForegroundColor(current_book_day_theme.fg, true, false)
-                                setForegroundColor(current_book_night_theme.fg, true, true)
-                                setLinkColor(current_book_day_theme.link, true, false)
-                                setLinkColor(current_book_night_theme.link, true, true)
+                                setTheme(current_ui_day_theme, false, false)
+                                setTheme(current_ui_night_theme, false, true)
+                                setTheme(current_book_day_theme, true, false)
+                                setTheme(current_book_night_theme, true, true)
 
                                 if current_ui_day_theme.night then
                                     UIInvertIconsDay.set(true)
@@ -832,17 +813,10 @@ local function themes_menu()
                                 CurrentBookDayTheme.set(theme_list.DEFAULT_DAY_THEME)
                                 CurrentBookNightTheme.set(theme_list.DEFAULT_NIGHT_THEME)
 
-                                setBackgroundColor(theme_list.DEFAULT_DAY_THEME.bg, false, false)
-                                setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, false, true)
-                                setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, false, false)
-                                setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, false, true)
-
-                                setBackgroundColor(theme_list.DEFAULT_DAY_THEME.bg, true, false)
-                                setBackgroundColor(theme_list.DEFAULT_NIGHT_THEME.bg, true, true)
-                                setForegroundColor(theme_list.DEFAULT_DAY_THEME.fg, true, false)
-                                setForegroundColor(theme_list.DEFAULT_NIGHT_THEME.fg, true, true)
-                                setLinkColor(theme_list.DEFAULT_DAY_THEME.link, true, false)
-                                setLinkColor(theme_list.DEFAULT_NIGHT_THEME.link, true, true)
+                                setTheme(theme_list.DEFAULT_DAY_THEME, false, false)
+                                setTheme(theme_list.DEFAULT_NIGHT_THEME, false, true)
+                                setTheme(theme_list.DEFAULT_DAY_THEME, true, false)
+                                setTheme(theme_list.DEFAULT_NIGHT_THEME, true, true)
 
                                 UIInvertIconsDay.set(UIInvertIconsDay.default)
                                 UIInvertIconsNight.set(UIInvertIconsNight.default)
@@ -914,9 +888,7 @@ local function SelectTheme(_, args)
         setter.set(theme)
     end
 
-    setBackgroundColor(theme.bg, book, night)
-    setForegroundColor(theme.fg, book, night)
-    setLinkColor(theme.link, book, night)
+    setTheme(theme, book, night)
     UIManager:broadcastEvent(Event:new("ApplyTheme"))
 end
 
