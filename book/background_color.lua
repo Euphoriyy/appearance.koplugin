@@ -133,9 +133,11 @@ end
 local function refresh()
     if common.has_document_open() then
         if ReaderUI.instance.rolling then
+            -- Reapply page CSS
             UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        elseif ReaderUI.instance.paging and bg_cached.set_fixed_color then
-            UIManager:broadcastEvent(Event:new("RedrawCurrentPage"))
+        elseif ReaderUI.instance.paging then
+            -- Redraw page
+            ReaderUI.instance.paging:onRedrawCurrentPage()
         end
     end
 end
@@ -264,6 +266,7 @@ local function background_color_menu()
                 callback = function()
                     FixedBackgroundColor.toggle()
                     bg_cached.set_fixed_color = FixedBackgroundColor.get()
+                    refresh()
                 end,
             },
         }

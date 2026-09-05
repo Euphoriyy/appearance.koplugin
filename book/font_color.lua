@@ -79,9 +79,14 @@ local function setFontColor(hex)
 end
 
 local function refresh()
-    -- Reapply page CSS
     if common.has_document_open() then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        if ReaderUI.instance.rolling then
+            -- Reapply page CSS
+            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        elseif ReaderUI.instance.paging then
+            -- Redraw page
+            ReaderUI.instance.paging:onRedrawCurrentPage()
+        end
     end
 end
 
@@ -209,6 +214,7 @@ local function font_color_menu()
                 callback = function()
                     FixedFontColor.toggle()
                     fg_cached.set_fixed_color = FixedFontColor.get()
+                    refresh()
                 end,
             },
         },

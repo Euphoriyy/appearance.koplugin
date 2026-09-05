@@ -217,6 +217,7 @@ local function link_color_menu()
                 callback = function()
                     FixedLinkColor.toggle()
                     link_cached.set_fixed_color = FixedLinkColor.get()
+                    refresh()
                 end,
             },
         },
