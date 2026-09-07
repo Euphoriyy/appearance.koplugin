@@ -176,9 +176,12 @@ local function link_color_menu()
                 text = _("Reset color"),
                 enabled_func = function() return getLinkColor() ~= nil end,
                 keep_menu_open = true,
-                callback = function()
+                callback = function(touchmenu_instance)
                     setLinkColor(nil)
                     refresh()
+                    if touchmenu_instance then
+                        touchmenu_instance:updateItems()
+                    end
                 end,
                 separator = true,
             },
