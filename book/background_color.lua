@@ -39,11 +39,6 @@ local function get_book_fghex()
     return font_color.hex()
 end
 
-local function get_book_fghex_night()
-    font_color = font_color or require("book/font_color")
-    return font_color.hex()
-end
-
 local function get_book_fixed_fgcolor()
     font_color = font_color or require("book/font_color")
     return font_color.set_fixed_color()
@@ -324,12 +319,8 @@ end
 -- Helper: recolor light pixels as an alternative to RGB multiplication
 local function recolorLightPixels(bb, x, y, w, h, c, override_setting)
     if not override_setting then
-        -- Check if background color is at default for the current mode
-        local is_default_bg = (Screen.night_mode and bg_cached.last_hex == "#000000") or
-            (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
-        if not bg_cached.set_fixed_color or is_default_bg then return end
+        if not bg_cached.set_fixed_color then return end
     end
-
 
     local thres = 200
     local bb_w = bb:getWidth()
@@ -351,10 +342,7 @@ end
 -- Helper: recolor dark pixels (i.e. text)
 local function recolorDarkPixels(bb, x, y, w, h, c, override_setting)
     if not override_setting then
-        -- Check if font color is at default for the current mode
-        local is_default_fg = (Screen.night_mode and get_book_fghex_night() == "#FFFFFF") or
-            (not Screen.night_mode and get_book_fghex() == "#000000")
-        if not get_book_fixed_fgcolor() or is_default_fg then return end
+        if not get_book_fixed_fgcolor() then return end
     end
 
     local thres = 50
@@ -408,20 +396,6 @@ local function shouldSkipColorReplacement()
     if not bg_cached.set_fixed_color and not get_book_fixed_fgcolor() and not get_book_fixed_linkcolor() then
         return true
     end
-
-    -- Check if background color is at default for the current mode
-    local is_default_bg = (Screen.night_mode and bg_cached.last_hex == "#000000") or
-        (not Screen.night_mode and bg_cached.last_hex == "#FFFFFF")
-
-    -- Check if font color is at default for the current mode
-    local is_default_fg = (Screen.night_mode and get_book_fghex_night() == "#FFFFFF") or
-        (not Screen.night_mode and get_book_fghex() == "#000000")
-
-    -- Check if link color is at default
-    local is_default_linkcolor = get_book_link_is_default()
-
-    -- Skip if all colors are at defaults
-    return is_default_bg and is_default_fg and is_default_linkcolor
 end
 
 -- Add background color to PDFs by using RGB multiplication (or replacement)
