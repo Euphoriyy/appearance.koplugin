@@ -9,6 +9,7 @@ local common = require("lib/common")
 local font_color = require("ui/font_color")
 local font_face_menu = require("ui/font_face")
 local dict_font_face_menu = require("ui/dict_font_face")
+local misc_menu = require("ui/misc")
 local transparency_menu = require("ui/transparency")
 
 local function ui_menu()
@@ -21,6 +22,7 @@ local function ui_menu()
             font_face_menu(),
             dict_font_face_menu(),
             transparency_menu(),
+            misc_menu(),
         }
     }
 end

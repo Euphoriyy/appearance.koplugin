@@ -431,11 +431,20 @@ local function background_color_menu()
     }
 end
 
+local SquareWindowCorners = Setting("ui_misc_square_window_corners", false)
+local SquareOtherCorners = Setting("ui_misc_square_other_corners", false)
+
 -- Hook into FrameContainer painting (responsible for 80% of background)
 local original_FrameContainer_paintTo = FrameContainer.paintTo
 function FrameContainer:paintTo(bb, x, y)
     local original_background = self.background
     local original_color = self.color
+    local original_radius = self.radius
+
+    local is_window_frame = self.radius == Size.radius.window and self.bordersize == Size.border.window
+    if (is_window_frame and SquareWindowCorners.get()) or (not is_window_frame and SquareOtherCorners.get()) then
+        self.radius = 0
+    end
 
     -- Change background color if it isn't transparent (nil)
     if original_background and not common.is_excluded(original_background) and original_background == Blitbuffer.COLOR_WHITE then
@@ -466,6 +475,7 @@ function FrameContainer:paintTo(bb, x, y)
 
     self.background = original_background
     self.color = original_color
+    self.radius = original_radius
 end
 
 -- Ensure dithered waveforms are used for colored backgrounds when desirable
