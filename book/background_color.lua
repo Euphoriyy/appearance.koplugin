@@ -421,7 +421,11 @@ function Document:drawPage(target, x, y, rect, ...)
         -- Recolor links before multiply
         recolorLinks(target, x, y, rect.w, rect.h, get_book_linkcolor())
         multiplyRectRGB(target, x, y, rect.w, rect.h, bg_cached.bgcolor)
-        recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
+        if Screen.night_mode then
+            recolorLightPixels(target, x, y, rect.w, rect.h, get_book_fgcolor():invert())
+        else
+            recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
+        end
     end
 end
 
@@ -522,11 +526,15 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
         if not (Device:isAndroid() and is_cbb_enabled) and (sw_invert or has_dual_pages()) then
             recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             recolorLightPixels(target, x, y, rect.w, rect.h, bgcolor)
-            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
+            recolorDarkPixels(target, x, y, rect.w, rect.h, get_book_fgcolor())
         else
             recolorLinks(target, x, y, rect.w, rect.h, linkcolor)
             multiplyRectRGB(target, x, y, rect.w, rect.h, bgcolor)
-            recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
+            if Screen.night_mode then
+                recolorLightPixels(target, x, y, rect.w, rect.h, fgcolor:invert())
+            else
+                recolorDarkPixels(target, x, y, rect.w, rect.h, fgcolor)
+            end
         end
     end
 end
