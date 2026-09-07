@@ -40,11 +40,10 @@ local function recomputeLinkColor(is_doc_css)
     end
 
     if Screen.night_mode then
-        if link_cached.alt_night_color or not link_cached.invert_in_night_mode then
+        if not link_cached.alt_night_color and link_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
-        -- Invert hex again if the reflowable document is inverting it
-        if is_doc_css and common.isColorInversionActive() and not common.isGrayscale(hex) then
+        if is_doc_css and common.isGrayscale(hex) then
             hex = common.invertColor(hex)
         end
     end

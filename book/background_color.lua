@@ -39,6 +39,11 @@ local function get_book_fghex()
     return font_color.hex()
 end
 
+local function get_book_fghex_night()
+    font_color = font_color or require("book/font_color")
+    return font_color.night_hex()
+end
+
 local function get_book_fixed_fgcolor()
     font_color = font_color or require("book/font_color")
     return font_color.set_fixed_color()
@@ -79,11 +84,10 @@ local bg_cached = {
 local function calculateHex(is_doc_css)
     local hex = (Screen.night_mode and bg_cached.alt_night_color) and bg_cached.night_hex or bg_cached.hex
     if Screen.night_mode then
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
+        if not bg_cached.alt_night_color and bg_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
-        -- Invert hex again if the reflowable document is inverting it
-        if is_doc_css and common.isColorInversionActive() and not common.isGrayscale(hex) then
+        if is_doc_css and common.isGrayscale(hex) then
             hex = common.invertColor(hex)
         end
     end
@@ -439,8 +443,8 @@ function Document:drawPageInverted(target, x, y, rect, pageno, ...)
     end
 
     local linkcolor = get_book_linkhex() and Blitbuffer.colorFromString(get_book_linkhex())
-    local bgcolor = Blitbuffer.colorFromString(bg_cached.hex)
-    local fgcolor = Blitbuffer.colorFromString(get_book_fghex())
+    local bgcolor = Blitbuffer.colorFromString(common.invertColor(bg_cached.night_hex))
+    local fgcolor = Blitbuffer.colorFromString(common.invertColor(get_book_fghex_night()))
 
     -- Multiply against background before inversion when hardware inversion is used
     if Device:canHWInvert() then
@@ -485,10 +489,13 @@ function KoptInterface:drawContextPage(doc, target, x, y, rect, pageno, zoom, ro
     end
 
     local is_cbb_enabled = G_reader_settings:nilOrFalse("dev_no_c_blitter")
-    local linkcolor = nightmode_invert and (get_book_linkhex() and Blitbuffer.colorFromString(get_book_linkhex())) or
+    local linkcolor = nightmode_invert and (get_book_linkhex() and
+            Blitbuffer.colorFromString(common.invertColor(get_book_linkhex()))) or
         get_book_linkcolor()
-    local bgcolor = nightmode_invert and Blitbuffer.colorFromString(bg_cached.hex) or bg_cached.bgcolor
-    local fgcolor = nightmode_invert and Blitbuffer.colorFromString(get_book_fghex()) or get_book_fgcolor()
+    local bgcolor = nightmode_invert and Blitbuffer.colorFromString(common.invertColor(bg_cached.night_hex)) or
+        bg_cached.bgcolor
+    local fgcolor = nightmode_invert and
+        Blitbuffer.colorFromString(common.invertColor(get_book_fghex_night())) or get_book_fgcolor()
 
     if nightmode_invert then
         -- Document:drawPageInverted path

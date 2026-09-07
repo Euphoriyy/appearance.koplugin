@@ -34,11 +34,10 @@ local fg_cached = {
 local function calculateHex(is_doc_css)
     local hex = (Screen.night_mode and fg_cached.alt_night_color) and fg_cached.night_hex or fg_cached.hex
     if Screen.night_mode then
-        if fg_cached.alt_night_color or not fg_cached.invert_in_night_mode then
+        if not fg_cached.alt_night_color and fg_cached.invert_in_night_mode then
             hex = common.invertColor(hex)
         end
-        -- Invert hex again if the reflowable document is inverting it
-        if is_doc_css and common.isColorInversionActive() and not common.isGrayscale(hex) then
+        if is_doc_css and common.isGrayscale(hex) then
             hex = common.invertColor(hex)
         end
     end
