@@ -45,7 +45,7 @@ end
 local submenus = {
     themes_menu(),
     ui_menu(),
-    book_menu(),
+    book_menu(Appearance),
     about_menu(),
 }
 

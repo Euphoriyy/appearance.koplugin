@@ -1,5 +1,4 @@
 local Event = require("ui/event")
-local ReaderRolling = require("apps/reader/modules/readerrolling")
 local ReaderTypeset = require("apps/reader/modules/readertypeset")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
@@ -13,7 +12,27 @@ local link_color_menu = require("book/link_color").menu
 local progress_bar_colors_menu = require("book/progress_bar_colors")
 local progress_bar_roundness_menu = require("book/progress_bar_roundness")
 
-local function book_menu()
+local function refreshCSS()
+    if ReaderUI.instance and ReaderUI.instance.rolling then
+        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+    end
+end
+
+local function book_menu(plugin)
+    -- Refresh CSS after initialization when color inversion is enabled (invert images)
+    -- Prevents inverted colors from being shown on opening documents
+    local original_init = plugin.init
+    function plugin:init()
+        original_init(self)
+        self.ui:registerPostReaderReadyCallback(function()
+            UIManager:nextTick(function()
+                if Screen.night_mode and common.isColorInversionActive() then
+                    refreshCSS()
+                end
+            end)
+        end)
+    end
+
     return {
         text = "Book",
         sub_item_table = {
@@ -33,12 +52,6 @@ local FixedBackgroundColor = Setting("book_background_color_fixed", true)
 -- Helpers that call events
 local function recomputeAllColors()
     UIManager:broadcastEvent(Event:new("RecomputeAllColors"))
-end
-
-local function refreshCSS()
-    if ReaderUI.instance and ReaderUI.instance.rolling then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-    end
 end
 
 local function redrawPage()
@@ -87,21 +100,6 @@ function ReaderUI:onApplyTheme()
     if FixedBackgroundColor.get() then
         redrawPage()
     end
-end
-
--- Refresh CSS after initialization when color inversion is enabled (invert images)
--- Prevents inverted colors from being shown on opening documents
-local original_ReaderRolling_init = ReaderRolling.init
-function ReaderRolling:init()
-    original_ReaderRolling_init(self)
-
-    self.ui:registerPostInitCallback(function()
-        UIManager:nextTick(function()
-            if Screen.night_mode and common.isColorInversionActive() then
-                refreshCSS()
-            end
-        end)
-    end)
 end
 
 -- Refresh CSS when toggling color inversion in reflowable documents (invert images)
