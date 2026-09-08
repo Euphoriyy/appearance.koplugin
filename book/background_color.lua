@@ -34,11 +34,6 @@ local function get_book_fgcolor()
     return font_color.fgcolor()
 end
 
-local function get_book_fghex()
-    font_color = font_color or require("book/font_color")
-    return font_color.hex()
-end
-
 local function get_book_fghex_night()
     font_color = font_color or require("book/font_color")
     return font_color.night_hex()
