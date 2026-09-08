@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.8.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.7.0...v1.8.0) (2026-09-08)
+
+
+### Features
+
+* **book/font_color:** add dispatcher actions for toggling fixed page font color ([075f2ba](https://github.com/Euphoriyy/appearance.koplugin/commit/075f2baf0b620473a26f510b07490445bcd7ec19))
+* **book/font_color:** add dispatcher actions for toggling fixed page link color ([182be74](https://github.com/Euphoriyy/appearance.koplugin/commit/182be74f9982f4cf441bef439c452f20cf62fc26))
+* **book:** apply link color to fixed-layout docs ([96937ac](https://github.com/Euphoriyy/appearance.koplugin/commit/96937ac0bec17225b87d3a11282b98707c6f4e16)), closes [#94](https://github.com/Euphoriyy/appearance.koplugin/issues/94)
+* **ui/misc:** add miscellaneous options for squaring corners ([94b7799](https://github.com/Euphoriyy/appearance.koplugin/commit/94b7799f82039791067e40ce2de517bf64070d7f))
+
+
+### Bug Fixes
+
+* **book/link_color:** update touchmenu items on reset ([1daf127](https://github.com/Euphoriyy/appearance.koplugin/commit/1daf1276c5c8d0a3594503f738602b19878e0e35))
+* **book:** correct inversion of fixed-layout font color on Android ([1ee0793](https://github.com/Euphoriyy/appearance.koplugin/commit/1ee079375b4ee447181cf2eac88f31a6b629c3b6))
+* **book:** refresh CSS on reader ready to fix inversion after restarts ([d3fd8e0](https://github.com/Euphoriyy/appearance.koplugin/commit/d3fd8e036b17e4590460f70f8a33d65ca9a0263c))
+* **book:** refresh live changes to colors for fixed-layout docs ([63cf416](https://github.com/Euphoriyy/appearance.koplugin/commit/63cf41652b7c29a94d666c0e1777fd44ea2b8c88))
+* **book:** remove faulty recolor skipping logic ([f98084e](https://github.com/Euphoriyy/appearance.koplugin/commit/f98084e9d145a098a2c3a6d247876882fe3818e9))
+* **themes:** correct icon inversion when applying themes to "Both" ([1635526](https://github.com/Euphoriyy/appearance.koplugin/commit/16355262bc537beb6d3ce01b12ec0f05394e96aa))
+* **themes:** keep menu open on resetting to current themes ([4c5ae8c](https://github.com/Euphoriyy/appearance.koplugin/commit/4c5ae8c0065a354776f9f8a5143a5baa62ec034e))
+* **ui:** reload non-transparent icons on bg color changes ([843f08a](https://github.com/Euphoriyy/appearance.koplugin/commit/843f08a67ef7e310fc372f1157e83859559fc5a7))
+
 ## [1.7.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.6.1...v1.7.0) (2026-09-03)
 
 
