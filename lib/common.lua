@@ -141,7 +141,7 @@ end
 function common.isColorInversionActive(doc)
     doc = doc or (ReaderUI.instance and ReaderUI.instance.document)
     if not doc then
-        return nil
+        return false
     end
     if doc._nightmode_images ~= nil then
         return doc._nightmode_images
