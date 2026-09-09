@@ -18,21 +18,7 @@ local function refreshCSS()
     end
 end
 
-local function book_menu(plugin)
-    -- Refresh CSS after initialization when color inversion is enabled (invert images)
-    -- Prevents inverted colors from being shown on opening documents
-    local original_init = plugin.init
-    function plugin:init()
-        original_init(self)
-        self.ui:registerPostReaderReadyCallback(function()
-            UIManager:nextTick(function()
-                if Screen.night_mode and common.isColorInversionActive() then
-                    refreshCSS()
-                end
-            end)
-        end)
-    end
-
+local function book_menu()
     return {
         text = "Book",
         sub_item_table = {
