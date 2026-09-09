@@ -18,7 +18,7 @@ local function refreshCSS()
     end
 end
 
-local function book_menu(plugin)
+local function book_menu()
     return {
         text = "Book",
         sub_item_table = {
