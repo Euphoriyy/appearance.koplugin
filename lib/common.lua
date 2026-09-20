@@ -138,9 +138,15 @@ function common.contains(tbl, val)
 end
 
 -- Helper: check if reflowable documents are inverting colors according to the invert images setting
-function common.isColorInversionActive()
-    local doc = ReaderUI.instance and ReaderUI.instance.document
-    return doc and doc._nightmode_images
+function common.isColorInversionActive(doc)
+    doc = doc or (ReaderUI.instance and ReaderUI.instance.document)
+    if not doc then
+        return false
+    end
+    if doc._nightmode_images ~= nil then
+        return doc._nightmode_images
+    end
+    return doc.configurable and doc.configurable.nightmode_images == 1
 end
 
 return common
