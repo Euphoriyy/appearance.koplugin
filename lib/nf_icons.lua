@@ -6,10 +6,10 @@
 local MenuIcons  = Setting("ui_misc_icons", true)
 
 local icons = {
+    BOOK = "\u{E7B9}",
     BOOK_OPEN = "\u{E28B}",
     BORDER_COLOR = "\u{E7C8}",
     CURSOR_DEFAULT = "\u{E8B3}",
-    DICTIONARY = "\u{ED1C}",
     EYEDROPPER = "\u{E909}",
     FONT = "\u{F031}",
     FORMAT_COLOR = "\u{E965}",

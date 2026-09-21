@@ -72,7 +72,7 @@ local T = require("ffi/util").template
 local function dict_font_face_menu()
     return {
         text_func = function()
-            return T(nf_icons.label(nf_icons.DICTIONARY, _("Dictionary font: %1")), DictFontEnabled.get() and DictFontName.get() or "default")
+            return T(nf_icons.label(nf_icons.BOOK, _("Dictionary font: %1")), DictFontEnabled.get() and DictFontName.get() or "default")
         end,
         sub_item_table_func = function()
             local items = {

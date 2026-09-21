@@ -14,7 +14,7 @@ local ProgressBarRoundFill = Setting("book_progress_bar_round_fill", false) -- W
 
 local function progress_bar_roundness_menu()
     return {
-        text_func = function() return _(nf_icons.label(nf_icons.ROUNDED_CORNER, "Progress bar roundness")) end,
+        text_func = function() return nf_icons.label(nf_icons.ROUNDED_CORNER, _("Progress bar roundness")) end,
         keep_menu_open = true,
         sub_item_table = {
             {
