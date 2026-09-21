@@ -125,18 +125,6 @@ local function setBackgroundColor(hex)
     recomputeBGColor()
 end
 
-local function refresh()
-    if common.has_document_open() then
-        if ReaderUI.instance.rolling then
-            -- Reapply page CSS
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        elseif ReaderUI.instance.paging then
-            -- Redraw page
-            ReaderUI.instance.paging:onRedrawCurrentPage()
-        end
-    end
-end
-
 -- Menus
 local _ = require("gettext")
 local T = require("ffi/util").template
@@ -167,7 +155,7 @@ local function set_color_callback()
                                 end
 
                                 setBackgroundColor(text)
-                                refresh()
+                                common.refreshPage()
 
                                 if touchmenu_instance then
                                     touchmenu_instance:updateItems()
@@ -197,7 +185,7 @@ local function pick_color_callback()
             invert_in_night_mode = should_invert_wheel,
             callback = function(hex)
                 setBackgroundColor(hex)
-                refresh()
+                common.refreshPage()
 
                 if touchmenu_instance then
                     touchmenu_instance:updateItems()
@@ -235,8 +223,7 @@ local function background_color_menu()
 
                     if Screen.night_mode then
                         recomputeBGColor()
-
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
             },
@@ -250,7 +237,7 @@ local function background_color_menu()
                     recomputeBGColor()
 
                     if Screen.night_mode then
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
                 separator = true,
@@ -261,7 +248,7 @@ local function background_color_menu()
                 callback = function()
                     FixedBackgroundColor.toggle()
                     bg_cached.set_fixed_color = FixedBackgroundColor.get()
-                    refresh()
+                    common.refreshPage()
                 end,
             },
         }
@@ -588,13 +575,13 @@ end
 local function ToggleBookBackgroundColorFixed()
     FixedBackgroundColor.toggle()
     bg_cached.set_fixed_color = FixedBackgroundColor.get()
-    refresh()
+    common.refreshPage()
 end
 
 local function SetBookBackgroundColorFixed(apply_on)
     FixedBackgroundColor.set(apply_on)
     bg_cached.set_fixed_color = apply_on
-    refresh()
+    common.refreshPage()
 end
 
 FileManager.onToggleBookBackgroundColorFixed = ToggleBookBackgroundColorFixed

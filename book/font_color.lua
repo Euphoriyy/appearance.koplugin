@@ -78,18 +78,6 @@ local function setFontColor(hex)
     recomputeFGColor()
 end
 
-local function refresh()
-    if common.has_document_open() then
-        if ReaderUI.instance.rolling then
-            -- Reapply page CSS
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        elseif ReaderUI.instance.paging then
-            -- Redraw page
-            ReaderUI.instance.paging:onRedrawCurrentPage()
-        end
-    end
-end
-
 -- Menus
 local _ = require("gettext")
 local T = require("ffi/util").template
@@ -120,7 +108,7 @@ local function set_color_callback()
                                 end
 
                                 setFontColor(string.upper(text))
-                                refresh()
+                                common.refreshPage()
 
                                 if touchmenu_instance then
                                     touchmenu_instance:updateItems()
@@ -150,7 +138,7 @@ local function pick_color_callback()
             invert_in_night_mode = should_invert_wheel,
             callback = function(hex)
                 setFontColor(hex)
-                refresh()
+                common.refreshPage()
 
                 if touchmenu_instance then
                     touchmenu_instance:updateItems()
@@ -189,7 +177,7 @@ local function font_color_menu()
                     if Screen.night_mode then
                         recomputeFGColor()
 
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
             },
@@ -203,7 +191,7 @@ local function font_color_menu()
                     recomputeFGColor()
 
                     if Screen.night_mode then
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
                 separator = true,
@@ -214,7 +202,7 @@ local function font_color_menu()
                 callback = function()
                     FixedFontColor.toggle()
                     fg_cached.set_fixed_color = FixedFontColor.get()
-                    refresh()
+                    common.refreshPage()
                 end,
             },
         },
@@ -311,13 +299,13 @@ end
 local function ToggleBookFontColorFixed()
     FixedFontColor.toggle()
     fg_cached.set_fixed_color = FixedFontColor.get()
-    refresh()
+    common.refreshPage()
 end
 
 local function SetBookFontColorFixed(apply_on)
     FixedFontColor.set(apply_on)
     fg_cached.set_fixed_color = apply_on
-    refresh()
+    common.refreshPage()
 end
 
 FileManager.onToggleBookFontColorFixed = ToggleBookFontColorFixed

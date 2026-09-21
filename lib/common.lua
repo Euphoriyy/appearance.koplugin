@@ -149,4 +149,16 @@ function common.isColorInversionActive(doc)
     return doc.configurable and doc.configurable.nightmode_images == 1
 end
 
+function common.refreshPage()
+    if common.has_document_open() then
+        if ReaderUI.instance.rolling then
+            -- Reapply page CSS
+            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        elseif ReaderUI.instance.paging then
+            -- Redraw page
+            ReaderUI.instance.paging:onRedrawCurrentPage()
+        end
+    end
+end
+
 return common

@@ -76,18 +76,6 @@ local function setLinkColor(hex)
     recomputeLinkColor()
 end
 
-local function refresh()
-    if common.has_document_open() then
-        if ReaderUI.instance.rolling then
-            -- Reapply page CSS
-            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
-        elseif ReaderUI.instance.paging then
-            -- Redraw page
-            ReaderUI.instance.paging:onRedrawCurrentPage()
-        end
-    end
-end
-
 -- Menus
 local _ = require("gettext")
 local T = require("ffi/util").template
@@ -118,7 +106,7 @@ local function set_color_callback()
                                 end
 
                                 setLinkColor(string.upper(text))
-                                refresh()
+                                common.refreshPage()
 
                                 if touchmenu_instance then
                                     touchmenu_instance:updateItems()
@@ -148,7 +136,7 @@ local function pick_color_callback()
             invert_in_night_mode = should_invert_wheel,
             callback = function(hex)
                 setLinkColor(hex)
-                refresh()
+                common.refreshPage()
 
                 if touchmenu_instance then
                     touchmenu_instance:updateItems()
@@ -183,7 +171,7 @@ local function link_color_menu()
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
                     setLinkColor(nil)
-                    refresh()
+                    common.refreshPage()
                     if touchmenu_instance then
                         touchmenu_instance:updateItems()
                     end
@@ -199,8 +187,7 @@ local function link_color_menu()
 
                     if Screen.night_mode then
                         recomputeLinkColor()
-
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
             },
@@ -214,7 +201,7 @@ local function link_color_menu()
                     recomputeLinkColor()
 
                     if Screen.night_mode then
-                        refresh()
+                        common.refreshPage()
                     end
                 end,
                 separator = true,
@@ -225,7 +212,7 @@ local function link_color_menu()
                 callback = function()
                     FixedLinkColor.toggle()
                     link_cached.set_fixed_color = FixedLinkColor.get()
-                    refresh()
+                    common.refreshPage()
                 end,
             },
         },
@@ -320,13 +307,13 @@ end
 local function ToggleBookLinkColorFixed()
     FixedLinkColor.toggle()
     link_cached.set_fixed_color = FixedLinkColor.get()
-    refresh()
+    common.refreshPage()
 end
 
 local function SetBookLinkColorFixed(apply_on)
     FixedLinkColor.set(apply_on)
     link_cached.set_fixed_color = apply_on
-    refresh()
+    common.refreshPage()
 end
 
 FileManager.onToggleBookLinkColorFixed = ToggleBookLinkColorFixed
