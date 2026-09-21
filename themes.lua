@@ -677,6 +677,8 @@ local function themes_menu()
                     text_func = function()
                         return nf_icons.label(nf_icons.MENU, _("Current UI themes"))
                     end,
+                    keep_menu_open = true,
+                    callback = function() end,
                 },
                 {
                     text_func = function()
@@ -699,6 +701,8 @@ local function themes_menu()
                     text_func = function()
                         return nf_icons.label(nf_icons.BOOK_OPEN, _("Current book themes"))
                     end,
+                    keep_menu_open = true,
+                    callback = function() end,
                 },
                 {
                     text_func = function()
