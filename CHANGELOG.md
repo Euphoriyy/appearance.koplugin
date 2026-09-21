@@ -7,6 +7,7 @@
 
 * preserve book link color on startup ([6f07ff6](https://github.com/Euphoriyy/appearance.koplugin/commit/6f07ff6a9e387e7269c19d9b32963497d713744f))
 * preserve book theme colors on startup ([f61a0ba](https://github.com/Euphoriyy/appearance.koplugin/commit/f61a0ba78983200eb3bbc6429bc64eaeddbd0ad2))
+* correct link color hex variable name ([c109d0c](https://github.com/Euphoriyy/appearance.koplugin/commit/c109d0c58e8bb83bfad71ed6e46d20ea8f3cc8fb))
 
 ## [1.8.0](https://github.com/Euphoriyy/appearance.koplugin/compare/v1.7.0...v1.8.0) (2026-09-08)
 
