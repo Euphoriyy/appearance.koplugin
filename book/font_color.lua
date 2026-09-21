@@ -1,10 +1,8 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Dispatcher = require("dispatcher")
-local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local FootnoteWidget = require("ui/widget/footnotewidget")
-local InputDialog = require("ui/widget/inputdialog")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
@@ -82,49 +80,6 @@ end
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local function set_color_callback()
-    return function(touchmenu_instance)
-        local input_dialog
-        input_dialog = InputDialog:new({
-            title = "Enter custom color code",
-            input = getFontColor(),
-            input_hint = "#000000",
-            buttons = {
-                {
-                    {
-                        text = "Cancel",
-                        callback = function()
-                            UIManager:close(input_dialog)
-                        end,
-                    },
-                    {
-                        text = "Save",
-                        callback = function()
-                            local text = input_dialog:getInputText()
-
-                            if text ~= "" then
-                                if not text:match("^#%x%x%x%x%x%x$") then
-                                    return
-                                end
-
-                                setFontColor(string.upper(text))
-                                common.refreshPage()
-
-                                if touchmenu_instance then
-                                    touchmenu_instance:updateItems()
-                                end
-                                UIManager:close(input_dialog)
-                            end
-                        end,
-                    },
-                },
-            },
-        })
-        UIManager:show(input_dialog)
-        input_dialog:onShowKeyboard()
-    end
-end
-
 local function pick_color_callback()
     return function(touchmenu_instance)
         local h, s, v = common.hexToHSV(getFontColor())
@@ -161,11 +116,10 @@ local function font_color_menu()
         sub_item_table = {
             {
                 text_func = function()
-                    return T(_("Font color: %1 (hold to pick)"), getFontColor())
+                    return T(_("Font color: %1"), getFontColor())
                 end,
                 keep_menu_open = true,
-                callback = set_color_callback(),
-                hold_callback = pick_color_callback(),
+                callback = pick_color_callback(),
             },
             {
                 text = _("Alternative night mode color"),

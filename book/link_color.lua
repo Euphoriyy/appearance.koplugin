@@ -80,52 +80,9 @@ end
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local function set_color_callback()
-    return function(touchmenu_instance)
-        local input_dialog
-        input_dialog = InputDialog:new({
-            title = "Enter custom color code",
-            input = getLinkColor() or "#0000EE",
-            input_hint = "#000000",
-            buttons = {
-                {
-                    {
-                        text = "Cancel",
-                        callback = function()
-                            UIManager:close(input_dialog)
-                        end,
-                    },
-                    {
-                        text = "Save",
-                        callback = function()
-                            local text = input_dialog:getInputText()
-
-                            if text ~= "" then
-                                if not text:match("^#%x%x%x%x%x%x$") then
-                                    return
-                                end
-
-                                setLinkColor(string.upper(text))
-                                common.refreshPage()
-
-                                if touchmenu_instance then
-                                    touchmenu_instance:updateItems()
-                                end
-                                UIManager:close(input_dialog)
-                            end
-                        end,
-                    },
-                },
-            },
-        })
-        UIManager:show(input_dialog)
-        input_dialog:onShowKeyboard()
-    end
-end
-
 local function pick_color_callback()
     return function(touchmenu_instance)
-        local h, s, v = common.hexToHSV(getLinkColor() or "#0066FF")
+        local h, s, v = common.hexToHSV(getLinkColor() or "#0000EE")
         local wheel
         local should_invert_wheel = AltNightLinkColor.get() or not InvertLinkColor.get()
         wheel = ColorWheelWidget:new({
@@ -159,11 +116,10 @@ local function link_color_menu()
         sub_item_table = {
             {
                 text_func = function()
-                    return T(_("Link color: %1 (hold to pick)"), getLinkColor() or "default")
+                    return T(_("Link color: %1"), getLinkColor() or "default")
                 end,
                 keep_menu_open = true,
-                callback = set_color_callback(),
-                hold_callback = pick_color_callback(),
+                callback = pick_color_callback(),
             },
             {
                 text = _("Reset color"),

@@ -2,7 +2,6 @@ local Blitbuffer = require("ffi/blitbuffer")
 local ButtonDialog = require("ui/widget/buttondialog")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local InputDialog = require("ui/widget/inputdialog")
-local MultiConfirmBox = require("ui/widget/multiconfirmbox")
 local ReaderHighlight = require("apps/reader/modules/readerhighlight")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
@@ -130,47 +129,6 @@ function ReaderHighlight:editHighlightColor(index)
 end
 
 -- Menus
-local function set_color_menu(touchmenu_instance, original_hex, callback)
-    original_hex = original_hex or "#333333"
-
-    local input_dialog
-    input_dialog = InputDialog:new({
-        title = _("Enter highlight color code"),
-        input = original_hex,
-        input_hint = "#FFFFFF",
-        buttons = {
-            {
-                {
-                    text = "Cancel",
-                    callback = function()
-                        UIManager:close(input_dialog)
-                    end,
-                },
-                {
-                    text = "Next",
-                    callback = function()
-                        local text = input_dialog:getInputText()
-
-                        if text ~= "" then
-                            if not text:match("^#%x%x%x%x%x%x$") then
-                                return
-                            end
-
-                            callback(text)
-
-                            if touchmenu_instance then
-                                touchmenu_instance:updateItems()
-                            end
-                            UIManager:close(input_dialog)
-                        end
-                    end,
-                },
-            },
-        },
-    })
-    return input_dialog
-end
-
 local function pick_color_menu(touchmenu_instance, original_hex, callback)
     original_hex = original_hex or "#333333"
 
@@ -199,20 +157,7 @@ end
 
 -- Menu to select method for choosing color
 local function color_menu(touchmenu_instance, original_hex, callback)
-    local dialog = MultiConfirmBox:new({
-        text = _("Choose the highlight color by:"),
-        choice1_text = _("Hex code"),
-        choice1_callback = function()
-            local input_dialog = set_color_menu(touchmenu_instance, original_hex, callback)
-            UIManager:show(input_dialog)
-            input_dialog:onShowKeyboard()
-        end,
-        choice2_text = _("Color picker"),
-        choice2_callback = function()
-            UIManager:show(pick_color_menu(touchmenu_instance, original_hex, callback))
-        end,
-    })
-    return dialog
+    UIManager:show(pick_color_menu(touchmenu_instance, original_hex, callback))
 end
 
 local edit_menu
@@ -316,7 +261,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             original_background = button_bg_colors[2],
             background = common.EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(color_menu(touchmenu_instance, getHighlightColorHex(color), function(hex)
+                UIManager:show(pick_color_menu(touchmenu_instance, getHighlightColorHex(color), function(hex)
                     setHighlightColorHex(color, hex)
 
                     UIManager:close(dialog)

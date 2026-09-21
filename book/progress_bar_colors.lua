@@ -2,7 +2,6 @@ local BD = require("ui/bidi")
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Geom = require("ui/geometry")
-local InputDialog = require("ui/widget/inputdialog")
 local Math = require("optmath")
 local ProgressWidget = require("ui/widget/progresswidget")
 local ReaderFooter = require("apps/reader/modules/readerfooter")
@@ -214,7 +213,7 @@ function ReaderFooter:_statusBarColorMenu(read)
     return {
         text_func = function()
             local color = Settings:getPersistent(self.settings.progress_style_thin, color_attrib)
-            local format = (read and "Read color: %1" or "Unread color: %1") .. " (hold to pick)"
+            local format = read and "Read color: %1" or "Unread color: %1"
             return T(format, color)
         end,
         keep_menu_open = true,
@@ -222,61 +221,6 @@ function ReaderFooter:_statusBarColorMenu(read)
             return not self.settings.disable_progress_bar
         end,
         callback = function(touchmenu_instance)
-            local invert_enabled = read and InvertReadColor.get() or InvertUnreadColor.get()
-            local input_dialog
-            input_dialog = InputDialog:new({
-                title = "Enter color hex code for " .. (read and "read color" or "unread color"),
-                input = Settings:getPersistent(self.settings.progress_style_thin, color_attrib),
-                input_hint = "#FFFFFF",
-                buttons = {
-                    {
-                        {
-                            text = "Cancel",
-                            callback = function()
-                                UIManager:close(input_dialog)
-                            end,
-                        },
-                        {
-                            text = "Save",
-                            callback = function()
-                                local text = input_dialog:getInputText()
-
-                                if text ~= "" then
-                                    if not text:match("^#%x%x%x%x%x%x$") then
-                                        return
-                                    end
-
-                                    -- Process color depending on if the color should be inverted in night mode
-                                    local display_text = text
-                                    if Screen.night_mode then
-                                        if not invert_enabled then
-                                            display_text = common.invertColor(text)
-                                        end
-                                    end
-                                    local color = Blitbuffer.colorFromString(display_text)
-
-                                    if not color then
-                                        return
-                                    end
-
-                                    Settings:set(self.settings.progress_style_thin, color_attrib,
-                                        string.upper(text))
-                                    Settings:setPersistent(self.settings.progress_style_thin, color_attrib,
-                                        string.upper(text))
-                                    self.progress_bar[color_attrib] = color
-                                    touchmenu_instance:updateItems()
-                                    self:refreshFooter(true)
-                                    UIManager:close(input_dialog)
-                                end
-                            end,
-                        },
-                    },
-                },
-            })
-            UIManager:show(input_dialog)
-            input_dialog:onShowKeyboard()
-        end,
-        hold_callback = function(touchmenu_instance)
             local title_text = read and "Pick read color" or "Pick unread color"
             local current_hex = Settings:getPersistent(self.settings.progress_style_thin, color_attrib)
             local h, s, v = common.hexToHSV(current_hex)
@@ -507,63 +451,11 @@ local function color_submenu(thin, read, separator)
     {
         text_func = function()
             local color = Settings:getPersistent(thin, color_attrib)
-            local format = (read and "Read color: %1" or "Unread color: %1") .. " (hold to pick)"
+            local format = read and "Read color: %1" or "Unread color: %1"
             return T(format, color)
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local invert_enabled = read and InvertReadColor.get() or InvertUnreadColor.get()
-            local input_dialog
-            input_dialog = InputDialog:new({
-                title = "Enter color hex code for " .. (read and "read color" or "unread color"),
-                input = Settings:getPersistent(thin, color_attrib),
-                input_hint = "#FFFFFF",
-                buttons = {
-                    {
-                        {
-                            text = "Cancel",
-                            callback = function()
-                                UIManager:close(input_dialog)
-                            end,
-                        },
-                        {
-                            text = "Save",
-                            callback = function()
-                                local text = input_dialog:getInputText()
-
-                                if text ~= "" then
-                                    if not text:match("^#%x%x%x%x%x%x$") then
-                                        return
-                                    end
-
-                                    -- Process color depending on if the color should be inverted in night mode
-                                    local display_text = text
-                                    if Screen.night_mode then
-                                        if not invert_enabled then
-                                            display_text = common.invertColor(text)
-                                        end
-                                    end
-                                    local color = Blitbuffer.colorFromString(display_text)
-
-                                    if not color then
-                                        return
-                                    end
-
-                                    Settings:set(thin, color_attrib, string.upper(text))
-                                    Settings:setPersistent(thin, color_attrib, string.upper(text))
-                                    touchmenu_instance:updateItems()
-                                    update_footer()
-                                    UIManager:close(input_dialog)
-                                end
-                            end,
-                        },
-                    },
-                },
-            })
-            UIManager:show(input_dialog)
-            input_dialog:onShowKeyboard()
-        end,
-        hold_callback = function(touchmenu_instance)
             local title_text = read and "Pick read color" or "Pick unread color"
             local current_hex = Settings:getPersistent(thin, color_attrib)
             local h, s, v = common.hexToHSV(current_hex)
