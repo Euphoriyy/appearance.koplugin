@@ -533,7 +533,7 @@ function ColorWheelWidget:update()
         value_group:resetLayout() -- label width can change (e.g. 90% → 100%)
         value_minus:enableDisable(self.value > 0)
         value_plus:enableDisable(self.value < 1)
-        UIManager:setDirty(self, "ui")
+        UIManager:setDirty(self, "flashui", self.color_wheel.dimen, true)
     end
 
     local preview_group = HorizontalGroup:new {
