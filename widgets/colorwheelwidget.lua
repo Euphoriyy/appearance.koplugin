@@ -546,6 +546,7 @@ function ColorWheelWidget:update()
     local cancel_button = Button:new {
         text        = self.cancel_text,
         width       = math.floor(self.width / 2) - Size.padding.large * 2,
+        radius      = Size.radius.button,
         show_parent = self,
         callback    = function() self:onCancel() end,
     }
@@ -553,6 +554,7 @@ function ColorWheelWidget:update()
     local ok_button     = Button:new {
         text        = self.ok_text,
         width       = math.floor(self.width / 2) - Size.padding.large * 2,
+        radius      = Size.radius.button,
         show_parent = self,
         callback    = function() self:onApply() end,
     }
