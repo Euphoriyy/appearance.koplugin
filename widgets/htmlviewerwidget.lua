@@ -88,7 +88,7 @@ local link_color
 
 local function get_book_link_hex()
     link_color = link_color or require("book/link_color")
-    return link_color.link_hex()
+    return link_color.hex()
 end
 
 -- ---------------------------------------------------------------------------
