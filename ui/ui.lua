@@ -12,14 +12,15 @@ local dict_font_face_menu = require("ui/dict_font_face")
 local misc_menu = require("ui/misc")
 local nf_icons = require("lib/nf_icons")
 local transparency_menu = require("ui/transparency")
+local _ = require("gettext")
 
 local function ui_menu()
     return {
-        text_func = function() return nf_icons.label(nf_icons.MENU, "User interface") end,
+        text_func = function() return nf_icons.label(nf_icons.MENU, _("User interface")) end,
         sub_item_table = {
             background_color.menu(),
-            background_image_menu(),
             common.add_separator(font_color.menu()),
+            common.add_separator(background_image_menu()),
             font_face_menu(),
             common.add_separator(dict_font_face_menu()),
             transparency_menu(),
