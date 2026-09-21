@@ -10,6 +10,7 @@ local GestureRange = require("ui/gesturerange")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local MovableContainer = require("ui/widget/container/movablecontainer")
+local Screen = Device.screen
 local Size = require("ui/size")
 local TextWidget = require("ui/widget/textwidget")
 local TitleBar = require("ui/widget/titlebar")
@@ -19,7 +20,6 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local Font = require("ui/font")
 local common = require("lib/common")
-local Screen = Device.screen
 
 --------------------------------------------
 -- Lazy Loading
@@ -485,16 +485,19 @@ function ColorWheelWidget:update()
         show_parent      = self,
     }
 
-    -- Defined below, once the widgets it updates exist
-    local set_brightness
 
     local value_minus   = Button:new {
         text        = "▬",
         enabled     = self.value > 0,
         width       = self.button_width,
+        radius      = Size.radius.button,
         show_parent = self,
         callback    = function()
-            set_brightness(math.max(0, self.value - 0.1))
+            self.value = math.max(0, self.value - 0.1)
+            -- Brightness change requires wheel re-render: use full update()
+            self.color_wheel._needs_redraw = true
+            self:update()
+            UIManager:setDirty(self, "ui", self.color_wheel.dimen, true)
         end,
     }
 
@@ -502,9 +505,13 @@ function ColorWheelWidget:update()
         text        = "✚",
         enabled     = self.value < 1,
         width       = self.button_width,
+        radius      = Size.radius.button,
         show_parent = self,
         callback    = function()
-            set_brightness(math.min(1, self.value + 0.1))
+            self.value = math.min(1, self.value + 0.1)
+            self.color_wheel._needs_redraw = true
+            self:update()
+            UIManager:setDirty(self, "ui", self.color_wheel.dimen, true)
         end,
     }
 
@@ -522,24 +529,11 @@ function ColorWheelWidget:update()
         value_plus,
     }
 
-    -- Brightness change: update in place instead of rebuilding the widget tree.
-    -- The wheel re-renders on its next paint (value changed), and the live
-    -- preview/hex read hue/sat/val at paint time.
-    set_brightness = function(value)
-        self.value = value
-        self.color_wheel.value = self.value
-        self.color_wheel._needs_redraw = true
-        value_label:setText(string.format("Brightness: %d%%", math.floor(self.value * 100)))
-        value_group:resetLayout() -- label width can change (e.g. 90% → 100%)
-        value_minus:enableDisable(self.value > 0)
-        value_plus:enableDisable(self.value < 1)
-        UIManager:setDirty(self, "flashui", self.color_wheel.dimen, true)
-    end
-
     local preview_group = HorizontalGroup:new {
         align = "center",
         FrameContainer:new {
             bordersize = Size.border.thick,
+            radius     = Size.radius.button,
             margin     = 0,
             padding    = 0,
             self._live_preview,
