@@ -1,6 +1,7 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local Button = require("ui/widget/button")
 local CenterContainer = require("ui/widget/container/centercontainer")
+local CircleWidget = require("widgets/circlewidget")
 local Device = require("device")
 local FocusManager = require("ui/widget/focusmanager")
 local FrameContainer = require("ui/widget/container/framecontainer")
@@ -162,6 +163,22 @@ function ColorWheel:init()
     self.dimen       = Geom:new { x = 0, y = 0, w = self.dimen.w, h = self.dimen.h }
     self.night_mode  = self.invert_in_night_mode and Screen.night_mode
     self.draw_radius = math.max(1, math.floor(self.radius * self.draw_scale))
+
+    -- Selection indicator: white disc with a dark dot, scaled to the wheel.
+    -- Odd diameters so the circle centers exactly on the selected pixel.
+    local outer_r    = math.max(2, math.floor(self.radius / 32 + 0.5))
+    local inner_r    = math.max(1, math.floor(outer_r * 0.707 + 0.5))
+    self._sel_outer  = CircleWidget:new {
+        width      = outer_r * 2 + 1,
+        height     = outer_r * 2 + 1,
+        background = Blitbuffer.COLOR_WHITE,
+    }
+    self._sel_inner  = CircleWidget:new {
+        width      = inner_r * 2 + 1,
+        height     = inner_r * 2 + 1,
+        background = get_font_fgcolor() or Blitbuffer.COLOR_BLACK,
+    }
+
     -- Pre-warm the cache so the first paint doesn't stutter
     getWheelCache(self.draw_radius)
     self._needs_redraw = true
@@ -241,22 +258,10 @@ function ColorWheel:paintTo(bb, x, y)
     local sel_x = cx + math.floor(math.cos(math.rad(self.hue)) * self.saturation * self.radius + 0.5)
     local sel_y = cy + math.floor(math.sin(math.rad(self.hue)) * self.saturation * self.radius + 0.5)
 
-    local a = self.radius / 32
-    local b = a * a
-    local c = a / 2 * a
-    local fgcolor = get_font_fgcolor()
-
-    for py = -a, a do
-        for px = -a, a do
-            local d = px * px + py * py
-            if d <= b then
-                bb:setPixelClamped(sel_x + px, sel_y + py, Blitbuffer.COLOR_WHITE)
-            end
-            if d <= c then
-                bb:setPixelClamped(sel_x + px, sel_y + py, fgcolor)
-            end
-        end
-    end
+    local outer = math.floor(self._sel_outer.width / 2)
+    local inner = math.floor(self._sel_inner.width / 2)
+    self._sel_outer:paintTo(bb, sel_x - outer, sel_y - outer)
+    self._sel_inner:paintTo(bb, sel_x - inner, sel_y - inner)
 end
 
 function ColorWheel:updateColor(ges_pos)
@@ -480,16 +485,16 @@ function ColorWheelWidget:update()
         show_parent      = self,
     }
 
+    -- Defined below, once the widgets it updates exist
+    local set_brightness
+
     local value_minus   = Button:new {
         text        = "▬",
         enabled     = self.value > 0,
         width       = self.button_width,
         show_parent = self,
         callback    = function()
-            self.value = math.max(0, self.value - 0.1)
-            -- Brightness change requires wheel re-render: use full update()
-            self.color_wheel._needs_redraw = true
-            self:update()
+            set_brightness(math.max(0, self.value - 0.1))
         end,
     }
 
@@ -499,9 +504,7 @@ function ColorWheelWidget:update()
         width       = self.button_width,
         show_parent = self,
         callback    = function()
-            self.value = math.min(1, self.value + 0.1)
-            self.color_wheel._needs_redraw = true
-            self:update()
+            set_brightness(math.min(1, self.value + 0.1))
         end,
     }
 
@@ -518,6 +521,20 @@ function ColorWheelWidget:update()
         HorizontalSpan:new { width = Size.padding.large },
         value_plus,
     }
+
+    -- Brightness change: update in place instead of rebuilding the widget tree.
+    -- The wheel re-renders on its next paint (value changed), and the live
+    -- preview/hex read hue/sat/val at paint time.
+    set_brightness = function(value)
+        self.value = value
+        self.color_wheel.value = self.value
+        self.color_wheel._needs_redraw = true
+        value_label:setText(string.format("Brightness: %d%%", math.floor(self.value * 100)))
+        value_group:resetLayout() -- label width can change (e.g. 90% → 100%)
+        value_minus:enableDisable(self.value > 0)
+        value_plus:enableDisable(self.value < 1)
+        UIManager:setDirty(self, "ui")
+    end
 
     local preview_group = HorizontalGroup:new {
         align = "center",
