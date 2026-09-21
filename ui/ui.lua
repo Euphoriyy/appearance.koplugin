@@ -18,9 +18,9 @@ local function ui_menu()
         sub_item_table = {
             background_color.menu(),
             background_image_menu(),
-            font_color.menu(),
+            common.add_separator(font_color.menu()),
             font_face_menu(),
-            dict_font_face_menu(),
+            common.add_separator(dict_font_face_menu()),
             transparency_menu(),
             misc_menu(),
         }

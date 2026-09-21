@@ -161,4 +161,9 @@ function common.refreshPage()
     end
 end
 
+function common.add_separator(tbl)
+    tbl.separator = true
+    return tbl
+end
+
 return common
