@@ -10,6 +10,7 @@ local icons = {
     BOOK_OPEN = "\u{E28B}",
     BORDER_COLOR = "\u{E7C8}",
     CURSOR_DEFAULT = "\u{E8B3}",
+    CURSOR_TEXT = "\u{ECE6}",
     EYEDROPPER = "\u{E909}",
     FONT = "\u{F031}",
     FORMAT_COLOR = "\u{E965}",
@@ -26,6 +27,7 @@ local icons = {
     PICTURE = "\u{F03E}",
     PLUS = "\u{F44D}",
     REFRESH = "\u{EB4F}",
+    REMOVE = "\u{F00D}",
     ROUNDED_CORNER = "\u{ED06}",
     UPDATE = "\u{EDAE}",
 }

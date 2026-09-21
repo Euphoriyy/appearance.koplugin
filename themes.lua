@@ -462,7 +462,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
 
     local edit_buttons = {
         { {
-            text = _("§white ✒ Rename§r "),
+            text = T(_("§white %1 Rename§r "), nf_icons.CURSOR_TEXT),
             menu_style = true,
             original_background = button_bg_colors[1],
             background = common.EXCLUSION_COLOR,
@@ -502,7 +502,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = T(_("§white ● Edit background color§r ")),
+            text = T(_("§white %1 Edit background color§r "), nf_icons.FORMAT_COLOR),
             menu_style = true,
             original_background = button_bg_colors[2],
             background = common.EXCLUSION_COLOR,
@@ -517,7 +517,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = T(_("§white ＴEdit foreground color§r ")),
+            text = T(_("§white %1 Edit foreground color§r "), nf_icons.BORDER_COLOR),
             menu_style = true,
             original_background = button_bg_colors[3],
             background = common.EXCLUSION_COLOR,
@@ -532,7 +532,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = T(_("§white ⤴ Edit link color§r ")),
+            text = T(_("§white %1 Edit link color§r "), nf_icons.LINK_VARIANT_1),
             menu_style = true,
             original_background = button_bg_colors[4],
             background = common.EXCLUSION_COLOR,
@@ -547,7 +547,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ✖ Delete§r "),
+            text = T(_("§white %1 Delete§r "), nf_icons.REMOVE),
             menu_style = true,
             original_background = button_bg_colors[6],
             background = common.EXCLUSION_COLOR,

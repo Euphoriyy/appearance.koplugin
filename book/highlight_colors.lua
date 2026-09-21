@@ -7,9 +7,10 @@ local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
-local _ = require("gettext")
 local common = require("lib/common")
 local nf_icons = require("lib/nf_icons")
+local _ = require("gettext")
+local T = require("ffi/util").template
 
 local HIGHLIGHT_COLOR_KEYS = {
     "red",
@@ -216,7 +217,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
 
     local edit_buttons = {
         { {
-            text = _("§white ✒ Rename§r "),
+            text = T(_("§white %1 Rename§r "), nf_icons.CURSOR_TEXT),
             menu_style = true,
             original_background = button_bg_colors[1],
             background = common.EXCLUSION_COLOR,
@@ -257,7 +258,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ● Edit color§r "),
+            text = T(_("§white %1 Edit color§r "), nf_icons.EYEDROPPER),
             menu_style = true,
             original_background = button_bg_colors[2],
             background = common.EXCLUSION_COLOR,
@@ -289,7 +290,7 @@ edit_menu = function(touchmenu_instance, color, updialog_ref)
             end,
         } },
         { {
-            text = _("§white ⟳ Reset§r "),
+            text = T(_("§white %1 Reset§r "), nf_icons.REFRESH),
             menu_style = true,
             original_background = button_bg_colors[4],
             background = common.EXCLUSION_COLOR,
