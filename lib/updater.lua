@@ -14,7 +14,8 @@ local T = require("ffi/util").template
 
 local PLUGIN_NAME = "appearance.koplugin"
 local PLUGIN_TITLE = "Appearance"
-local REPO_PATH = "Euphoriyy/" .. PLUGIN_NAME
+local AUTHOR = "Euphoriyy"
+local REPO_PATH = AUTHOR .. "/" .. PLUGIN_NAME
 local PLUGIN_PATH = DataStorage:getDataDir() .. "/plugins/" .. PLUGIN_NAME
 local USERAGENT_STRING = "KOReader-" .. PLUGIN_TITLE
 local CACHE_DIR = "appearance_cache"

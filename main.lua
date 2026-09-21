@@ -9,6 +9,7 @@ local about_menu = require("about")
 local book_menu = require("book/book")
 local themes_menu = require("themes")
 local ui_menu = require("ui/ui")
+local updates_menu = require("updates")
 
 local Appearance = WidgetContainer:extend({
     name = "appearance",
@@ -46,6 +47,7 @@ local submenus = {
     themes_menu(),
     ui_menu(),
     book_menu(),
+    updates_menu(),
     about_menu(),
 }
 

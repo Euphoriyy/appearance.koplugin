@@ -1,7 +1,9 @@
 local Blitbuffer = require("ffi/blitbuffer")
+local Device = require("device")
 local Event = require("ui/event")
 local ReaderUI = require("apps/reader/readerui")
 local UIManager = require("ui/uimanager")
+local _ = require("gettext")
 
 local common = {}
 
@@ -164,6 +166,21 @@ end
 function common.add_separator(tbl)
     tbl.separator = true
     return tbl
+end
+
+function common.handleLink(link)
+    local ok = false
+    if Device.openLink then
+        local _ok, ret = pcall(function() return Device:openLink(link) end)
+        if _ok and ret then ok = true end
+    end
+    if not ok and Device.input and Device.input.setClipboardText then
+        pcall(function() Device.input.setClipboardText(link) end)
+        local Notification = require("ui/widget/notification")
+        UIManager:show(Notification:new {
+            text = _("Link copied to clipboard"),
+        })
+    end
 end
 
 return common
