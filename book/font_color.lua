@@ -9,6 +9,7 @@ local Screen = require("device").screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 local util = require("util")
 
 local HexFontColor = Setting("book_font_color_hex", "#000000")
@@ -111,7 +112,7 @@ end
 local function font_color_menu()
     return {
         text_func = function()
-            return T(_("Font color: %1"), getFontColor())
+            return T(nf_icons.label(nf_icons.BORDER_COLOR, _("Font color: %1")), getFontColor())
         end,
         sub_item_table = {
             {

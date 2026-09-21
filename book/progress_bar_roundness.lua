@@ -4,6 +4,7 @@ local Screen = require("device").screen
 local Setting = require("lib/setting")
 local SpinWidget = require("ui/widget/spinwidget")
 local UIManager = require("ui/uimanager")
+local nf_icons = require("lib/nf_icons")
 local _ = require("gettext")
 local T = require("ffi/util").template
 
@@ -13,7 +14,7 @@ local ProgressBarRoundFill = Setting("book_progress_bar_round_fill", false) -- W
 
 local function progress_bar_roundness_menu()
     return {
-        text = _("Progress bar roundness"),
+        text_func = function() return _(nf_icons.label(nf_icons.ROUNDED_CORNER, "Progress bar roundness")) end,
         keep_menu_open = true,
         sub_item_table = {
             {

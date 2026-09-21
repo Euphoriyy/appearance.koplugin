@@ -12,6 +12,7 @@ local Screen = Device.screen
 local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 local util = require("util")
 
 -- Settings
@@ -158,7 +159,7 @@ end
 local function background_color_menu()
     return {
         text_func = function()
-            return T(_("Background color: %1"), getBackgroundColor())
+            return T(nf_icons.label(nf_icons.FORMAT_COLOR, _("Background color: %1")), getBackgroundColor())
         end,
         sub_item_table = {
             {

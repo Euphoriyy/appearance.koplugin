@@ -10,11 +10,12 @@ local font_color = require("ui/font_color")
 local font_face_menu = require("ui/font_face")
 local dict_font_face_menu = require("ui/dict_font_face")
 local misc_menu = require("ui/misc")
+local nf_icons = require("lib/nf_icons")
 local transparency_menu = require("ui/transparency")
 
 local function ui_menu()
     return {
-        text = "User interface",
+        text_func = function() return nf_icons.label(nf_icons.MENU, "User interface") end,
         sub_item_table = {
             background_color.menu(),
             background_image_menu(),

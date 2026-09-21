@@ -20,6 +20,7 @@ local VerticalSpan = require("ui/widget/verticalspan")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local Font = require("ui/font")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 
 --------------------------------------------
 -- Lazy Loading
@@ -478,7 +479,7 @@ function ColorWheelWidget:update()
 
     local title_bar     = TitleBar:new {
         width            = self.width,
-        title            = self.title_text,
+        title            = nf_icons.label(nf_icons.EYEDROPPER, self.title_text),
         with_bottom_line = true,
         close_button     = true,
         close_callback   = function() self:onCancel() end,

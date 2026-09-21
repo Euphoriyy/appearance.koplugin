@@ -1,6 +1,7 @@
 local Device = require("device")
 local Setting = require("lib/setting")
 local Updater = require("lib/updater")
+local nf_icons = require("lib/nf_icons")
 local _ = require("gettext")
 local T = require("ffi/util").template
 
@@ -8,7 +9,7 @@ local AutomaticUpdateChecks = Setting("automatic_update_checks", false)
 
 local function about_menu()
     return {
-        text = _("About"),
+        text_func = function() return _(nf_icons.label(nf_icons.INFO, "About")) end,
         sub_item_table = {
             {
                 text = _("Made with §pink ❤§r by Euphoriyy"),
@@ -27,7 +28,7 @@ local function about_menu()
                 separator = true,
             },
             {
-                text = _("Check for updates"),
+                text_func = function() return nf_icons.label(nf_icons.UPDATE, _("Check for updates")) end,
                 callback = function()
                     Updater.check()
                 end,

@@ -1,16 +1,15 @@
 local Blitbuffer = require("ffi/blitbuffer")
 local ColorWheelWidget = require("widgets/colorwheelwidget")
 local Dispatcher = require("dispatcher")
-local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local FootnoteWidget = require("ui/widget/footnotewidget")
-local InputDialog = require("ui/widget/inputdialog")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
 local _ = require("gettext")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 local util = require("util")
 
 local HexLinkColor = Setting("book_link_color_hex", nil)
@@ -111,7 +110,7 @@ end
 local function link_color_menu()
     return {
         text_func = function()
-            return T(_("Link color: %1"), getLinkColor() or "default")
+            return T(nf_icons.label(nf_icons.LINK, _("Link color: %1")), getLinkColor() or "default")
         end,
         sub_item_table = {
             {

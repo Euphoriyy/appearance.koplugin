@@ -9,6 +9,7 @@ local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 local _ = require("gettext")
 local T = require("ffi/util").template
 
@@ -518,7 +519,7 @@ local function progress_bar_colors_menu()
         Settings:init()
     end
     return {
-        text = _("Progress bar colors"),
+        text_func = function() return nf_icons.label(nf_icons.FORMAT_LINE_WEIGHT, _("Progress bar colors")) end,
         sub_item_table = {
             {
                 text = _("Thick progress bar")

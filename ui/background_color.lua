@@ -34,6 +34,7 @@ local UnderlineContainer      = require("ui/widget/container/underlinecontainer"
 local VirtualKeyboard         = require("ui/widget/virtualkeyboard")
 local common                  = require("lib/common")
 local logger                  = require("logger")
+local nf_icons                = require("lib/nf_icons")
 local userpatch               = require("userpatch")
 local util                    = require("util")
 
@@ -229,7 +230,7 @@ end
 local function background_color_menu()
     return {
         text_func = function()
-            return T(_("Background color: %1"), getBackgroundColor())
+            return T(nf_icons.label(nf_icons.FORMAT_COLOR, _("Background color: %1")), getBackgroundColor())
         end,
         sub_item_table = {
             {

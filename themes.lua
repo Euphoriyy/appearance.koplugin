@@ -15,6 +15,7 @@ local Settings = require("lib/settings")
 local TripleConfirmBox = require("widgets/tripleconfirmbox")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 local theme_list = require("lib/theme_list")
 
 -- Significant variables for the UI background and font color
@@ -669,12 +670,17 @@ end
 -- Main themes menu
 local function themes_menu()
     return {
-        text = _("Themes"),
+        text_func = function() return nf_icons.label(nf_icons.PALETTE, _("Themes")) end,
         sub_item_table_func = function()
             local items = {
                 {
                     text_func = function()
-                        return T(_("Current day theme for UI: %1"), CurrentUIDayTheme.get().label)
+                        return nf_icons.label(nf_icons.MENU, _("Current UI themes"))
+                    end,
+                },
+                {
+                    text_func = function()
+                        return T(_("§orange ☀️§r %1"), CurrentUIDayTheme.get().label)
                     end,
                     callback = function()
                         ask_to_apply(CurrentUIDayTheme.get(), true, false)
@@ -682,7 +688,7 @@ local function themes_menu()
                 },
                 {
                     text_func = function()
-                        return T(_("Current night theme for UI: %1"), CurrentUINightTheme.get().label)
+                        return T(_("§blue ⏾§r %1"), CurrentUINightTheme.get().label)
                     end,
                     callback = function()
                         ask_to_apply(CurrentUINightTheme.get(), true, false)
@@ -691,7 +697,12 @@ local function themes_menu()
                 },
                 {
                     text_func = function()
-                        return T(_("Current day theme for Book: %1"), CurrentBookDayTheme.get().label)
+                        return nf_icons.label(nf_icons.BOOK_OPEN, _("Current book themes"))
+                    end,
+                },
+                {
+                    text_func = function()
+                        return T(_("§orange ☀️§r %1"), CurrentBookDayTheme.get().label)
                     end,
                     callback = function()
                         ask_to_apply(CurrentBookDayTheme.get(), true, true)
@@ -699,7 +710,7 @@ local function themes_menu()
                 },
                 {
                     text_func = function()
-                        return T(_("Current night theme for Book: %1"), CurrentBookNightTheme.get().label)
+                        return T(_("§blue ⏾§r %1"), CurrentBookNightTheme.get().label)
                     end,
                     callback = function()
                         ask_to_apply(CurrentBookNightTheme.get(), true, true)
@@ -707,7 +718,7 @@ local function themes_menu()
                     separator = true,
                 },
                 {
-                    text = _("Choose a theme"),
+                    text_func = function() return nf_icons.label(nf_icons.CURSOR_DEFAULT, _("Choose a theme")) end,
                     callback = function(touchmenu_instance)
                         local dialog_ref = {}
                         local buttons = getThemeButtons(touchmenu_instance, dialog_ref)
@@ -728,7 +739,7 @@ local function themes_menu()
                     end,
                 },
                 {
-                    text = _("Add a theme"),
+                    text_func = function() return nf_icons.label(nf_icons.PLUS, _("Add a theme")) end,
                     callback = function(touchmenu_instance)
                         local input_dialog
                         input_dialog = InputDialog:new({
@@ -773,7 +784,7 @@ local function themes_menu()
                     end,
                 },
                 {
-                    text = _("Reset themes"),
+                    text_func = function() return nf_icons.label(nf_icons.REFRESH, _("Reset themes")) end,
                     sub_item_table = {
                         {
                             text = _("Reset to current themes"),

@@ -9,8 +9,10 @@ local common = require("lib/common")
 local font_color_menu = require("book/font_color").menu
 local highlight_colors_menu = require("book/highlight_colors")
 local link_color_menu = require("book/link_color").menu
+local nf_icons = require("lib/nf_icons")
 local progress_bar_colors_menu = require("book/progress_bar_colors")
 local progress_bar_roundness_menu = require("book/progress_bar_roundness")
+local _ = require("gettext")
 
 local function refreshCSS()
     if ReaderUI.instance and ReaderUI.instance.rolling then
@@ -20,7 +22,7 @@ end
 
 local function book_menu()
     return {
-        text = "Book",
+        text_func = function() return nf_icons.label(nf_icons.BOOK_OPEN, _("Book")) end,
         sub_item_table = {
             background_color_menu(),
             font_color_menu(),

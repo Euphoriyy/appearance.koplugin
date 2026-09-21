@@ -9,6 +9,7 @@ local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local _ = require("gettext")
 local common = require("lib/common")
+local nf_icons = require("lib/nf_icons")
 
 local HIGHLIGHT_COLOR_KEYS = {
     "red",
@@ -316,7 +317,7 @@ end
 -- Appearance menu
 local function highlight_colors_menu()
     return {
-        text = _("Highlight colors"),
+        text_func = function() return nf_icons.label(nf_icons.GREASE_PENCIL, _("Highlight colors")) end,
         callback = function(touchmenu_instance)
             UIManager:show(highlightColorDialog(touchmenu_instance))
         end

@@ -14,6 +14,7 @@ local SpinWidget             = require("ui/widget/spinwidget")
 local UIManager              = require("ui/uimanager")
 local lfs                    = require("libs/libkoreader-lfs")
 local logger                 = require("logger")
+local nf_icons               = require("lib/nf_icons")
 local pic                    = require("ffi/pic")
 
 local MAX_HISTORY_SIZE       = 20
@@ -186,7 +187,7 @@ local filemanagerutil = require("apps/filemanager/filemanagerutil")
 local function background_image_menu()
     return {
         text_func = function()
-            return T(_("Background image: %1"), BackgroundImage.get() and background_image_name() or "none")
+            return T(nf_icons.label(nf_icons.PICTURE, _("Background image: %1")), BackgroundImage.get() and background_image_name() or "none")
         end,
         sub_item_table = {
             {

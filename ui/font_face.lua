@@ -8,6 +8,7 @@ local Setting = require("lib/setting")
 local TitleBar = require("ui/widget/titlebar")
 local UIManager = require("ui/uimanager")
 local cre = require("document/credocument"):engineInit()
+local nf_icons = require("lib/nf_icons")
 
 local UIFontName = Setting("ui_font_name", "Noto Sans", true)
 local UIFontEnabled = Setting("ui_font_enabled", true, true)
@@ -111,7 +112,7 @@ local T = require("ffi/util").template
 local function font_face_menu()
     return {
         text_func = function()
-            return T(_("Font: %1"), UIFontEnabled.get() and UIFontName.get() or "default")
+            return T(nf_icons.label(nf_icons.FONT, _("Font: %1")), UIFontEnabled.get() and UIFontName.get() or "default")
         end,
         sub_item_table_func = function()
             local items = {

@@ -5,6 +5,7 @@ local ReaderFooter          = require("apps/reader/modules/readerfooter")
 local Setting               = require("lib/setting")
 local UIManager             = require("ui/uimanager")
 local common                = require("lib/common")
+local nf_icons              = require("lib/nf_icons")
 
 local TransparentIcons      = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
 local TransparentButtons    = Setting("ui_transparent_buttons", false)   -- Whether buttons should be fully transparent (default: false)
@@ -42,7 +43,7 @@ local _ = require("gettext")
 
 local function transparency_menu()
     return {
-        text = _("Transparency"),
+        text_func = function() return nf_icons.label(nf_icons.OPACITY, _("Transparency")) end,
         sub_item_table = {
             {
                 text = _("Make icons transparent"),

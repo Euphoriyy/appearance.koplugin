@@ -13,6 +13,7 @@ local UIManager = require("ui/uimanager")
 local bit = require("bit")
 local common = require("lib/common")
 local logger = require("logger")
+local nf_icons = require("lib/nf_icons")
 
 -- Settings
 local HexFontColor = Setting("ui_font_color_hex", "#000000")               -- RGB hex for UI font color (default: #000000)
@@ -124,7 +125,7 @@ end
 local function font_color_menu()
     return {
         text_func = function()
-            return T(_("Foreground color: %1"), getFontColor())
+            return T(nf_icons.label(nf_icons.BORDER_COLOR, _("Foreground color: %1")), getFontColor())
         end,
         sub_item_table = {
             {
