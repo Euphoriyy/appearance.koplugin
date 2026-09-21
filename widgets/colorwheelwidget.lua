@@ -17,6 +17,7 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local Font = require("ui/font")
+local common = require("lib/common")
 local Screen = Device.screen
 
 --------------------------------------------
@@ -240,14 +241,19 @@ function ColorWheel:paintTo(bb, x, y)
     local sel_x = cx + math.floor(math.cos(math.rad(self.hue)) * self.saturation * self.radius + 0.5)
     local sel_y = cy + math.floor(math.sin(math.rad(self.hue)) * self.saturation * self.radius + 0.5)
 
-    for py = -4, 4 do
-        for px = -4, 4 do
+    local a = self.radius / 32
+    local b = a * a
+    local c = a / 2 * a
+    local fgcolor = get_font_fgcolor()
+
+    for py = -a, a do
+        for px = -a, a do
             local d = px * px + py * py
-            if d <= 16 then
+            if d <= b then
                 bb:setPixelClamped(sel_x + px, sel_y + py, Blitbuffer.COLOR_WHITE)
             end
-            if d <= 9 then
-                bb:setPixelClamped(sel_x + px, sel_y + py, Blitbuffer.COLOR_BLACK)
+            if d <= c then
+                bb:setPixelClamped(sel_x + px, sel_y + py, fgcolor)
             end
         end
     end
@@ -297,8 +303,16 @@ end
 -- Live hex label — reads hue/sat/val at paint time.
 ------------------------------------------------------------
 local function makeLiveHexLabel(parent, face)
+    -- Fixed size so layout/centering is correct before the first paint
+    local sample      = TextWidget:new { text = "#FFFFFF", face = face }
+    local sample_size = sample:getSize()
+    sample:free()
+
     local LiveHex = WidgetContainer:extend {
-        dimen = Geom:new { w = 0, h = 0 },
+        dimen = Geom:new {
+            w = sample_size.w + Screen:scaleBySize(16),
+            h = sample_size.h,
+        },
         _last_text = "",
         _tw = nil,
     }
@@ -310,11 +324,17 @@ local function makeLiveHexLabel(parent, face)
             if self._tw then self._tw:free() end
             self._tw = TextWidget:new { text = txt, face = face }
             self._last_text = txt
-            local sz = self._tw:getSize()
-            self.dimen.w = sz.w
-            self.dimen.h = sz.h
         end
-        self._tw:paintTo(bb, x, y)
+        -- Center the text inside the fixed-width box
+        local tw_size = self._tw:getSize()
+        self._tw:paintTo(bb, x + math.floor((self.dimen.w - tw_size.w) / 2), y)
+    end
+
+    function LiveHex:free()
+        if self._tw then
+            self._tw:free()
+            self._tw = nil
+        end
     end
 
     return LiveHex:new {}
@@ -383,13 +403,52 @@ function ColorWheelWidget:onCloseWidget()
     self:_freeChildren()
 end
 
+function ColorWheelWidget:setHex(hex)
+    local hue, saturation, value = common.hexToHSV(hex)
+    if not hue then return false end
+    self.hue, self.saturation, self.value = hue, saturation, value
+    self:update()
+    return true
+end
+
+function ColorWheelWidget:showHexInput()
+    local InputDialog = require("ui/widget/inputdialog")
+    local r, g, b = hsvToRgb(self.hue, self.saturation, self.value)
+    local dialog
+    dialog = InputDialog:new {
+        title = "Enter color code",
+        input = string.format("#%02X%02X%02X", r, g, b),
+        input_hint = "#FFFFFF",
+        buttons = { {
+            {
+                text = "Cancel",
+                id = "close",
+                callback = function() UIManager:close(dialog) end,
+            },
+            {
+                text = "Set",
+                is_enter_default = true,
+                callback = function()
+                    local text = dialog:getInputText()
+                    if text ~= "" and text:match("^#%x%x%x%x%x%x$") then
+                        self:setHex(text)
+                    end
+                    UIManager:close(dialog)
+                end,
+            },
+        } },
+    }
+    UIManager:show(dialog)
+    dialog:onShowKeyboard()
+end
+
 function ColorWheelWidget:update()
     -- Free previous ColorWheel (and its _cached_buf) and LiveHex
     -- before creating new ones, so no orphaned FFI buffers are left behind.
     self:_freeChildren()
 
     local wheel_size    = self.width - 2 * Size.padding.large
-    local preview_size  = math.floor(wheel_size / 4)
+    local preview_size  = math.floor(wheel_size / 6)
 
     self.color_wheel    = ColorWheel:new {
         dimen                = Geom:new { w = wheel_size, h = wheel_size },
@@ -404,6 +463,13 @@ function ColorWheelWidget:update()
     -- Live widgets read parent's hue/sat/val at paint time; no rebuild on drag
     self._live_preview  = makeLivePreview(self, preview_size)
     self._live_hex      = makeLiveHexLabel(self, self.hex_font_face)
+    self._hex_frame     = FrameContainer:new {
+        bordersize = Size.border.button,
+        radius     = Size.radius.button,
+        margin     = 0,
+        padding    = Size.padding.button,
+        self._live_hex,
+    }
 
     local title_bar     = TitleBar:new {
         width            = self.width,
@@ -462,7 +528,7 @@ function ColorWheelWidget:update()
             self._live_preview,
         },
         HorizontalSpan:new { width = Size.padding.large },
-        self._live_hex,
+        self._hex_frame,
     }
 
     local cancel_button = Button:new {
@@ -552,6 +618,12 @@ end
 -- Close on tap outside the dialog.
 function ColorWheelWidget:onTapColorWheel(arg, ges_ev)
     if not self.color_wheel.dimen or not self.frame.dimen then return true end
+
+    if self._hex_frame and self._hex_frame.dimen
+        and ges_ev.pos:intersectWith(self._hex_frame.dimen) then
+        self:showHexInput()
+        return true
+    end
 
     if ges_ev.pos:intersectWith(self.color_wheel.dimen) then
         if self.color_wheel:updateColor(ges_ev.pos) then
