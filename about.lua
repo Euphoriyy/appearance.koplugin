@@ -4,7 +4,7 @@ local UIManager = require("ui/uimanager")
 local common = require("lib/common")
 local nf_icons = require("lib/nf_icons")
 local _ = require("gettext")
-local T = require("ffi/template")
+local T = require("ffi/util").template
 
 local PLUGIN_NAME = "appearance.koplugin"
 local PLUGIN_TITLE = "Appearance"

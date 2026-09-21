@@ -223,10 +223,7 @@ function Updater.check()
 
     local NetworkMgr = require("ui/network/manager")
     if not NetworkMgr:isWifiOn() then
-        UIManager:show(InfoMessage:new {
-            text = _("Wi-Fi is not enabled."),
-            timeout = 3,
-        })
+        NetworkMgr:promptWifiOn(Updater.check)
         return
     end
 
