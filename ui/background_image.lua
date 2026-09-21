@@ -187,7 +187,8 @@ local filemanagerutil = require("apps/filemanager/filemanagerutil")
 local function background_image_menu()
     return {
         text_func = function()
-            return T(nf_icons.label(nf_icons.PICTURE, _("Background image: %1")), BackgroundImage.get() and background_image_name() or "none")
+            return T(nf_icons.label(nf_icons.PICTURE, _("Background image: %1")),
+                BackgroundImage.get() and background_image_name() or "none")
         end,
         sub_item_table = {
             {
@@ -256,6 +257,7 @@ local function background_image_menu()
                     touchmenu_instance:updateItems()
                     reload_background_image()
                 end,
+                separator = true,
             },
             {
                 text = _("Stretch to fit screen"),
@@ -319,26 +321,31 @@ How transparent the background image is to the UI. Can help with visibility.
                 separator = true,
             },
             {
-                text = _("Show in file browser"),
-                checked_func = ShowInFiles.get,
-                callback = function()
-                    ShowInFiles.toggle()
-                    reload_filemanager()
-                end,
-            },
-            {
-                text = _("Show in reader"),
-                checked_func = ShowInReader.get,
-                callback = function()
-                    ShowInReader.toggle()
-                end,
-            },
-            {
-                text = _("Show in top menu"),
-                checked_func = ShowInMenu.get,
-                callback = function()
-                    ShowInMenu.toggle()
-                end,
+                text = _("Show in"),
+                sub_item_table = {
+                    {
+                        text = _("File browser"),
+                        checked_func = ShowInFiles.get,
+                        callback = function()
+                            ShowInFiles.toggle()
+                            reload_filemanager()
+                        end,
+                    },
+                    {
+                        text = _("Reader"),
+                        checked_func = ShowInReader.get,
+                        callback = function()
+                            ShowInReader.toggle()
+                        end,
+                    },
+                    {
+                        text = _("Top menu"),
+                        checked_func = ShowInMenu.get,
+                        callback = function()
+                            ShowInMenu.toggle()
+                        end,
+                    },
+                },
             },
         },
     }
