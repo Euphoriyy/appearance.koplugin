@@ -298,8 +298,8 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
         local bgcolor = Blitbuffer.colorFromString(theme.bg)
         buttons[i] = { {
             -- Could also use ↗ symbol ¯\_('' )_/¯
-            text = T(_("§%1 §%2 %3 §%4 ⤴ §r"), theme.night and "blue ⏾" or "orange ☀️",
-                string.lower(theme.fg), theme.label, theme.link or "blue"),
+            text = T(_("§%1 §%2 %3 §%4 %5 §r"), theme.night and "blue ⏾" or "orange ☀️",
+                string.lower(theme.fg), theme.label, theme.link or "blue", nf_icons.LINK_VARIANT_1),
             menu_style = true,
             original_background = Screen.night_mode and bgcolor:invert() or bgcolor,
             background = common.EXCLUSION_COLOR,

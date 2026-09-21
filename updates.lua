@@ -14,8 +14,8 @@ local function updates_menu()
             {
                 text_func = function()
                     local available_update = Updater.getAvailableUpdate()
-                    return T(_("Version: %1%2"), Updater.getInstalledVersion(),
-                        available_update and T(" (v%1 is available)", available_update) or "")
+                    return T(_("Version: %1%2 %3"), Updater.getInstalledVersion(),
+                        available_update and T(" (v%1 is available)", available_update) or "", nf_icons.LINK_EXTERNAL)
                 end,
                 keep_menu_open = true,
                 callback = function()
