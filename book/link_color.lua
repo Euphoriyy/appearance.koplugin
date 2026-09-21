@@ -77,9 +77,14 @@ local function setLinkColor(hex)
 end
 
 local function refresh()
-    -- Reapply page CSS
     if common.has_document_open() then
-        UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        if ReaderUI.instance.rolling then
+            -- Reapply page CSS
+            UIManager:broadcastEvent(Event:new("ApplyStyleSheet"))
+        elseif ReaderUI.instance.paging then
+            -- Redraw page
+            ReaderUI.instance.paging:onRedrawCurrentPage()
+        end
     end
 end
 
