@@ -336,7 +336,7 @@ function ColorWheelWidget:init()
     end
 
     self.inner_width  = self.width - 2 * Size.padding.large
-    self.button_width = math.floor(self.inner_width / 4)
+    self.button_width = math.floor(self.inner_width / 5)
 
     if Device:isTouchDevice() then
         self.ges_events = {
@@ -415,7 +415,7 @@ function ColorWheelWidget:update()
     }
 
     local value_minus   = Button:new {
-        text        = "−",
+        text        = "▬",
         enabled     = self.value > 0,
         width       = self.button_width,
         show_parent = self,
@@ -428,7 +428,7 @@ function ColorWheelWidget:update()
     }
 
     local value_plus    = Button:new {
-        text        = "＋",
+        text        = "✚",
         enabled     = self.value < 1,
         width       = self.button_width,
         show_parent = self,
