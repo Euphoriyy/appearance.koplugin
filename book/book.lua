@@ -67,7 +67,7 @@ local original_UIManager_SetNightMode = UIManager.SetNightMode
 function UIManager:SetNightMode(night_mode)
     original_UIManager_SetNightMode(self)
 
-    if Screen.night_mode ~= night_mode then
+    if common.has_document_open() and Screen.night_mode ~= night_mode then
         recomputeAllColors()
 
         refreshCSS()
