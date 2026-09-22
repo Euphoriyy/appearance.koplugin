@@ -415,6 +415,9 @@ function FrameContainer:paintTo(bb, x, y)
     -- After default painting, repaint border
     if bg_cached.set_border_color then
         local fgcolor = get_font_fgcolor() or bg_cached.bgcolor:invert()
+        if self.retain_border_color then
+            fgcolor = self.color
+        end
 
         local my_size = self:getSize()
         local container_width = self.width or my_size.w
@@ -1109,6 +1112,32 @@ userpatch.registerPatchPluginFunc("statistics", function()
     end
 end)
 
+local function colored_button_onFocus(self)
+    if self.no_focus then return end
+
+    self.original_bordersize = self.frame.bordersize
+    self.original_border_color = self.frame.color
+
+    self.frame.bordersize = Size.border.thick
+    self.frame.color = self[1].original_background:invert()
+    self.frame.retain_border_color = true
+
+    return true
+end
+
+local function colored_button_onUnfocus(self)
+    if self.no_focus then return end
+
+    self.frame.bordersize = self.original_bordersize
+    self.frame.color = self.original_border_color
+
+    self.original_bordersize = nil
+    self.original_border_color = nil
+    self.frame.retain_border_color = nil
+
+    return true
+end
+
 -- Propagate properties from the button table entries to each button (or its FrameContainer)
 local original_ButtonTable_init = ButtonTable.init
 function ButtonTable:init()
@@ -1117,11 +1146,17 @@ function ButtonTable:init()
     for i = 1, #self.buttons_layout do
         for j = 1, #self.buttons_layout[i] do
             local btn_entry = self.buttons[i][j]
+            local button = self.buttons_layout[i][j]
+
             if btn_entry and btn_entry.original_background then
-                self.buttons_layout[i][j][1].original_background = btn_entry.original_background
+                button[1].original_background = btn_entry.original_background
+
+                -- Don't invert the background color of colored buttons when focused
+                button.onFocus = colored_button_onFocus
+                button.onUnfocus = colored_button_onUnfocus
             end
             -- Buttons in a button table should NOT be transparent
-            self.buttons_layout[i][j].exclude_from_transparency = true
+            button.exclude_from_transparency = true
         end
     end
 end
