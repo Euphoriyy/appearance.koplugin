@@ -34,8 +34,10 @@ local function book_menu()
     }
 end
 
--- Setting for the Book background color
+-- Setting for the fixed page color
 local FixedBackgroundColor = Setting("book_background_color_fixed", true)
+local FixedFontColor = Setting("book_font_color_fixed", true)
+local FixedLinkColor = Setting("book_link_color_fixed", true)
 
 -- Helpers that call events
 local function recomputeAllColors()
@@ -57,7 +59,7 @@ function UIManager:ToggleNightMode()
         recomputeAllColors()
 
         refreshCSS()
-        if FixedBackgroundColor.get() then
+        if FixedBackgroundColor.get() or FixedFontColor.get() or FixedLinkColor.get() then
             redrawPage()
         end
     end
@@ -71,7 +73,7 @@ function UIManager:SetNightMode(night_mode)
         recomputeAllColors()
 
         refreshCSS()
-        if FixedBackgroundColor.get() then
+        if FixedBackgroundColor.get() or FixedFontColor.get() or FixedLinkColor.get() then
             redrawPage()
         end
     end
