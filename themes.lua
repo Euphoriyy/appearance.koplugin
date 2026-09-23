@@ -675,7 +675,7 @@ local function themes_menu()
             local items = {
                 {
                     text_func = function()
-                        return nf_icons.label(nf_icons.MENU, _("Current UI themes"))
+                        return nf_icons.label(nf_icons.MENU, _("Current UI themes:"))
                     end,
                     keep_menu_open = true,
                     callback = function() end,
@@ -699,7 +699,7 @@ local function themes_menu()
                 },
                 {
                     text_func = function()
-                        return nf_icons.label(nf_icons.BOOK_OPEN, _("Current book themes"))
+                        return nf_icons.label(nf_icons.BOOK_OPEN, _("Current book themes:"))
                     end,
                     keep_menu_open = true,
                     callback = function() end,
