@@ -72,7 +72,8 @@ local T = require("ffi/util").template
 local function dict_font_face_menu()
     return {
         text_func = function()
-            return T(nf_icons.label(nf_icons.BOOK, _("Dictionary font: %1")), DictFontEnabled.get() and DictFontName.get() or "default")
+            return T(nf_icons.label(nf_icons.BOOK, _("Dictionary font: %1")),
+                DictFontEnabled.get() and DictFontName.get() or "default")
         end,
         sub_item_table_func = function()
             local items = {
@@ -108,8 +109,13 @@ local function dict_font_face_menu()
             for i, name in ipairs(font_list) do
                 table.insert(items, {
                     text = T(name .. " %1", fonts[name].regular == fonts[name].bold and "(no bold)" or ""),
-                    enabled_func = function() return name ~= DictFontName.get() end,
-                    font_func = function(size) return Font:getFace(fonts[name].regular, size) end,
+                    font_func = function(size)
+                        return Font:getFace(fonts[name].regular, size)
+                    end,
+                    checked_func = function()
+                        return name == DictFontName.get()
+                    end,
+                    radio = true,
                     callback = function()
                         set_font(name)
                     end,

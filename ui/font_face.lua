@@ -34,9 +34,9 @@ local function refresh_titlebar_faces()
     -- Re-fetching them forces Font to resolve the new fontmap path and cache
     -- a face under the new hash, then we replace the class default.
     local slots = {
-        { field = "title_face_fullscreen",     face = "smalltfont"     },
-        { field = "title_face_not_fullscreen", face = "x_smalltfont"   },
-        { field = "subtitle_face",             face = "xx_smallinfofont"},
+        { field = "title_face_fullscreen",     face = "smalltfont" },
+        { field = "title_face_not_fullscreen", face = "x_smalltfont" },
+        { field = "subtitle_face",             face = "xx_smallinfofont" },
         { field = "info_text_face",            face = "x_smallinfofont" },
     }
     for _, s in ipairs(slots) do
@@ -143,8 +143,13 @@ local function font_face_menu()
             for i, name in ipairs(font_list) do
                 table.insert(items, {
                     text = T(name .. " %1", fonts[name].regular == fonts[name].bold and "(no bold)" or ""),
-                    enabled_func = function() return name ~= UIFontName.get() end,
-                    font_func = function(size) return Font:getFace(fonts[name].regular, size) end,
+                    font_func = function(size)
+                        return Font:getFace(fonts[name].regular, size)
+                    end,
+                    checked_func = function()
+                        return name == UIFontName.get()
+                    end,
+                    radio = true,
                     callback = function()
                         if set_font(name) then
                             UIManager:askForRestart(_("Restart to fully apply the UI font change."))
@@ -166,7 +171,7 @@ local InputDialog = require("ui/widget/inputdialog")
 
 local original_ButtonDialog_init = ButtonDialog.init
 function ButtonDialog:init()
-     if self.title_face then
+    if self.title_face then
         local orig_size = self.title_face.orig_size or 20
         self.title_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
     end
