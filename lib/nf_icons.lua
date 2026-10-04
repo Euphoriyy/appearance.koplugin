@@ -9,6 +9,7 @@ local icons = {
     BOOK = "\u{E7B9}",
     BOOK_OPEN = "\u{E28B}",
     BORDER_COLOR = "\u{E7C8}",
+    CREATION = "\u{E8C8}",
     CURSOR_DEFAULT = "\u{E8B3}",
     CURSOR_TEXT = "\u{ECE6}",
     EYEDROPPER = "\u{E909}",

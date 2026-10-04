@@ -28,6 +28,9 @@ local UIInvertIconsNight = Setting("ui_background_color_invert_icons_night", tru
 local UIHexFontColor = Setting("ui_font_color_hex", "#000000")
 local UIAltNightFontColor = Setting("ui_font_color_alt_night", false)
 local UINightHexFontColor = Setting("ui_font_color_night_hex", "#FFFFFF")
+local HexAccentColor = Setting("ui_accent_color_hex", nil)
+local AltNightAccentColor = Setting("ui_accent_color_alt_night", false)
+local NightHexAccentColor = Setting("ui_accent_color_night_hex", nil)
 
 -- Significant variables for the Book background, font, and link color
 local BookHexBackgroundColor = Setting("book_background_color_hex", "#FFFFFF")
@@ -92,6 +95,16 @@ local function setForegroundColor(hex, book, night)
     end
 end
 
+local function setAccentColor(hex, book, night)
+    if book then return end
+    if not night then
+        HexAccentColor.set(hex)
+    else
+        AltNightAccentColor.set(true)
+        NightHexAccentColor.set(hex)
+    end
+end
+
 local function setLinkColor(hex, book, night)
     if not book then return end
     if not night then
@@ -106,7 +119,7 @@ end
 local _ = require("gettext")
 local T = require("ffi/util").template
 
-local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", LINK = "link", }
+local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", ACCENT = "accent", LINK = "link", }
 
 local function set_color_menu(touchmenu_instance, type, original_hex, callback)
     if not original_hex then
@@ -114,6 +127,8 @@ local function set_color_menu(touchmenu_instance, type, original_hex, callback)
             original_hex = theme_list.DEFAULT_DAY_THEME.bg
         elseif type == ColorType.FOREGROUND then
             original_hex = theme_list.DEFAULT_DAY_THEME.fg
+        elseif type == ColorType.ACCENT then
+            original_hex = "#AAAAAA"
         elseif type == ColorType.LINK then
             original_hex = "#0000EE"
         end
@@ -163,6 +178,8 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
             original_hex = theme_list.DEFAULT_DAY_THEME.bg
         elseif type == ColorType.FOREGROUND then
             original_hex = theme_list.DEFAULT_DAY_THEME.fg
+        elseif type == ColorType.ACCENT then
+            original_hex = "#AAAAAA"
         elseif type == ColorType.LINK then
             original_hex = "#0000EE"
         end
@@ -218,9 +235,17 @@ local function color_menu(touchmenu_instance, type, original_hex, callback, skip
 end
 
 -- Add theme to the appropriate list
-local function add_theme(name, bg_hex, fg_hex, link_hex, night)
+local function add_theme(name, bg_hex, fg_hex, accent_hex, link_hex, night)
     local key = string.lower(name:gsub(" ", "_"))
-    local theme = { key = key, label = name, bg = bg_hex, fg = fg_hex, link = link_hex, night = night }
+    local theme = {
+        key = key,
+        label = name,
+        bg = bg_hex,
+        fg = fg_hex,
+        accent = accent_hex,
+        link = link_hex,
+        night = night
+    }
 
     if not night then
         table.insert(cached.dayThemes, theme)
@@ -281,6 +306,7 @@ end
 local function setTheme(theme, book, night)
     setBackgroundColor(theme.bg, book, night)
     setForegroundColor(theme.fg, book, night)
+    setAccentColor(theme.accent, book, night)
     setLinkColor(theme.link, book, night)
 end
 
@@ -298,8 +324,9 @@ local function getThemeButtons(touchmenu_instance, dialog_ref)
         local bgcolor = Blitbuffer.colorFromString(theme.bg)
         buttons[i] = { {
             -- Could also use ↗ symbol ¯\_('' )_/¯
-            text = T(_("§%1 §%2 %3 §%4 %5 §r"), theme.night and "blue ⏾" or "orange ☀️",
-                string.lower(theme.fg), theme.label, theme.link or "blue", nf_icons.LINK_VARIANT_1),
+            text = T(_("§%1 §%2 %3 §%4 %5 §%6 %7 §r"), theme.night and "blue ⏾" or "orange ☀️",
+                string.lower(theme.fg), theme.label, theme.accent or "#AAAAAA", nf_icons.CREATION,
+                theme.link or "#0000EE", nf_icons.LINK_VARIANT_1),
             menu_style = true,
             original_background = Screen.night_mode and bgcolor:invert() or bgcolor,
             background = common.EXCLUSION_COLOR,
@@ -448,6 +475,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
         Blitbuffer.colorFromString("#2D728F"),
         Blitbuffer.colorFromString("#60AB9A"),
         Blitbuffer.colorFromString("#9B5DE5"),
+        Blitbuffer.colorFromString("#090C9B"),
         Blitbuffer.colorFromString("#700548"),
         Blitbuffer.colorFromString("#FF5964"),
     }
@@ -532,9 +560,24 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             end,
         } },
         { {
-            text = T(_("§white %1 Edit link color§r "), nf_icons.LINK_VARIANT_1),
+            text = T(_("§white %1 Edit accent color§r "), nf_icons.CREATION),
             menu_style = true,
             original_background = button_bg_colors[4],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                UIManager:show(color_menu(touchmenu_instance, ColorType.ACCENT, theme.accent, function(accent_hex)
+                    theme.accent = accent_hex
+                    replace_theme(theme, theme)
+
+                    UIManager:close(dialog)
+                    refreshThemeButtons()
+                end))
+            end,
+        } },
+        { {
+            text = T(_("§white %1 Edit link color§r "), nf_icons.LINK_VARIANT_1),
+            menu_style = true,
+            original_background = button_bg_colors[5],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 UIManager:show(color_menu(touchmenu_instance, ColorType.LINK, theme.link, function(link_hex)
@@ -549,7 +592,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
         { {
             text = T(_("§white %1 Delete§r "), nf_icons.REMOVE),
             menu_style = true,
-            original_background = button_bg_colors[6],
+            original_background = button_bg_colors[7],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 remove_theme(theme)
@@ -560,11 +603,27 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
         } },
     }
 
+    if theme.accent then
+        table.insert(edit_buttons, 5, { {
+            text = T(_("§white ⟳ Reset accent color§r ")),
+            menu_style = true,
+            original_background = button_bg_colors[6],
+            background = common.EXCLUSION_COLOR,
+            callback = function()
+                theme.accent = nil
+                replace_theme(theme, theme)
+
+                UIManager:close(dialog)
+                refreshThemeButtons()
+            end,
+        } })
+    end
+
     if theme.link then
         table.insert(edit_buttons, 5, { {
             text = T(_("§white ⟳ Reset link color§r ")),
             menu_style = true,
-            original_background = button_bg_colors[5],
+            original_background = button_bg_colors[6],
             background = common.EXCLUSION_COLOR,
             callback = function()
                 theme.link = nil
@@ -651,17 +710,17 @@ local function ask_to_apply(theme, reapply, book)
 end
 
 -- Popup that asks which mode the theme should be created for
-local function select_mode(name, bg_hex, fg_hex, link_hex)
+local function select_mode(name, bg_hex, fg_hex, accent_hex, link_hex)
     UIManager:show(MultiConfirmBox:new({
         text = _("The theme is for:"),
         choice1_text = _("§orange ☀️ Day mode§r "),
         choice1_callback = function()
-            local theme = add_theme(name, bg_hex, fg_hex, link_hex, false)
+            local theme = add_theme(name, bg_hex, fg_hex, accent_hex, link_hex, false)
             ask_to_apply(theme)
         end,
         choice2_text = _("§blue ⏾ Night mode§r "),
         choice2_callback = function()
-            local theme = add_theme(name, bg_hex, fg_hex, link_hex, true)
+            local theme = add_theme(name, bg_hex, fg_hex, accent_hex, link_hex, true)
             ask_to_apply(theme)
         end,
     }))
@@ -769,9 +828,14 @@ local function themes_menu()
                                                             ColorType.FOREGROUND, nil,
                                                             function(fg_hex)
                                                                 UIManager:show(color_menu(touchmenu_instance,
-                                                                    ColorType.LINK, nil,
-                                                                    function(link_hex)
-                                                                        select_mode(text, bg_hex, fg_hex, link_hex)
+                                                                    ColorType.ACCENT, nil,
+                                                                    function(accent_hex)
+                                                                        UIManager:show(color_menu(touchmenu_instance,
+                                                                            ColorType.LINK, nil,
+                                                                            function(link_hex)
+                                                                                select_mode(text, bg_hex, fg_hex,
+                                                                                    accent_hex, link_hex)
+                                                                            end, true))
                                                                     end, true))
                                                             end))
                                                     end))

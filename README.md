@@ -76,7 +76,8 @@ A background image can also be automatically set/changed by using the "Select ba
 Under **🞂 Appearance 🞂 User interface**:
  
 - **Background color** - the main canvas behind text and UI elements
-- **Font color** - the color of all rendered text
+- **Foreground color** - the color of all rendered text and borders/outlines
+- **Accent color** - the auxillary color of UI elements like switches or progress bars
 
 Under **🞂 Appearance 🞂 Book**:
  

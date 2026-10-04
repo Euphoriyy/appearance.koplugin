@@ -91,6 +91,13 @@ local function get_font_fgcolor()
     return font_color.fgcolor()
 end
 
+local accent
+
+local function get_accent_color()
+    accent = accent or require("ui/accent_color")
+    return accent.accent_color()
+end
+
 local book_bgcolor
 
 local function get_book_bgcolor()
@@ -962,7 +969,7 @@ end
 
 -- Replace ToggleSwitch update method to use the appropriate colors
 function ToggleSwitch:update()
-    self.fgcolor = bg_cached.bgcolor:invert()
+    self.fgcolor = get_accent_color() or bg_cached.bgcolor:invert()
 
     self[1].original_background = bg_cached.bgcolor
     self[1].background = common.EXCLUSION_COLOR
@@ -1167,7 +1174,7 @@ function ProgressWidget:init()
     original_ProgressWidget_init(self)
 
     self.bgcolor = bg_cached.bgcolor
-    self.fillcolor = bg_cached.bgcolor:invert()
+    self.fillcolor = get_accent_color()
     self.bordercolor = bg_cached.fgcolor
 end
 

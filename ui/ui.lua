@@ -3,6 +3,7 @@ local FileManager = require("apps/filemanager/filemanager")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
+local accent_color = require("ui/accent_color")
 local background_color = require("ui/background_color")
 local background_image_menu = require("ui/background_image")
 local common = require("lib/common")
@@ -19,7 +20,8 @@ local function ui_menu()
         text_func = function() return nf_icons.label(nf_icons.MENU, _("User interface")) end,
         sub_item_table = {
             background_color.menu(),
-            common.add_separator(font_color.menu()),
+            font_color.menu(),
+            common.add_separator(accent_color.menu()),
             common.add_separator(background_image_menu()),
             font_face_menu(),
             common.add_separator(dict_font_face_menu()),
