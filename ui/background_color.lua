@@ -394,8 +394,8 @@ local function background_color_menu()
     }
 end
 
-local SquareWindowCorners = Setting("ui_misc_square_window_corners", false)
-local SquareOtherCorners = Setting("ui_misc_square_other_corners", false)
+local SquareWindowCorners = Setting("ui_borders_square_window_corners", false)
+local SquareOtherCorners = Setting("ui_borders_square_other_corners", false)
 
 -- Hook into FrameContainer painting (responsible for 80% of background)
 local original_FrameContainer_paintTo = FrameContainer.paintTo

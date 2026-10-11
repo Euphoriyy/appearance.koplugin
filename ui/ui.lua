@@ -6,6 +6,7 @@ local UIManager = require("ui/uimanager")
 local accent_color = require("ui/accent_color")
 local background_color = require("ui/background_color")
 local background_image_menu = require("ui/background_image")
+local borders_menu = require("ui/borders")
 local common = require("lib/common")
 local font_color = require("ui/font_color")
 local font_face_menu = require("ui/font_face")
@@ -26,6 +27,7 @@ local function ui_menu()
             font_face_menu(),
             common.add_separator(dict_font_face_menu()),
             transparency_menu(),
+            borders_menu(),
             misc_menu(),
         }
     }
