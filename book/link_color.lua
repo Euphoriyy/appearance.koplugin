@@ -32,7 +32,9 @@ local link_cached = {
 -- Recompute and cache the final link color based on current settings
 -- Applies night mode inversion if enabled
 local function recomputeLinkColor(is_doc_css, doc)
-    local hex = (Screen.night_mode and link_cached.alt_night_color) and link_cached.night_hex or link_cached.hex
+    -- Fallback to default link color in night mode when the alternate night mode color is unset
+    local night_hex = link_cached.night_hex or "#FFFF11"
+    local hex = (Screen.night_mode and link_cached.alt_night_color) and night_hex or link_cached.hex
     if not hex then -- Hex can be nil if using the default link colors
         link_cached.computed_hex = nil
         return
