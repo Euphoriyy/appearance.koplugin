@@ -1183,14 +1183,19 @@ local original_ButtonProgressWidget_update = ButtonProgressWidget.update
 function ButtonProgressWidget:update()
     original_ButtonProgressWidget_update(self)
 
-    for i, button in ipairs(self.buttonprogress_content) do
-        local highlighted = i <= self.position
-        if highlighted then
-            -- The button and its frame background will be inverted,
-            -- so invert the color we want so it gets inverted back
-            if button[1] and button[1].frame then
-                button[1].frame.background = bg_cached.bgcolor
-            end
+    local accent_color = get_accent_color()
+    if not accent_color then return end
+
+    -- Skip the leading "-" button when fine tuning is enabled
+    local offset = self.fine_tune and 1 or 0
+
+    for i = 1, math.min(self.position or 0, self.num_buttons) do
+        local entry = self.layout[1][offset + i]
+        local button = entry and (entry.frame and entry or entry[1])
+        if button and button.frame then
+            button.exclude_from_transparency = true
+            button.frame.invert = false
+            button.frame.background = accent_color
         end
     end
 end

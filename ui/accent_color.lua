@@ -26,7 +26,10 @@ local cached = {
 
 -- Calculate the current hex value based on night mode and current settings
 local function calculateHex()
-    local hex = (Screen.night_mode and cached.alt_night_color) and cached.night_hex or cached.hex
+    local hex = cached.hex
+    if Screen.night_mode and cached.alt_night_color then
+        hex = cached.night_hex
+    end
     if not hex then return nil end
     if Screen.night_mode then
         if cached.alt_night_color or not cached.invert_in_night_mode then
@@ -42,6 +45,7 @@ local function recomputeAccentColor()
     local hex = calculateHex()
     if not hex then
         cached.accent_color = nil
+        cached.last_hex = nil
         return
     end
     if hex ~= cached.last_hex then
