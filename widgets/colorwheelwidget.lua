@@ -482,7 +482,7 @@ function ColorWheelWidget:update()
         title            = nf_icons.label(nf_icons.EYEDROPPER, self.title_text),
         with_bottom_line = true,
         close_button     = true,
-        close_callback   = function() self:onCancel() end,
+        close_callback   = function() self:onClose() end,
         show_parent      = self,
     }
 
@@ -647,7 +647,7 @@ function ColorWheelWidget:onTapColorWheel(arg, ges_ev)
         end
         return true
     elseif not ges_ev.pos:intersectWith(self.frame.dimen) then
-        self:onCancel()
+        self:onClose()
         return true
     end
     return false
@@ -690,6 +690,12 @@ function ColorWheelWidget:onApply()
         local r, g, b = hsvToRgb(self.hue, self.saturation, self.value)
         self.callback(string.format("#%02X%02X%02X", r, g, b))
     end
+    if self.close_callback then self.close_callback() end
+    return true
+end
+
+function ColorWheelWidget:onClose()
+    UIManager:close(self)
     if self.close_callback then self.close_callback() end
     return true
 end

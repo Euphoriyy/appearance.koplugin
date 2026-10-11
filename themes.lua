@@ -121,58 +121,7 @@ local T = require("ffi/util").template
 
 local ColorType = { BACKGROUND = "background", FOREGROUND = "foreground", ACCENT = "accent", LINK = "link", }
 
-local function set_color_menu(touchmenu_instance, type, original_hex, callback)
-    if not original_hex then
-        if type == ColorType.BACKGROUND then
-            original_hex = theme_list.DEFAULT_DAY_THEME.bg
-        elseif type == ColorType.FOREGROUND then
-            original_hex = theme_list.DEFAULT_DAY_THEME.fg
-        elseif type == ColorType.ACCENT then
-            original_hex = "#AAAAAA"
-        elseif type == ColorType.LINK then
-            original_hex = "#0000EE"
-        end
-    end
-
-    local input_dialog
-    input_dialog = InputDialog:new({
-        title = T(_("Enter %1 color code"), type),
-        input = original_hex,
-        input_hint = "#FFFFFF",
-        buttons = {
-            {
-                {
-                    text = "Cancel",
-                    callback = function()
-                        UIManager:close(input_dialog)
-                    end,
-                },
-                {
-                    text = "Next",
-                    callback = function()
-                        local text = input_dialog:getInputText()
-
-                        if text ~= "" then
-                            if not text:match("^#%x%x%x%x%x%x$") then
-                                return
-                            end
-
-                            callback(text)
-
-                            if touchmenu_instance then
-                                touchmenu_instance:updateItems()
-                            end
-                            UIManager:close(input_dialog)
-                        end
-                    end,
-                },
-            },
-        },
-    })
-    return input_dialog
-end
-
-local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
+local function pick_color_menu(touchmenu_instance, type, original_hex, callback, skippable)
     if not original_hex then
         if type == ColorType.BACKGROUND then
             original_hex = theme_list.DEFAULT_DAY_THEME.bg
@@ -190,6 +139,7 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
     local should_invert_wheel = UIAltNightBackgroundColor.get() or not UIInvertBackgroundColor.get()
     wheel = ColorWheelWidget:new({
         title_text = T(_("Pick %1 color"), type),
+        cancel_text = skippable and "Skip" or "Cancel",
         hue = h,
         saturation = s,
         value = v,
@@ -202,36 +152,16 @@ local function pick_color_menu(touchmenu_instance, type, original_hex, callback)
             end
             UIManager:setDirty(nil, "ui")
         end,
-        cancel_callback = function()
+        close_callback = function()
             UIManager:setDirty(nil, "ui")
         end,
+        cancel_callback = function()
+            if skippable then
+                callback(nil)
+            end
+        end
     })
     return wheel
-end
-
--- Menu to select method for choosing color
-local function color_menu(touchmenu_instance, type, original_hex, callback, skippable)
-    local VariableConfirmBox = skippable and TripleConfirmBox or MultiConfirmBox
-
-    local dialog = VariableConfirmBox:new({
-        text = T(_("Choose the %1 color by:"), type),
-        choice1_text = _("Hex code"),
-        choice1_callback = function()
-            local input_dialog = set_color_menu(touchmenu_instance, type, original_hex, callback)
-            UIManager:show(input_dialog)
-            input_dialog:onShowKeyboard()
-        end,
-        choice2_text = _("Color picker"),
-        choice2_callback = function()
-            UIManager:show(pick_color_menu(touchmenu_instance, type, original_hex, callback))
-        end,
-        choice3_text = _("Skip"),
-        choice3_callback = function()
-            callback(nil)
-        end,
-        choice3_enabled = skippable,
-    })
-    return dialog
 end
 
 -- Add theme to the appropriate list
@@ -535,7 +465,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             original_background = button_bg_colors[2],
             background = common.EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(color_menu(touchmenu_instance, ColorType.BACKGROUND, theme.bg, function(bg_hex)
+                UIManager:show(pick_color_menu(touchmenu_instance, ColorType.BACKGROUND, theme.bg, function(bg_hex)
                     theme.bg = bg_hex
                     replace_theme(theme, theme)
 
@@ -550,7 +480,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             original_background = button_bg_colors[3],
             background = common.EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(color_menu(touchmenu_instance, ColorType.FOREGROUND, theme.fg, function(fg_hex)
+                UIManager:show(pick_color_menu(touchmenu_instance, ColorType.FOREGROUND, theme.fg, function(fg_hex)
                     theme.fg = fg_hex
                     replace_theme(theme, theme)
 
@@ -565,7 +495,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             original_background = button_bg_colors[4],
             background = common.EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(color_menu(touchmenu_instance, ColorType.ACCENT, theme.accent, function(accent_hex)
+                UIManager:show(pick_color_menu(touchmenu_instance, ColorType.ACCENT, theme.accent, function(accent_hex)
                     theme.accent = accent_hex
                     replace_theme(theme, theme)
 
@@ -580,7 +510,7 @@ edit_menu = function(touchmenu_instance, theme, updialog_ref)
             original_background = button_bg_colors[5],
             background = common.EXCLUSION_COLOR,
             callback = function()
-                UIManager:show(color_menu(touchmenu_instance, ColorType.LINK, theme.link, function(link_hex)
+                UIManager:show(pick_color_menu(touchmenu_instance, ColorType.LINK, theme.link, function(link_hex)
                     theme.link = link_hex
                     replace_theme(theme, theme)
 
@@ -821,16 +751,16 @@ local function themes_menu()
                                             local text = input_dialog:getInputText()
 
                                             if text ~= "" then
-                                                UIManager:show(color_menu(touchmenu_instance,
+                                                UIManager:show(pick_color_menu(touchmenu_instance,
                                                     ColorType.BACKGROUND, nil,
                                                     function(bg_hex)
-                                                        UIManager:show(color_menu(touchmenu_instance,
+                                                        UIManager:show(pick_color_menu(touchmenu_instance,
                                                             ColorType.FOREGROUND, nil,
                                                             function(fg_hex)
-                                                                UIManager:show(color_menu(touchmenu_instance,
+                                                                UIManager:show(pick_color_menu(touchmenu_instance,
                                                                     ColorType.ACCENT, nil,
                                                                     function(accent_hex)
-                                                                        UIManager:show(color_menu(touchmenu_instance,
+                                                                        UIManager:show(pick_color_menu(touchmenu_instance,
                                                                             ColorType.LINK, nil,
                                                                             function(link_hex)
                                                                                 select_mode(text, bg_hex, fg_hex,
