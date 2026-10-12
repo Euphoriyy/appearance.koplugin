@@ -318,15 +318,15 @@ local function makeBrightnessSlider(parent, width, height)
 
     function Slider:paintTo(bb, x, y)
         self.dimen.x, self.dimen.y = x, y
-        local bar_h  = math.floor(height / 2)
-        local bar_y  = y + math.floor((height - bar_h) / 2)
-        local radius = math.floor(bar_h / 2)
-        local nm     = parent.invert_in_night_mode and Screen.night_mode
-        local fg     = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
+        local bar_h                = math.floor(height / 2)
+        local bar_y                = y + math.floor((height - bar_h) / 2)
+        local radius               = math.floor(bar_h / 2)
+        local nm                   = parent.invert_in_night_mode and Screen.night_mode
+        local fg                   = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
 
         -- Keep the gradient fixed while the slider is being dragged.
-        local hue = self.gradient_hue or parent.hue
-        local saturation = self.gradient_saturation or parent.saturation
+        local hue                  = self.gradient_hue or parent.hue
+        local saturation           = self.gradient_saturation or parent.saturation
 
         for i = 0, width - 1 do
             local inset = 0
@@ -877,13 +877,26 @@ function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
     -- Everything is drawn live from hue/sat/value, so a clean refresh is
     -- enough. No rebuild needed.
     if was_slider then
-        local regions = self:_sliderDirtyRegions()
-        if #regions > 0 then
-            for _, r in ipairs(regions) do
-                UIManager:setDirty(self, "ui", r)
-            end
-        else
-            UIManager:setDirty(self, "ui")
+        self._slider:endDrag()
+        self._slider_drag_started = false
+
+        -- Force a full refresh of the slider track.
+        -- This redraws the gradient and knob at its final position.
+        if self._slider and self._slider.dimen then
+            UIManager:scheduleIn(0.1, function()
+                UIManager:setDirty(self, "flashui", self._slider.dimen)
+            end)
+        end
+
+        -- Refresh the brightness label.
+        if self._live_value and self._live_value.dimen then
+            UIManager:setDirty(self, "ui", self._live_value.dimen)
+        end
+
+        -- Refresh the preview swatch and hex label.
+        local preview = self:_previewRegion()
+        if preview then
+            UIManager:setDirty(self, "ui", preview)
         end
     else
         -- Finish wheel drag: clear indicator ghosts and update
