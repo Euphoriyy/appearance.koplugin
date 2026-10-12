@@ -47,6 +47,70 @@ local function refresh_titlebar_faces()
     end
 end
 
+local sizemap = {
+    cfont = 24,
+    tfont = 26,
+    smalltfont = 24,
+    x_smalltfont = 22,
+    ffont = 20,
+    smallffont = 15,
+    largeffont = 25,
+    pgfont = 20,
+    scfont = 20,
+    rifont = 16,
+    hpkfont = 20,
+    hfont = 24,
+    infont = 22,
+    smallinfont = 16,
+    infofont = 24,
+    smallinfofont = 22,
+    smallinfofontbold = 22,
+    x_smallinfofont = 20,
+    xx_smallinfofont = 18,
+}
+
+-- Override the font for widgets that have already been loaded
+local function apply_font_to_widgets()
+    local font_name = fonts[UIFontName.get()].regular
+
+    local ok_bd, ButtonDialog = pcall(require, "ui/widget/buttondialog")
+    if ok_bd and ButtonDialog then
+        if ButtonDialog.title_face then
+            local orig_size = ButtonDialog.title_face.orig_size or sizemap.x_smalltfont
+            ButtonDialog.title_face = Font:getFace(font_name, orig_size)
+        end
+        if ButtonDialog.info_face then
+            local orig_size = ButtonDialog.info_face.orig_size or sizemap.infont
+            ButtonDialog.info_face = Font:getFace(font_name, orig_size)
+        end
+    end
+
+    local ok_cb, ConfirmBox = pcall(require, "ui/widget/confirmbox")
+    if ok_cb and ConfirmBox then
+        local orig_size = ConfirmBox.face.orig_size or sizemap.infont
+        ConfirmBox.face = Font:getFace(font_name, orig_size)
+    end
+
+    local ok_mcb, MultiConfirmBox = pcall(require, "ui/widget/multiconfirmbox")
+    if ok_mcb and MultiConfirmBox then
+        local orig_size = MultiConfirmBox.face.orig_size or sizemap.infont
+        MultiConfirmBox.face = Font:getFace(font_name, orig_size)
+    end
+
+    local ok_im, InfoMessage = pcall(require, "ui/widget/infomessage")
+    if ok_im and InfoMessage then
+        local def_face = Font:getFace("infofont")
+        local orig_size = def_face.orig_size or sizemap.infont
+        InfoMessage.face = Font:getFace(font_name, orig_size)
+    end
+
+    local ok_id, InputDialog = pcall(require, "ui/widget/inputdialog")
+    if ok_id and InputDialog then
+        local orig_size = InputDialog.input_face.orig_size or sizemap.smallinfont
+        InputDialog.input_face = Font:getFace(font_name, orig_size)
+    end
+end
+
 local function apply_font(name)
     name = name or UIFontName.get()
     if not UIFontEnabled.get() or not fonts[name] then return end
@@ -55,6 +119,7 @@ local function apply_font(name)
     end
 
     refresh_titlebar_faces()
+    apply_font_to_widgets()
 end
 
 local function set_font(name)
@@ -160,55 +225,6 @@ local function font_face_menu()
             return items
         end
     }
-end
-
--- Override the font for widgets that have already been loaded
-local ButtonDialog = require("ui/widget/buttondialog")
-local ConfirmBox = require("ui/widget/confirmbox")
-local MultiConfirmBox = require("ui/widget/multiconfirmbox")
-local InfoMessage = require("ui/widget/infomessage")
-local InputDialog = require("ui/widget/inputdialog")
-
-local original_ButtonDialog_init = ButtonDialog.init
-function ButtonDialog:init()
-    if self.title_face then
-        local orig_size = self.title_face.orig_size or 20
-        self.title_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    end
-    if self.info_face then
-        local orig_size = self.info_face.orig_size or 22
-        self.info_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    end
-    original_ButtonDialog_init(self)
-end
-
-local original_ConfirmBox_init = ConfirmBox.init
-function ConfirmBox:init()
-    local orig_size = self.face.orig_size or 22
-    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    original_ConfirmBox_init(self)
-end
-
-local original_MultiConfirmBox_init = MultiConfirmBox.init
-function MultiConfirmBox:init()
-    local orig_size = self.face.orig_size or 22
-    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    original_MultiConfirmBox_init(self)
-end
-
-local original_InfoMessage_init = InfoMessage.init
-function InfoMessage:init()
-    local def_face = Font:getFace("infofont")
-    local orig_size = def_face.orig_size or 22
-    self.face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    original_InfoMessage_init(self)
-end
-
-local original_InputDialog_init = InputDialog.init
-function InputDialog:init()
-    local orig_size = self.input_face.orig_size or 16
-    InputDialog.input_face = Font:getFace(fonts[UIFontName.get()].regular, orig_size)
-    original_InputDialog_init(self)
 end
 
 return font_face_menu
