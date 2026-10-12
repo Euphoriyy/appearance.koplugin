@@ -178,6 +178,15 @@ function ReaderFooter:onRefreshFooterBackground()
     self:refreshFooter(true)
 end
 
+-- Whether icons are currently being tinted with the accent color
+-- (tinting is on, an accent exists, and it has enough contrast with the background)
+local function icons_are_tinted()
+    if not get_tint_icons() then return false end
+    local accent_color = get_accent_color()
+    if not accent_color then return false end
+    return common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST
+end
+
 local function getBackgroundColor()
     if Screen.night_mode and bg_cached.alt_night_color then
         return NightHexBackgroundColor.get()
@@ -257,6 +266,7 @@ local function background_color_menu()
             },
             {
                 text = _("Invert icons in day mode"),
+                enabled_func = function() return not icons_are_tinted() end,
                 checked_func = InvertIconsDay.get,
                 callback = function()
                     InvertIconsDay.toggle()
@@ -288,7 +298,9 @@ local function background_color_menu()
             },
             {
                 text = _("Invert icons in night mode"),
-                enabled_func = function() return AltNightBackgroundColor.get() end,
+                enabled_func = function()
+                    return AltNightBackgroundColor.get() and not icons_are_tinted()
+                end,
                 checked_func = InvertIconsNight.get,
                 callback = function()
                     InvertIconsNight.toggle()
@@ -618,7 +630,7 @@ function ImageWidget:_loadfile()
                         -- Build the alpha mask from the untouched (black) icon, before any inversion
                         local accent_color = get_accent_color()
                         local mask
-                        if accent_color and get_tint_icons() and common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST then
+                        if icons_are_tinted() then
                             mask = Blitbuffer.new(self._bb.w, self._bb.h, Blitbuffer.TYPE_BB8)
                             mask:fill(Blitbuffer.Color8(0xFF))
                             if self._is_straight_alpha then
@@ -749,13 +761,10 @@ function ImageWidget:paintTo(bb, x, y)
 
     -- Transparent icons require tinting them when painting
     local tinted
-    if self.is_icon and self.alpha and self._bb and get_tint_icons() then
-        local accent_color = get_accent_color()
-        if accent_color and common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST then
-            local mask = get_tint_mask(self)
-            bb:colorblitFromRGB32(mask, x, y, self._offset_x, self._offset_y, size.w, size.h, accent_color)
-            tinted = true
-        end
+    if self.is_icon and self.alpha and self._bb and icons_are_tinted() then
+        local mask = get_tint_mask(self)
+        bb:colorblitFromRGB32(mask, x, y, self._offset_x, self._offset_y, size.w, size.h, get_accent_color())
+        tinted = true
     end
 
     if tinted then
