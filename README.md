@@ -132,14 +132,14 @@ For rounded book & folder covers to work properly with the background color, [my
 
 ## Acknowledgements
 - Features originally integrated from [my KOReader patches](https://github.com/Euphoriyy/KOReader.patches).
-- Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko).
-- The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin).
-- UI font replacement based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol).
+- Theming functionality inspired by [2-color-theme.lua](https://github.com/artemartemenko/koreader-color-themes) by [@artemartemenko](https://github.com/artemartemenko) (GPL-3.0).
+- The packaging system in use is based on work from [ComicReader](https://github.com/KORComic/comicreader.koplugin) by [@OGKevin](https://github.com/OGKevin) (AGPL-3.0).
+- UI font replacement based on the patch [2--ui-font.lua](https://github.com/sebdelsol/KOReader.patches/#-2-ui-font) by [@sebdelsol](https://github.com/sebdelsol) under the MIT license.
 - Dictionary font replacement based on the patch [2-custom-ui-fonts.lua](https://github.com/gennaro-tedesco/KOReader.patches/#2-custom-ui-fonts) by [@gennaro-tedesco](https://github.com/gennaro-tedesco).
-- In-plugin updater adapted from the one used in [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
-- Markdown implementation for Lua sourced from [markdown.lua](https://github.com/mpeterv/markdown) by [@mpeterv](https://github.com/mpeterv) and [@niklasfrykholm](https://github.com/niklasfrykholm).
-- Nerd font glyph codepoints and method to handle links sourced from [bookshelf.koplugin](https://github.com/AndyHazz/bookshelf.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
-- Brightness slider used in color wheel widget adapted from [ink-away.koplugin](https://github.com/EmirErtorer/ink-away.koplugin) by [@EmirErtorer](https://github.com/EmirErtorer).
+- In-plugin updater adapted from the one used in [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz) (AGPL-3.0).
+- Markdown implementation for Lua sourced from [markdown.lua](https://github.com/mpeterv/markdown) by [@mpeterv](https://github.com/mpeterv) and [@niklasfrykholm](https://github.com/niklasfrykholm) under the MIT license.
+- Nerd font glyph codepoints and method to handle links sourced from [bookshelf.koplugin](https://github.com/AndyHazz/bookshelf.koplugin) by [@AndyHazz](https://github.com/AndyHazz) (AGPL-3.0).
+- Brightness slider used in color wheel widget adapted from [ink-away.koplugin](https://github.com/EmirErtorer/ink-away.koplugin) by [@EmirErtorer](https://github.com/EmirErtorer) under the MIT license.
 
 ## Support
 If you want to support me, you can star this repository or buy me a coffee. :)
