@@ -767,6 +767,27 @@ function ColorWheelWidget:_sliderDirtyRegions()
     return regions
 end
 
+-- Screen rect covering the wheel's selection dot at the current hue/saturation.
+-- Used to refresh only the dot's old and new positions while panning.
+function ColorWheelWidget:_indicatorRect()
+    local w = self.color_wheel
+    if not (w and w.dimen and w.dimen.x and w._sel_outer) then return nil end
+    local cx = w.dimen.x + w.radius
+    local cy = w.dimen.y + w.radius
+    local sx = cx + math.floor(math.cos(math.rad(self.hue)) * self.saturation * w.radius + 0.5)
+    local sy = cy + math.floor(math.sin(math.rad(self.hue)) * self.saturation * w.radius + 0.5)
+    local r  = math.floor(w._sel_outer.width / 2) + 2 -- small margin for the border
+    return Geom:new { x = sx - r, y = sy - r, w = r * 2 + 1, h = r * 2 + 1 }
+end
+
+-- Screen rect covering the preview swatch and the hex label.
+function ColorWheelWidget:_previewRegion()
+    if self._preview_frame and self._preview_frame.dimen
+        and self._hex_frame and self._hex_frame.dimen then
+        return self._preview_frame.dimen:copy():combine(self._hex_frame.dimen)
+    end
+end
+
 -- Pan: sync values + fast-dirty + periodic ui-dirty.
 function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
     if not self.color_wheel or not self.color_wheel.dimen then return false end
@@ -777,6 +798,7 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
             self._pan_target = "slider"
         elseif ges_ev.pos:intersectWith(self.color_wheel.dimen) then
             self._pan_target = "wheel"
+            self._ind_rect   = self:_indicatorRect() -- where the dot is before this drag moves it
         else
             return false
         end
@@ -802,7 +824,17 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
             UIManager:setDirty(self, mode)
         end
     else
-        UIManager:setDirty(self, mode)
+        -- Wheel drag: refresh just the dot's old and new positions plus the
+        -- preview row. The wheel itself doesn't change, so the rest of the
+        -- dialog isn't touched and fast refreshes can't smear it.
+        local old = self._ind_rect
+        local new = self:_indicatorRect()
+        self._ind_rect = new
+        if old then UIManager:setDirty(self, "fast", old) end
+        if new then UIManager:setDirty(self, "fast", new) end
+        local preview = self:_previewRegion()
+        if preview then UIManager:setDirty(self, "fast", preview) end
+        if not (old or new or preview) then UIManager:setDirty(self, "fast") end
     end
     return true
 end
@@ -811,6 +843,7 @@ function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
     if not self._pan_target then return false end
     local was_slider = self._pan_target == "slider"
     self._pan_target = nil
+    self._ind_rect   = nil
 
     -- Everything is drawn live from hue/sat/value, so a clean refresh is
     -- enough. No rebuild needed.
@@ -822,7 +855,11 @@ function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
             UIManager:setDirty(self, "ui")
         end
     else
-        UIManager:setDirty(self, "ui")
+        -- Fast refreshes during the drag leave ghosts of the dot's old spots;
+        -- one partial refresh of just the wheel (and preview row) clears them.
+        UIManager:setDirty(self, "partial", self.color_wheel.dimen)
+        local preview = self:_previewRegion()
+        if preview then UIManager:setDirty(self, "ui", preview) end
     end
     return true
 end
@@ -866,3 +903,4 @@ function ColorWheelWidget:onShow()
 end
 
 return ColorWheelWidget
+ 
