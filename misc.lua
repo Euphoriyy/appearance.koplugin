@@ -13,9 +13,14 @@ local DetectSystemTheme = Setting("ui_misc_detect_sys_theme", false)
 -- Menu
 local _                 = require("gettext")
 
+local function apply_night_mode(is_dark)
+    if is_dark == nil then return end
+    UIManager:broadcastEvent(Event:new("SetNightMode", is_dark))
+end
+
 local function start_themewatcher()
     ThemeWatcher:start(function(is_dark)
-        UIManager:broadcastEvent(Event:new("SetNightMode", is_dark))
+        apply_night_mode(is_dark)
     end)
 end
 
@@ -53,9 +58,7 @@ if Device:isDesktop() and jit.os == "Linux" then
         -- Startup check
         UIManager:nextTick(function()
             local is_dark = common.isSystemDark()
-            if is_dark ~= nil then
-                UIManager:broadcastEvent(Event:new("SetNightMode", is_dark))
-            end
+            apply_night_mode(is_dark)
         end)
 
         start_themewatcher()
