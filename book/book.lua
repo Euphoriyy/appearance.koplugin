@@ -66,26 +66,6 @@ function UIManager:ToggleNightMode(night_mode)
     end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-if original_UIManager_SetNightMode then
-    function UIManager:SetNightMode(night_mode)
-        local previous_night_mode = Screen.night_mode and true or false
-        original_UIManager_SetNightMode(self, night_mode)
-        local current_night_mode = Screen.night_mode and true or false
-
-        if common.has_document_open() and previous_night_mode ~= current_night_mode then
-            recomputeAllColors()
-
-            refreshCSS()
-            if FixedBackgroundColor.get() or FixedFontColor.get() or FixedLinkColor.get() then
-                redrawPage()
-            end
-        end
-    end
-else
-    logger.warn("UIManager.SetNightMode not found; skipping book SetNightMode hook")
-end
-
 -- Only refresh page on applying a book theme in the reader
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
 function ReaderUI:onApplyTheme()

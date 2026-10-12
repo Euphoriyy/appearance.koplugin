@@ -483,18 +483,6 @@ function UIManager:ToggleNightMode(night_mode)
     end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-if original_UIManager_SetNightMode then
-    function UIManager:SetNightMode(night_mode)
-        local previous_night_mode = Screen.night_mode and true or false
-        original_UIManager_SetNightMode(self, night_mode)
-        local current_night_mode = Screen.night_mode and true or false
-        if previous_night_mode ~= current_night_mode then
-            reload_background_image()
-        end
-    end
-end
-
 -- Reload background image on dimension changes (window resizing)
 local original_FileManager_onSetDimensions = FileManager.onSetDimensions
 function FileManager:onSetDimensions(dimen)

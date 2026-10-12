@@ -811,21 +811,6 @@ function UIManager:ToggleNightMode(night_mode)
     end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-if original_UIManager_SetNightMode then
-    function UIManager:SetNightMode(night_mode)
-        local previous_night_mode = Screen.night_mode and true or false
-        original_UIManager_SetNightMode(self, night_mode)
-        local current_night_mode = Screen.night_mode and true or false
-
-        if previous_night_mode ~= current_night_mode then
-            if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-                ImageCache:clear()
-            end
-        end
-    end
-end
-
 -- Replace UnderlineContainer painting
 function UnderlineContainer:paintTo(bb, x, y)
     local container_size = self:getSize()

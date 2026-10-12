@@ -50,23 +50,6 @@ function UIManager:ToggleNightMode(night_mode)
     end
 end
 
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-if original_UIManager_SetNightMode then
-    function UIManager:SetNightMode(night_mode)
-        local previous_night_mode = Screen.night_mode and true or false
-        original_UIManager_SetNightMode(self, night_mode)
-        local current_night_mode = Screen.night_mode and true or false
-
-        if previous_night_mode ~= current_night_mode then
-            recomputeAllColors()
-
-            if background_color.needsFileManagerRefresh(true) or font_color.needsFileManagerRefresh(true) then
-                common.refreshFileManager()
-            end
-        end
-    end
-end
-
 local original_FileManager_onApplyTheme = FileManager.onApplyTheme
 function FileManager:onApplyTheme()
     if original_FileManager_onApplyTheme then
