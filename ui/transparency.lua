@@ -9,7 +9,7 @@ local nf_icons              = require("lib/nf_icons")
 
 local TransparentIcons      = Setting("ui_transparent_icons", false)     -- Whether icons should be fully transparent (default: false)
 local TransparentButtons    = Setting("ui_transparent_buttons", false)   -- Whether buttons should be fully transparent (default: false)
-local TransparentFooter     = Setting("ui_transparent_footer", true)     -- Whether the ReaderFooter should be fully transparent (default: true)
+local TransparentFooter     = Setting("ui_transparent_footer", false)     -- Whether the ReaderFooter should be fully transparent (default: false)
 local TransparentBottomBar  = Setting("ui_transparent_bottombar", false) -- Whether the SimpleUI bottom bar should be made transparent
 
 -- Background color setting
