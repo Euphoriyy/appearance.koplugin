@@ -22,6 +22,7 @@ local icons = {
     LINK = "\u{EA36}",
     LINK_EXTERNAL = "\u{F465}",
     LINK_VARIANT_1 = "\u{EA38}",
+    LIST = "\u{F03A}",
     MAGIC = "\u{F0D0}",
     MENU = "\u{EA5B}",
     OPACITY = "\u{ECCB}",
@@ -31,6 +32,8 @@ local icons = {
     REFRESH = "\u{EB4F}",
     REMOVE = "\u{F00D}",
     ROUNDED_CORNER = "\u{ED06}",
+    REWIND = "\u{EB5E}",
+    THEME_LIGHT_DARK = "\u{EC0D}",
     UPDATE = "\u{EDAE}",
 }
 

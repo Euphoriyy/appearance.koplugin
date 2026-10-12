@@ -785,7 +785,7 @@ local function themes_menu()
                     text_func = function() return nf_icons.label(nf_icons.REFRESH, _("Reset themes")) end,
                     sub_item_table = {
                         {
-                            text = _("Reset to current themes"),
+                            text = nf_icons.label(nf_icons.THEME_LIGHT_DARK, _("Reset to current themes")),
                             keep_menu_open = true,
                             callback = function()
                                 local current_ui_day_theme = CurrentUIDayTheme.get()
@@ -814,7 +814,7 @@ local function themes_menu()
                             end,
                         },
                         {
-                            text = _("Reset to default themes"),
+                            text = nf_icons.label(nf_icons.REWIND, _("Reset to default themes")),
                             keep_menu_open = true,
                             callback = function()
                                 CurrentUIDayTheme.set(theme_list.DEFAULT_DAY_THEME)
@@ -834,7 +834,7 @@ local function themes_menu()
                             end,
                         },
                         {
-                            text = _("Reset themes list"),
+                            text = nf_icons.label(nf_icons.LIST, _("Reset themes list")),
                             keep_menu_open = true,
                             callback = function()
                                 DayThemes.set(theme_list.DEFAULT_DAY_THEMES)
