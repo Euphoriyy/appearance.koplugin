@@ -803,22 +803,11 @@ end
 
 -- Hook into night mode state changes and update cache
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+function UIManager:ToggleNightMode(night_mode)
+    original_UIManager_ToggleNightMode(self, night_mode)
 
     if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
         ImageCache:clear()
-    end
-end
-
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
-            ImageCache:clear()
-        end
     end
 end
 

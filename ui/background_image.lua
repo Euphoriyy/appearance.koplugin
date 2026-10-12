@@ -476,17 +476,11 @@ end
 
 -- Hook into night mode state changes and reload background image
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+function UIManager:ToggleNightMode(night_mode)
+    original_UIManager_ToggleNightMode(self, night_mode)
     if BackgroundImage.get() and (FileManager.instance and ShowInFiles.get() or ReaderUI.instance and ShowInReader.get()) then
         reload_background_image()
     end
-end
-
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode()
-    original_UIManager_SetNightMode(self)
-    reload_background_image()
 end
 
 -- Reload background image on dimension changes (window resizing)

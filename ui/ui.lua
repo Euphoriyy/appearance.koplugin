@@ -40,26 +40,13 @@ end
 
 -- Hook into night mode state changes and refresh page
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+function UIManager:ToggleNightMode(night_mode)
+    original_UIManager_ToggleNightMode(self, night_mode)
 
     recomputeAllColors()
 
     if background_color.needsFileManagerRefresh(true) or font_color.needsFileManagerRefresh(true) then
         common.refreshFileManager()
-    end
-end
-
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if Screen.night_mode ~= night_mode then
-        recomputeAllColors()
-
-        if background_color.needsFileManagerRefresh(true) or font_color.needsFileManagerRefresh(true) then
-            common.refreshFileManager()
-        end
     end
 end
 

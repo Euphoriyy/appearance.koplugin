@@ -9,6 +9,7 @@ local common = require("lib/common")
 local font_color_menu = require("book/font_color").menu
 local highlight_colors_menu = require("book/highlight_colors")
 local link_color_menu = require("book/link_color").menu
+local logger = require("logger")
 local nf_icons = require("lib/nf_icons")
 local progress_bar_colors_menu = require("book/progress_bar_colors")
 local progress_bar_roundness_menu = require("book/progress_bar_roundness")
@@ -52,24 +53,10 @@ end
 
 -- Hook into night mode state changes and refresh page
 local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
-function UIManager:ToggleNightMode()
-    original_UIManager_ToggleNightMode(self)
+function UIManager:ToggleNightMode(night_mode)
+    original_UIManager_ToggleNightMode(self, night_mode)
 
     if common.has_document_open() then
-        recomputeAllColors()
-
-        refreshCSS()
-        if FixedBackgroundColor.get() or FixedFontColor.get() or FixedLinkColor.get() then
-            redrawPage()
-        end
-    end
-end
-
-local original_UIManager_SetNightMode = UIManager.SetNightMode
-function UIManager:SetNightMode(night_mode)
-    original_UIManager_SetNightMode(self)
-
-    if common.has_document_open() and Screen.night_mode ~= night_mode then
         recomputeAllColors()
 
         refreshCSS()
