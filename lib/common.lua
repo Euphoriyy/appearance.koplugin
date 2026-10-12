@@ -183,4 +183,60 @@ function common.handleLink(link)
     end
 end
 
+local function run(cmd)
+    local f = io.popen(cmd .. " 2>/dev/null")
+    if not f then return "" end
+    local out = f:read("*a") or ""
+    f:close()
+    return out
+end
+
+local function nameIsDark(out)
+    if out == "" then return nil end
+    return out:lower():find("dark", 1, true) ~= nil
+end
+
+local checks = {
+    -- Freedesktop portal: 1 = dark, 2 = light, 0 = no preference
+    {
+        cmd = "gdbus call --session --dest org.freedesktop.portal.Desktop"
+            .. " --object-path /org/freedesktop/portal/desktop"
+            .. " --method org.freedesktop.portal.Settings.Read"
+            .. " org.freedesktop.appearance color-scheme",
+        parse = function(out)
+            local v = out:match("uint32 (%d)")
+            if v then return v == "1" end
+        end,
+    },
+    -- GNOME color-scheme: 'default', 'prefer-dark' or 'prefer-light'
+    {
+        cmd = "gsettings get org.gnome.desktop.interface color-scheme",
+        parse = function(out)
+            if out:find("prefer-dark", 1, true) then return true end
+            if out:find("default", 1, true) or out:find("prefer-light", 1, true) then
+                return false
+            end
+        end,
+    },
+    -- Older GTK fallback: theme name
+    {
+        cmd = "gsettings get org.gnome.desktop.interface gtk-theme",
+        parse = nameIsDark,
+    },
+    -- KDE color scheme name
+    {
+        cmd = "kreadconfig5 --group General --key ColorScheme",
+        parse = nameIsDark,
+    },
+}
+
+-- Returns true (dark), false (light), or nil (unknown)
+function common.isSystemDark()
+    for _, check in ipairs(checks) do
+        local result = check.parse(run(check.cmd))
+        if result ~= nil then return result end
+    end
+    return nil
+end
+
 return common

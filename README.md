@@ -17,6 +17,7 @@ The ultimate plugin to customize [<img src="img/koreader.png" width="24" /> KORe
 | **Font** | Customize your own unique UI and dictionary fonts |
 | **Page style** | Adjust page colors for a comfortable reading experience (both reflowable & fixed-layout documents such as EPUBs, PDFs, DJVUs, & CBZs) |
 | **Backgrounds** | Set custom background images (like a wallpaper) |
+| **System theme detection** | Sync KOReader's theme to your system (on Linux) |
 
 ## Installation
 1. Download the latest release.

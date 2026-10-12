@@ -7,6 +7,7 @@ local _ = require("gettext")
 local common = require("lib/common")
 local about_menu = require("about")
 local book_menu = require("book/book")
+local misc_menu = require("misc")
 local themes_menu = require("themes")
 local ui_menu = require("ui/ui")
 local updates_menu = require("updates")
@@ -47,6 +48,7 @@ local submenus = {
     themes_menu(),
     ui_menu(),
     book_menu(),
+    misc_menu(),
     updates_menu(),
     about_menu(),
 }

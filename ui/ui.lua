@@ -1,7 +1,6 @@
 local Event = require("ui/event")
 local FileManager = require("apps/filemanager/filemanager")
 local ReaderUI = require("apps/reader/readerui")
-local Screen = require("device").screen
 local UIManager = require("ui/uimanager")
 local accent_color = require("ui/accent_color")
 local background_color = require("ui/background_color")
@@ -11,7 +10,6 @@ local common = require("lib/common")
 local font_color = require("ui/font_color")
 local font_face_menu = require("ui/font_face")
 local dict_font_face_menu = require("ui/dict_font_face")
-local misc_menu = require("ui/misc")
 local nf_icons = require("lib/nf_icons")
 local transparency_menu = require("ui/transparency")
 local _ = require("gettext")
@@ -28,7 +26,6 @@ local function ui_menu()
             common.add_separator(dict_font_face_menu()),
             transparency_menu(),
             borders_menu(),
-            misc_menu(),
         }
     }
 end
