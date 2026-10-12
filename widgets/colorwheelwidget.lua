@@ -824,17 +824,20 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
             UIManager:setDirty(self, mode)
         end
     else
-        -- Wheel drag: refresh just the dot's old and new positions plus the
-        -- preview row. The wheel itself doesn't change, so the rest of the
-        -- dialog isn't touched and fast refreshes can't smear it.
+        -- Wheel drag: refresh only the indicator and preview.
         local old = self._ind_rect
         local new = self:_indicatorRect()
         self._ind_rect = new
+
         if old then UIManager:setDirty(self, "fast", old) end
         if new then UIManager:setDirty(self, "fast", new) end
+
         local preview = self:_previewRegion()
         if preview then UIManager:setDirty(self, "fast", preview) end
-        if not (old or new or preview) then UIManager:setDirty(self, "fast") end
+
+        if not (old or new or preview) then
+            UIManager:setDirty(self, "fast")
+        end
     end
     return true
 end
@@ -855,11 +858,19 @@ function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
             UIManager:setDirty(self, "ui")
         end
     else
-        -- Fast refreshes during the drag leave ghosts of the dot's old spots;
-        -- one partial refresh of just the wheel (and preview row) clears them.
+        -- Finish wheel drag: clear indicator ghosts and update
+        -- the preview and brightness gradient after the pan ends.
         UIManager:setDirty(self, "partial", self.color_wheel.dimen)
+
         local preview = self:_previewRegion()
-        if preview then UIManager:setDirty(self, "ui", preview) end
+        if preview then
+            UIManager:setDirty(self, "ui", preview)
+        end
+
+        local slider_regions = self:_sliderDirtyRegions()
+        for _, r in ipairs(slider_regions) do
+            UIManager:setDirty(self, "ui", r)
+        end
     end
     return true
 end
