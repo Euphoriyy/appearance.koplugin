@@ -1020,9 +1020,9 @@ end
 -- Restore virtual keyboard key border with appropriate color
 local MIN_KEY_BORDER_CONTRAST = 5
 
-local original_VirtualKeyboard_addKeys = VirtualKeyboard.addKeys
-function VirtualKeyboard:addKeys()
-    original_VirtualKeyboard_addKeys(self)
+local original_VirtualKeyboard_initLayer = VirtualKeyboard.initLayer
+function VirtualKeyboard:initLayer(...)
+    original_VirtualKeyboard_initLayer(self, ...)
 
     local border_color = bg_cached.fgcolor
 
