@@ -695,6 +695,33 @@ function ImageWidget:_loadfile()
     end
 end
 
+-- Build (or reuse) the alpha mask used for tinting transparent icons
+local function get_tint_mask(widget)
+    if widget._accent_mask and widget._accent_mask_src == widget._bb then
+        return widget._accent_mask
+    end
+
+    -- Source buffer changed (icon reloaded), drop the stale mask
+    if widget._accent_mask then
+        widget._accent_mask:free()
+        widget._accent_mask = nil
+    end
+
+    local src = widget._bb
+    local mask = Blitbuffer.new(src.w, src.h, Blitbuffer.TYPE_BB8)
+    mask:fill(Blitbuffer.Color8(0xFF))
+    if widget._is_straight_alpha then
+        mask:alphablitFrom(src, 0, 0, 0, 0, mask.w, mask.h)
+    else
+        mask:pmulalphablitFrom(src, 0, 0, 0, 0, mask.w, mask.h)
+    end
+    mask:invertRect(0, 0, mask.w, mask.h) -- white where the icon is opaque
+
+    widget._accent_mask = mask
+    widget._accent_mask_src = src
+    return mask
+end
+
 -- Replace ImageWidget painting to fix RGB dimming
 function ImageWidget:paintTo(bb, x, y)
     if self.hide then return end
@@ -725,16 +752,8 @@ function ImageWidget:paintTo(bb, x, y)
     if self.is_icon and self.alpha and self._bb and get_tint_icons() then
         local accent_color = get_accent_color()
         if accent_color and common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST then
-            local mask = Blitbuffer.new(self._bb.w, self._bb.h, Blitbuffer.TYPE_BB8)
-            mask:fill(Blitbuffer.Color8(0xFF))
-            if self._is_straight_alpha then
-                mask:alphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
-            else
-                mask:pmulalphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
-            end
-            mask:invertRect(0, 0, mask.w, mask.h)
+            local mask = get_tint_mask(self)
             bb:colorblitFromRGB32(mask, x, y, self._offset_x, self._offset_y, size.w, size.h, accent_color)
-            mask:free()
             tinted = true
         end
     end
@@ -807,6 +826,16 @@ function ImageWidget:paintTo(bb, x, y)
     if Screen.night_mode and self.original_in_nightmode and not self.is_icon then
         bb:invertRect(x, y, size.w, size.h)
     end
+end
+
+local original_ImageWidget_free = ImageWidget.free
+function ImageWidget:free()
+    if self._accent_mask then
+        self._accent_mask:free()
+        self._accent_mask = nil
+        self._accent_mask_src = nil
+    end
+    return original_ImageWidget_free(self)
 end
 
 -- Handles ChangeBackgroundColor event
