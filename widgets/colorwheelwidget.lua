@@ -342,14 +342,14 @@ local function makeBrightnessSlider(parent, width, height)
             bb:paintRectRGB32(x + i, bar_y + inset, 1, bar_h - 2 * inset,
                 Blitbuffer.ColorRGB32(r, g, b, 0xFF))
         end
-        bb:paintBorder(x, bar_y, width, bar_h, Size.border.thin, fg, radius)
+        bb:paintBorderRGB32(x, bar_y, width, bar_h, Size.border.thin, fg, radius)
 
         -- The knob always follows the live brightness value.
         local kw = Screen:scaleBySize(10)
         local kx = x + math.floor(parent.value * (width - 1)) - math.floor(kw / 2)
         local kr = math.floor(kw / 2)
         bb:paintRoundedRect(kx, y, kw, height, Blitbuffer.COLOR_WHITE, kr)
-        bb:paintBorder(kx, y, kw, height, Size.border.thick, fg, kr)
+        bb:paintBorderRGB32(kx, y, kw, height, Size.border.thick, fg, kr)
     end
 
     function Slider:hit(pos)
