@@ -12,11 +12,12 @@ The ultimate plugin to customize [<img src="img/koreader.png" width="24" /> KORe
 | Category | What you can change |
 |---|---|
 | **Themes** | Apply full UI & book themes with one tap |
-| **Colors** | Customize background, font, link, highlight, and progress bar colors |
+| **Colors** | Customize background, font, accent, link, highlight, and progress bar colors |
 | **Color wheel** | Choose colors with a visual RGB color wheel |
-| **Font** | Customize your own unique UI and dictionary fonts |
+| **Fonts** | Customize your own unique UI and dictionary fonts |
 | **Page style** | Adjust page colors for a comfortable reading experience (both reflowable & fixed-layout documents such as EPUBs, PDFs, DJVUs, & CBZs) |
 | **Backgrounds** | Set custom background images (like a wallpaper) |
+| **Borders** | Customize the roundness and thickness of borders |
 | **System theme detection** | Sync KOReader's theme to your system (on Linux) |
 
 ## Installation
