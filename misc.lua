@@ -25,7 +25,7 @@ local function start_themewatcher()
 end
 
 local function misc_menu()
-    return {
+    local menu = {
         text_func = function() return nf_icons.label(nf_icons.MAGIC, _("Miscellaneous")) end,
         sub_item_table = {
             {
@@ -35,21 +35,25 @@ local function misc_menu()
                     MenuIcons.toggle()
                 end,
             },
-            {
-                text = _("Detect system theme"),
-                enabled_func = function() return Device.isDesktop() and jit.os == "Linux" end,
-                checked_func = DetectSystemTheme.get,
-                callback = function()
-                    DetectSystemTheme.toggle()
-                    if DetectSystemTheme.get() then
-                        start_themewatcher()
-                    else
-                        ThemeWatcher:stop()
-                    end
-                end,
-            },
         },
     }
+
+    if Device.isDesktop() and jit.os == "Linux" then
+        table.insert(menu.sub_item_table, {
+            text = _("Detect system theme"),
+            checked_func = DetectSystemTheme.get,
+            callback = function()
+                DetectSystemTheme.toggle()
+                if DetectSystemTheme.get() then
+                    start_themewatcher()
+                else
+                    ThemeWatcher:stop()
+                end
+            end,
+        })
+    end
+
+    return menu
 end
 
 -- Start checking for the system theme if on Desktop (Linux)

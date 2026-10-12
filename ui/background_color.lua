@@ -235,7 +235,7 @@ local function pick_color_callback()
 end
 
 local function background_color_menu()
-    return {
+    local menu = {
         text_func = function()
             return T(nf_icons.label(nf_icons.FORMAT_COLOR, _("Background color: %1")), getBackgroundColor())
         end,
@@ -377,21 +377,24 @@ local function background_color_menu()
                             bg_cached.set_border_color = BorderColor.get()
                         end,
                     },
-                    {
-                        text = _("Use color-accurate flashing refreshes"),
-                        enabled_func = function()
-                            return Screen:isColorEnabled() and Device:hasKaleidoWfm()
-                        end,
-                        checked_func = AccurateRefreshes.get,
-                        callback = function()
-                            AccurateRefreshes.toggle()
-                            bg_cached.accurate_refreshes = AccurateRefreshes.get()
-                        end,
-                    },
                 },
             },
         },
     }
+
+    local advanced_settings_menu = menu.sub_item_table[#menu.sub_item_table].sub_item_table
+    if Screen:isColorEnabled() and Device:hasKaleidoWfm() then
+        table.insert(advanced_settings_menu, {
+            text = _("Use color-accurate flashing refreshes"),
+            checked_func = AccurateRefreshes.get,
+            callback = function()
+                AccurateRefreshes.toggle()
+                bg_cached.accurate_refreshes = AccurateRefreshes.get()
+            end,
+        })
+    end
+
+    return menu
 end
 
 local SquareWindowCorners = Setting("ui_borders_square_window_corners", false)
