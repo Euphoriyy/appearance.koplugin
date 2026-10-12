@@ -316,11 +316,11 @@ local function makeBrightnessSlider(parent, width, height)
 
     function Slider:paintTo(bb, x, y)
         self.dimen.x, self.dimen.y = x, y
-        local bar_h  = math.floor(height / 2)
-        local bar_y  = y + math.floor((height - bar_h) / 2)
-        local radius = math.floor(bar_h / 2)
-        local nm     = parent.invert_in_night_mode and Screen.night_mode
-        local fg     = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
+        local bar_h                = math.floor(height / 2)
+        local bar_y                = y + math.floor((height - bar_h) / 2)
+        local radius               = math.floor(bar_h / 2)
+        local nm                   = parent.invert_in_night_mode and Screen.night_mode
+        local fg                   = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
 
         for i = 0, width - 1 do
             -- Trim the column at the rounded ends so the gradient follows the curve
@@ -454,7 +454,7 @@ function ColorWheelWidget:init()
         )
     end
 
-    self.inner_width  = self.width - 2 * Size.padding.large
+    self.inner_width = self.width - 2 * Size.padding.large
 
     if Device:isTouchDevice() then
         self.ges_events = {
@@ -788,6 +788,12 @@ function ColorWheelWidget:_previewRegion()
     end
 end
 
+function ColorWheelWidget:_previewSwatchRegion()
+    if self._preview_frame and self._preview_frame.dimen then
+        return self._preview_frame.dimen:copy()
+    end
+end
+
 -- Pan: sync values + fast-dirty + periodic ui-dirty.
 function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
     if not self.color_wheel or not self.color_wheel.dimen then return false end
@@ -817,14 +823,19 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
     local mode = (self._pan_tick % 8 == 0) and "ui" or "fast"
 
     if self._pan_target == "slider" then
-        local regions = self:_sliderDirtyRegions()
-        if #regions > 0 then
-            for _, r in ipairs(regions) do UIManager:setDirty(self, mode, r) end
-        else
-            UIManager:setDirty(self, mode)
+        -- Update the knob and preview swatch live.
+        -- Keep the gradient and hex label unchanged until release.
+        local slider = self._slider.dimen
+        local preview = self:_previewSwatchRegion()
+
+        UIManager:setDirty(self, mode, slider)
+
+        if preview then
+            UIManager:setDirty(self, mode, preview)
         end
     else
-        -- Wheel drag: refresh only the indicator and preview.
+        -- Refresh the indicator and color swatch during the drag.
+        -- Keep the hex label and brightness gradient unchanged until release.
         local old = self._ind_rect
         local new = self:_indicatorRect()
         self._ind_rect = new
@@ -832,7 +843,7 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
         if old then UIManager:setDirty(self, "fast", old) end
         if new then UIManager:setDirty(self, "fast", new) end
 
-        local preview = self:_previewRegion()
+        local preview = self:_previewSwatchRegion()
         if preview then UIManager:setDirty(self, "fast", preview) end
 
         if not (old or new or preview) then
@@ -853,7 +864,9 @@ function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
     if was_slider then
         local regions = self:_sliderDirtyRegions()
         if #regions > 0 then
-            for _, r in ipairs(regions) do UIManager:setDirty(self, "ui", r) end
+            for _, r in ipairs(regions) do
+                UIManager:setDirty(self, "ui", r)
+            end
         else
             UIManager:setDirty(self, "ui")
         end
@@ -914,4 +927,3 @@ function ColorWheelWidget:onShow()
 end
 
 return ColorWheelWidget
- 
