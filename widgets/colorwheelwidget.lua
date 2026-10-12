@@ -312,18 +312,23 @@ end
 local function makeBrightnessSlider(parent, width, height)
     local Slider = WidgetContainer:extend {
         dimen = Geom:new { w = width, h = height },
+        gradient_hue = nil,
+        gradient_saturation = nil,
     }
 
     function Slider:paintTo(bb, x, y)
         self.dimen.x, self.dimen.y = x, y
-        local bar_h                = math.floor(height / 2)
-        local bar_y                = y + math.floor((height - bar_h) / 2)
-        local radius               = math.floor(bar_h / 2)
-        local nm                   = parent.invert_in_night_mode and Screen.night_mode
-        local fg                   = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
+        local bar_h  = math.floor(height / 2)
+        local bar_y  = y + math.floor((height - bar_h) / 2)
+        local radius = math.floor(bar_h / 2)
+        local nm     = parent.invert_in_night_mode and Screen.night_mode
+        local fg     = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
+
+        -- Keep the gradient fixed while the slider is being dragged.
+        local hue = self.gradient_hue or parent.hue
+        local saturation = self.gradient_saturation or parent.saturation
 
         for i = 0, width - 1 do
-            -- Trim the column at the rounded ends so the gradient follows the curve
             local inset = 0
             local d = (i < radius) and (radius - i - 0.5)
                 or (i > width - 1 - radius) and (i - (width - 1 - radius) - 0.5)
@@ -332,14 +337,14 @@ local function makeBrightnessSlider(parent, width, height)
                 inset = math.floor(radius - math.sqrt(math.max(0, radius * radius - d * d)) + 0.5)
             end
 
-            local r, g, b = hsvToRgb(parent.hue, parent.saturation, i / (width - 1))
+            local r, g, b = hsvToRgb(hue, saturation, i / (width - 1))
             if nm then r, g, b = 255 - r, 255 - g, 255 - b end
             bb:paintRectRGB32(x + i, bar_y + inset, 1, bar_h - 2 * inset,
                 Blitbuffer.ColorRGB32(r, g, b, 0xFF))
         end
         bb:paintBorder(x, bar_y, width, bar_h, Size.border.thin, fg, radius)
 
-        -- Rounded knob
+        -- The knob always follows the live brightness value.
         local kw = Screen:scaleBySize(10)
         local kx = x + math.floor(parent.value * (width - 1)) - math.floor(kw / 2)
         local kr = math.floor(kw / 2)
@@ -347,7 +352,6 @@ local function makeBrightnessSlider(parent, width, height)
         bb:paintBorder(kx, y, kw, height, Size.border.thick, fg, kr)
     end
 
-    -- Generous vertical hit area so it's easy to grab
     function Slider:hit(pos)
         local m = Size.padding.large
         return pos.x >= self.dimen.x - m and pos.x <= self.dimen.x + width + m
@@ -357,6 +361,16 @@ local function makeBrightnessSlider(parent, width, height)
     function Slider:setFromPos(pos)
         local v = (pos.x - self.dimen.x) / (width - 1)
         parent.value = math.max(0, math.min(1, v))
+    end
+
+    function Slider:beginDrag()
+        self.gradient_hue = parent.hue
+        self.gradient_saturation = parent.saturation
+    end
+
+    function Slider:endDrag()
+        self.gradient_hue = nil
+        self.gradient_saturation = nil
     end
 
     return Slider:new {}
@@ -819,23 +833,23 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
         self.saturation = self.color_wheel.saturation
     end
 
-    self._pan_tick = (self._pan_tick or 0) + 1
-    local mode = (self._pan_tick % 8 == 0) and "ui" or "fast"
-
     if self._pan_target == "slider" then
-        -- Update the knob and preview swatch live.
-        -- Keep the gradient and hex label unchanged until release.
+        -- Keep the gradient fixed, while updating the knob and swatch.
+        if not self._slider_drag_started then
+            self._slider:beginDrag()
+            self._slider_drag_started = true
+        end
+
         local slider = self._slider.dimen
         local preview = self:_previewSwatchRegion()
 
-        UIManager:setDirty(self, mode, slider)
+        UIManager:setDirty(self, "fast", slider)
 
         if preview then
-            UIManager:setDirty(self, mode, preview)
+            UIManager:setDirty(self, "fast", preview)
         end
     else
-        -- Refresh the indicator and color swatch during the drag.
-        -- Keep the hex label and brightness gradient unchanged until release.
+        -- Update the indicator and preview swatch during wheel dragging.
         local old = self._ind_rect
         local new = self:_indicatorRect()
         self._ind_rect = new
@@ -850,6 +864,7 @@ function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
             UIManager:setDirty(self, "fast")
         end
     end
+
     return true
 end
 
