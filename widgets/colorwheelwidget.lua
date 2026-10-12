@@ -537,6 +537,8 @@ function ColorWheelWidget:setHex(hex)
     local hue, saturation, value = common.hexToHSV(hex)
     if not hue then return false end
     self.hue, self.saturation, self.value = hue, saturation, value
+    -- The wheel keeps its own hue/saturation for the selection dot,
+    -- so a typed color needs a rebuild to move it.
     self:update()
     return true
 end
@@ -587,7 +589,6 @@ function ColorWheelWidget:update()
         value                = 1, -- wheel always shows full brightness
         invert_in_night_mode = self.invert_in_night_mode,
         draw_scale           = self.draw_scale,
-        -- update_callback is NOT set here — pan bypasses update() entirely
     }
 
     -- Live widgets read parent's hue/sat/val at paint time; no rebuild on drag
@@ -733,7 +734,7 @@ function ColorWheelWidget:onTapColorWheel(arg, ges_ev)
     end
     if self._slider and self._slider:hit(ges_ev.pos) then
         self._slider:setFromPos(ges_ev.pos)
-        self:update()
+        UIManager:setDirty(self, "ui")
         return true
     end
 
@@ -766,7 +767,7 @@ function ColorWheelWidget:_sliderDirtyRegions()
     return regions
 end
 
--- Pan: sync values + fast-dirty + periodic ui-dirty only the wheel region.
+-- Pan: sync values + fast-dirty + periodic ui-dirty.
 function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
     if not self.color_wheel or not self.color_wheel.dimen then return false end
 
@@ -808,8 +809,21 @@ end
 
 function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
     if not self._pan_target then return false end
+    local was_slider = self._pan_target == "slider"
     self._pan_target = nil
-    self:update() -- final clean refresh; syncs label, hex and preview
+
+    -- Everything is drawn live from hue/sat/value, so a clean refresh is
+    -- enough. No rebuild needed.
+    if was_slider then
+        local regions = self:_sliderDirtyRegions()
+        if #regions > 0 then
+            for _, r in ipairs(regions) do UIManager:setDirty(self, "ui", r) end
+        else
+            UIManager:setDirty(self, "ui")
+        end
+    else
+        UIManager:setDirty(self, "ui")
+    end
     return true
 end
 
