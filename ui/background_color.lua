@@ -57,6 +57,9 @@ local AccurateRefreshes       = Setting("ui_background_color_accurate_refreshes"
 -- Transparency setting
 local TransparentIcons        = Setting("ui_transparent_icons", false)
 
+-- Minimum contrast between tinted icons and background color
+local MIN_TINT_CONTRAST       = 25
+
 ------------------------------------------------------------
 -- ImageWidget specific code
 ------------------------------------------------------------
@@ -96,6 +99,11 @@ local accent
 local function get_accent_color()
     accent = accent or require("ui/accent_color")
     return accent.accent_color()
+end
+
+local function get_tint_icons()
+    accent = accent or require("ui/accent_color")
+    return accent.tint_icons()
 end
 
 local book_bgcolor
@@ -607,6 +615,20 @@ function ImageWidget:_loadfile()
                 if not self.alpha then
                     local bbtype = self._bb:getType()
                     if bbtype == Blitbuffer.TYPE_BB8A or bbtype == Blitbuffer.TYPE_BBRGB32 then
+                        -- Build the alpha mask from the untouched (black) icon, before any inversion
+                        local accent_color = get_accent_color()
+                        local mask
+                        if accent_color and get_tint_icons() and common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST then
+                            mask = Blitbuffer.new(self._bb.w, self._bb.h, Blitbuffer.TYPE_BB8)
+                            mask:fill(Blitbuffer.Color8(0xFF))
+                            if self._is_straight_alpha then
+                                mask:alphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
+                            else
+                                mask:pmulalphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
+                            end
+                            mask:invertRect(0, 0, mask.w, mask.h) -- white where the icon is opaque
+                        end
+
                         -- Invert so that icons stay the same
                         if (not Screen.night_mode and bg_cached.invert_icons_in_day_mode) or (Screen.night_mode and not should_invert_icons_in_night_mode()) then
                             self._bb:invert()
@@ -619,9 +641,11 @@ function ImageWidget:_loadfile()
                             icon_bb:paintRectRGB32(0, 0, icon_bb.w, icon_bb.h, bg_cached.bgcolor)
                         end
 
-                        -- And now simply compose the icon on top of that, with dithering if necessary
-                        -- Remembering that NanoSVG feeds us straight alpha, unlike MµPDF
-                        if self._is_straight_alpha then
+                        if mask then
+                            -- Paint the accent color through the mask, on top of the background
+                            icon_bb:colorblitFromRGB32(mask, 0, 0, 0, 0, icon_bb.w, icon_bb.h, accent_color)
+                            mask:free()
+                        elseif self._is_straight_alpha then
                             if Screen.sw_dithering then
                                 icon_bb:ditheralphablitFrom(self._bb, 0, 0, 0, 0, icon_bb.w, icon_bb.h)
                             else
@@ -695,7 +719,29 @@ function ImageWidget:paintTo(bb, x, y)
             do_alpha = true
         end
     end
-    if do_alpha then
+
+    -- Transparent icons require tinting them when painting
+    local tinted
+    if self.is_icon and self.alpha and self._bb and get_tint_icons() then
+        local accent_color = get_accent_color()
+        if accent_color and common.contrast(bg_cached.bgcolor, accent_color) >= MIN_TINT_CONTRAST then
+            local mask = Blitbuffer.new(self._bb.w, self._bb.h, Blitbuffer.TYPE_BB8)
+            mask:fill(Blitbuffer.Color8(0xFF))
+            if self._is_straight_alpha then
+                mask:alphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
+            else
+                mask:pmulalphablitFrom(self._bb, 0, 0, 0, 0, mask.w, mask.h)
+            end
+            mask:invertRect(0, 0, mask.w, mask.h)
+            bb:colorblitFromRGB32(mask, x, y, self._offset_x, self._offset_y, size.w, size.h, accent_color)
+            mask:free()
+            tinted = true
+        end
+    end
+
+    if tinted then
+        -- Skip normal blit
+    elseif do_alpha then
         --- @note: MuPDF feeds us premultiplied alpha (and we don't care w/ GifLib, as alpha is all or nothing),
         ---        while NanoSVG feeds us straight alpha.
         ---        SVG icons are currently flattened at caching time, so we'll only go through the straight alpha
@@ -772,14 +818,14 @@ end
 
 -- Reload icon images on night mode state changes
 function IconWidget:onToggleNightMode()
-    if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
+    if (bg_cached.alt_night_color or not bg_cached.invert_in_night_mode) or get_tint_icons() then
         self:free()
         self:init()
     end
 end
 
 function IconWidget:onSetNightMode(night_mode)
-    if Screen.night_mode ~= night_mode and (bg_cached.alt_night_color or not bg_cached.invert_in_night_mode) then
+    if Screen.night_mode ~= night_mode and ((bg_cached.alt_night_color or not bg_cached.invert_in_night_mode) or get_tint_icons()) then
         self:free()
         self:init()
     end
@@ -809,7 +855,7 @@ local original_UIManager_ToggleNightMode = UIManager.ToggleNightMode
 function UIManager:ToggleNightMode(night_mode)
     original_UIManager_ToggleNightMode(self, night_mode)
 
-    if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode then
+    if bg_cached.alt_night_color or not bg_cached.invert_in_night_mode or get_tint_icons() then
         ImageCache:clear()
     end
 end

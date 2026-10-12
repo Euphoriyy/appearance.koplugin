@@ -9,10 +9,22 @@ local common = require("lib/common")
 local nf_icons = require("lib/nf_icons")
 
 -- Settings
-local HexAccentColor = Setting("ui_accent_color_hex", nil)            -- RGB hex for UI accent color (default: #000000)
-local InvertAccentColor = Setting("ui_accent_color_inverted", true)         -- Whether the UI accent color should be inverted in night mode (default: true)
-local AltNightAccentColor = Setting("ui_accent_color_alt_night", false)     -- Whether the UI accent color should be changed to an alternative color in night mode (default: false)
-local NightHexAccentColor = Setting("ui_accent_color_night_hex", nil) -- RGB hex for the alternative UI accent color in night mode (default: #FFFFFF)
+local HexAccentColor = Setting("ui_accent_color_hex", nil)              -- RGB hex for UI accent color (default: #000000)
+local InvertAccentColor = Setting("ui_accent_color_inverted", true)     -- Whether the UI accent color should be inverted in night mode (default: true)
+local AltNightAccentColor = Setting("ui_accent_color_alt_night", false) -- Whether the UI accent color should be changed to an alternative color in night mode (default: false)
+local NightHexAccentColor = Setting("ui_accent_color_night_hex", nil)   -- RGB hex for the alternative UI accent color in night mode (default: #FFFFFF)
+local TintIcons = Setting("ui_accent_tint_icons", false)                -- Whether icons should be tinted with the accent color
+
+--------------------------------------------
+-- Lazy Loading
+--------------------------------------------
+
+local ui_bgcolor
+
+local function reloadIcons()
+    ui_bgcolor = ui_bgcolor or require("ui/background_color")
+    return ui_bgcolor.reloadIcons()
+end
 
 -- Cache
 local cached = {
@@ -22,6 +34,7 @@ local cached = {
     night_hex = NightHexAccentColor.get(),
     last_hex = nil,
     accent_color = nil,
+    tint_icons = TintIcons.get(),
 }
 
 -- Calculate the current hex value based on night mode and current settings
@@ -75,6 +88,9 @@ local function setAccentColor(hex)
     end
 
     recomputeAccentColor()
+    if cached.tint_icons then
+        reloadIcons()
+    end
 end
 
 -- Menus
@@ -142,6 +158,9 @@ local function accent_color_menu()
 
                     if Screen.night_mode then
                         recomputeAccentColor()
+                        if cached.tint_icons then
+                            reloadIcons()
+                        end
                     end
                 end,
             },
@@ -152,9 +171,24 @@ local function accent_color_menu()
                 callback = function()
                     InvertAccentColor.toggle()
                     cached.invert_in_night_mode = InvertAccentColor.get()
-                    recomputeAccentColor()
+
+                    if Screen.night_mode then
+                        recomputeAccentColor()
+                        if cached.tint_icons then
+                            reloadIcons()
+                        end
+                    end
                 end,
                 separator = true,
+            },
+            {
+                text = _("Tint icons"),
+                checked_func = TintIcons.get,
+                callback = function()
+                    TintIcons.toggle()
+                    cached.tint_icons = TintIcons.get()
+                    reloadIcons()
+                end,
             },
         },
     }
@@ -189,6 +223,9 @@ function FileManager:onApplyTheme()
     cached.hex = HexAccentColor.get()
     cached.night_hex = NightHexAccentColor.get()
     cached.alt_night_color = AltNightAccentColor.get()
+    if cached.tint_icons then
+        reloadIcons()
+    end
 end
 
 local original_ReaderUI_onApplyTheme = ReaderUI.onApplyTheme
@@ -200,10 +237,14 @@ function ReaderUI:onApplyTheme()
     cached.hex = HexAccentColor.get()
     cached.night_hex = NightHexAccentColor.get()
     cached.alt_night_color = AltNightAccentColor.get()
+    if cached.tint_icons then
+        reloadIcons()
+    end
 end
 
 return {
     menu = accent_color_menu,
     accent_color = function() return cached.accent_color end,
     accent_hex = function() return calculateHex() end,
+    tint_icons = function() return cached.tint_icons end,
 }
