@@ -306,6 +306,51 @@ local function makeLivePreview(parent, preview_size)
 end
 
 ------------------------------------------------------------
+-- Brightness slider: gradient from black to the current colour.
+-- Reads hue/sat at paint time; writes parent.value on touch.
+------------------------------------------------------------
+local function makeBrightnessSlider(parent, width, height)
+    local Slider = WidgetContainer:extend {
+        dimen = Geom:new { w = width, h = height },
+    }
+
+    function Slider:paintTo(bb, x, y)
+        self.dimen.x, self.dimen.y = x, y
+        local bar_h                = math.floor(height / 2)
+        local bar_y                = y + math.floor((height - bar_h) / 2)
+        local nm                   = parent.invert_in_night_mode and Screen.night_mode
+        local fg                   = get_font_fgcolor() or Blitbuffer.COLOR_BLACK
+
+        for i = 0, width - 1 do
+            local r, g, b = hsvToRgb(parent.hue, parent.saturation, i / (width - 1))
+            if nm then r, g, b = 255 - r, 255 - g, 255 - b end
+            bb:paintRectRGB32(x + i, bar_y, 1, bar_h, Blitbuffer.ColorRGB32(r, g, b, 0xFF))
+        end
+        bb:paintBorder(x, bar_y, width, bar_h, Size.border.thin, fg)
+
+        -- knob
+        local kw = Screen:scaleBySize(8)
+        local kx = x + math.floor(parent.value * (width - 1)) - math.floor(kw / 2)
+        bb:paintRect(kx, y, kw, height, Blitbuffer.COLOR_WHITE)
+        bb:paintBorder(kx, y, kw, height, Size.border.thick, fg)
+    end
+
+    -- Generous vertical hit area so it's easy to grab
+    function Slider:hit(pos)
+        local m = Size.padding.large
+        return pos.x >= self.dimen.x - m and pos.x <= self.dimen.x + width + m
+            and pos.y >= self.dimen.y - m and pos.y <= self.dimen.y + height + m
+    end
+
+    function Slider:setFromPos(pos)
+        local v = (pos.x - self.dimen.x) / (width - 1)
+        parent.value = math.max(0, math.min(1, v))
+    end
+
+    return Slider:new {}
+end
+
+------------------------------------------------------------
 -- Live hex label — reads hue/sat/val at paint time.
 ------------------------------------------------------------
 local function makeLiveHexLabel(parent, face)
@@ -448,15 +493,52 @@ function ColorWheelWidget:showHexInput()
     dialog:onShowKeyboard()
 end
 
+function ColorWheelWidget:setValue(percent)
+    percent = tonumber(percent)
+    if not percent then return false end
+    self.value = math.max(0, math.min(100, percent)) / 100
+    self:update()
+    return true
+end
+
+function ColorWheelWidget:showValueInput()
+    local InputDialog = require("ui/widget/inputdialog")
+    local dialog
+    dialog = InputDialog:new {
+        title = "Enter brightness (0-100)",
+        width = math.floor(self.width * 0.8),
+        input = tostring(math.floor(self.value * 100 + 0.5)),
+        input_type = "number",
+        input_hint = "100",
+        buttons = { {
+            {
+                text = "Cancel",
+                id = "close",
+                callback = function() UIManager:close(dialog) end,
+            },
+            {
+                text = "Set",
+                is_enter_default = true,
+                callback = function()
+                    self:setValue(dialog:getInputText())
+                    UIManager:close(dialog)
+                end,
+            },
+        } },
+    }
+    UIManager:show(dialog)
+    dialog:onShowKeyboard()
+end
+
 function ColorWheelWidget:update()
     -- Free previous ColorWheel (and its _cached_buf) and LiveHex
     -- before creating new ones, so no orphaned FFI buffers are left behind.
     self:_freeChildren()
 
-    local wheel_size    = self.width - 2 * Size.padding.large
-    local preview_size  = math.floor(wheel_size / 6)
+    local wheel_size   = self.width - 2 * Size.padding.large
+    local preview_size = math.floor(wheel_size / 6)
 
-    self.color_wheel    = ColorWheel:new {
+    self.color_wheel   = ColorWheel:new {
         dimen                = Geom:new { w = wheel_size, h = wheel_size },
         hue                  = self.hue,
         saturation           = self.saturation,
@@ -467,9 +549,9 @@ function ColorWheelWidget:update()
     }
 
     -- Live widgets read parent's hue/sat/val at paint time; no rebuild on drag
-    self._live_preview  = makeLivePreview(self, preview_size)
-    self._live_hex      = makeLiveHexLabel(self, self.hex_font_face)
-    self._hex_frame     = FrameContainer:new {
+    self._live_preview = makeLivePreview(self, preview_size)
+    self._live_hex     = makeLiveHexLabel(self, self.hex_font_face)
+    self._hex_frame    = FrameContainer:new {
         bordersize = Size.border.button,
         radius     = Size.radius.button,
         margin     = 0,
@@ -477,7 +559,7 @@ function ColorWheelWidget:update()
         self._live_hex,
     }
 
-    local title_bar     = TitleBar:new {
+    local title_bar    = TitleBar:new {
         width            = self.width,
         title            = nf_icons.label(nf_icons.EYEDROPPER, self.title_text),
         with_bottom_line = true,
@@ -487,48 +569,12 @@ function ColorWheelWidget:update()
     }
 
 
-    local value_minus   = Button:new {
-        text        = "▬",
-        enabled     = self.value > 0,
-        width       = self.button_width,
-        radius      = Size.radius.button,
-        show_parent = self,
-        callback    = function()
-            self.value = math.max(0, self.value - 0.1)
-            -- Brightness change requires wheel re-render: use full update()
-            self.color_wheel._needs_redraw = true
-            self:update()
-            UIManager:setDirty(self, "ui", self.color_wheel.dimen, true)
-        end,
-    }
-
-    local value_plus    = Button:new {
-        text        = "✚",
-        enabled     = self.value < 1,
-        width       = self.button_width,
-        radius      = Size.radius.button,
-        show_parent = self,
-        callback    = function()
-            self.value = math.min(1, self.value + 0.1)
-            self.color_wheel._needs_redraw = true
-            self:update()
-            UIManager:setDirty(self, "ui", self.color_wheel.dimen, true)
-        end,
-    }
-
     local value_label   = TextWidget:new {
-        text = string.format("Brightness: %d%%", math.floor(self.value * 100)),
+        text = string.format("Brightness: %d%%", math.floor(self.value * 100 + 0.5)),
         face = self.medium_font_face,
     }
 
-    local value_group   = HorizontalGroup:new {
-        align = "center",
-        value_minus,
-        HorizontalSpan:new { width = Size.padding.large },
-        value_label,
-        HorizontalSpan:new { width = Size.padding.large },
-        value_plus,
-    }
+    self._slider        = makeBrightnessSlider(self, wheel_size, Screen:scaleBySize(36))
 
     local preview_group = HorizontalGroup:new {
         align = "center",
@@ -573,9 +619,13 @@ function ColorWheelWidget:update()
         CenterContainer:new {
             dimen = Geom:new {
                 w = self.width,
-                h = value_label:getSize().h + Size.padding.default,
+                h = value_label:getSize().h + self._slider.dimen.h + Size.padding.default,
             },
-            value_group,
+            VerticalGroup:new {
+                align = "center",
+                value_label,
+                self._slider,
+            },
         },
         VerticalSpan:new { width = Size.padding.large },
         CenterContainer:new {
@@ -638,6 +688,11 @@ function ColorWheelWidget:onTapColorWheel(arg, ges_ev)
         self:showHexInput()
         return true
     end
+    if self._slider and self._slider:hit(ges_ev.pos) then
+        self._slider:setFromPos(ges_ev.pos)
+        self:update()
+        return true
+    end
 
     if ges_ev.pos:intersectWith(self.color_wheel.dimen) then
         if self.color_wheel:updateColor(ges_ev.pos) then
@@ -657,31 +712,37 @@ end
 function ColorWheelWidget:onPanColorWheel(arg, ges_ev)
     if not self.color_wheel or not self.color_wheel.dimen then return false end
 
-    if ges_ev.pos:intersectWith(self.color_wheel.dimen) then
-        if self.color_wheel:updateColor(ges_ev.pos) then
-            self.hue        = self.color_wheel.hue
-            self.saturation = self.color_wheel.saturation
-
-            self._pan_tick  = (self._pan_tick or 0) + 1
-            local mode      = (self._pan_tick % 8 == 0) and "ui" or "fast"
-
-            UIManager:setDirty(self, mode)
+    -- Lock onto whichever control the drag started on
+    if not self._pan_target then
+        if self._slider and self._slider:hit(ges_ev.pos) then
+            self._pan_target = "slider"
+        elseif ges_ev.pos:intersectWith(self.color_wheel.dimen) then
+            self._pan_target = "wheel"
+        else
+            return false
         end
-        return true
     end
-    return false
+
+    if self._pan_target == "slider" then
+        self._slider:setFromPos(ges_ev.pos)
+        self.color_wheel.value = self.value -- wheel re-renders itself on next paint
+    elseif not self.color_wheel:updateColor(ges_ev.pos) then
+        return true
+    else
+        self.hue        = self.color_wheel.hue
+        self.saturation = self.color_wheel.saturation
+    end
+
+    self._pan_tick = (self._pan_tick or 0) + 1
+    UIManager:setDirty(self, (self._pan_tick % 8 == 0) and "ui" or "fast")
+    return true
 end
 
--- Pan release: one clean "ui" refresh to fix A2 ghosting,
--- plus a full update() so the hex label and preview sync up.
 function ColorWheelWidget:onPanReleaseColorWheel(arg, ges_ev)
-    if not self.color_wheel or not self.color_wheel.dimen then return false end
-
-    if ges_ev.pos:intersectWith(self.color_wheel.dimen) then
-        self:update() -- rebuilds widget tree with final hue/sat; does "ui" dirty
-        return true
-    end
-    return false
+    if not self._pan_target then return false end
+    self._pan_target = nil
+    self:update() -- final clean refresh; syncs label, hex and preview
+    return true
 end
 
 function ColorWheelWidget:onApply()

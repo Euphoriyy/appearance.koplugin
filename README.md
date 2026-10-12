@@ -139,6 +139,7 @@ For rounded book & folder covers to work properly with the background color, [my
 - In-plugin updater adapted from the one used in [Bookends](https://github.com/AndyHazz/bookends.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
 - Markdown implementation for Lua sourced from [markdown.lua](https://github.com/mpeterv/markdown) by [@mpeterv](https://github.com/mpeterv) and [@niklasfrykholm](https://github.com/niklasfrykholm).
 - Nerd font glyph codepoints and method to handle links sourced from [bookshelf.koplugin](https://github.com/AndyHazz/bookshelf.koplugin) by [@AndyHazz](https://github.com/AndyHazz).
+- Brightness slider used in color wheel widget adapted from [ink-away.koplugin](https://github.com/EmirErtorer/ink-away.koplugin) by [@EmirErtorer](https://github.com/EmirErtorer).
 
 ## Support
 If you want to support me, you can star this repository or buy me a coffee. :)
