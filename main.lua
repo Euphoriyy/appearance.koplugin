@@ -71,10 +71,8 @@ function Appearance:addToMainMenu(menu_items)
     }
 
     -- Insert submenus
-    for _, submenu in pairs(submenus) do
-        for _, value in ipairs({ submenu }) do
-            table.insert(menu_items.appearance.sub_item_table, value)
-        end
+    for _, submenu in ipairs(submenus) do
+        table.insert(menu_items.appearance.sub_item_table, submenu)
     end
 end
 
