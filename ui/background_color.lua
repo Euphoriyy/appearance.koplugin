@@ -1250,7 +1250,7 @@ function ProgressWidget:init()
     original_ProgressWidget_init(self)
 
     self.bgcolor = bg_cached.bgcolor
-    self.fillcolor = get_accent_color()
+    self.fillcolor = get_accent_color() or bg_cached.bgcolor:invert()
     self.bordercolor = bg_cached.fgcolor
 end
 
@@ -1259,8 +1259,7 @@ local original_ButtonProgressWidget_update = ButtonProgressWidget.update
 function ButtonProgressWidget:update()
     original_ButtonProgressWidget_update(self)
 
-    local accent_color = get_accent_color()
-    if not accent_color then return end
+    local accent_color = get_accent_color() or bg_cached.bgcolor:invert()
 
     -- Skip the leading "-" button when fine tuning is enabled
     local offset = self.fine_tune and 1 or 0
