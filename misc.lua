@@ -8,7 +8,7 @@ local nf_icons          = require("lib/nf_icons")
 
 -- Settings
 local MenuIcons         = Setting("ui_misc_icons", true)
-local DetectSystemTheme = Setting("ui_misc_detect_sys_theme", false)
+local DetectSystemTheme = Setting("ui_misc_detect_sys_theme", true)
 
 -- Menu
 local _                 = require("gettext")
