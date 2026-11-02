@@ -7,6 +7,7 @@ local ProgressWidget = require("ui/widget/progresswidget")
 local ReaderFooter = require("apps/reader/modules/readerfooter")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
+local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local common = require("lib/common")
 local nf_icons = require("lib/nf_icons")

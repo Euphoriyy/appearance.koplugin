@@ -6,6 +6,7 @@ local FootnoteWidget = require("ui/widget/footnotewidget")
 local ReaderStyleTweak = require("apps/reader/modules/readerstyletweak")
 local ReaderUI = require("apps/reader/readerui")
 local Screen = require("device").screen
+local Setting = require("lib/setting")
 local UIManager = require("ui/uimanager")
 local _ = require("gettext")
 local common = require("lib/common")
@@ -194,7 +195,7 @@ function ReaderStyleTweak:getCssText()
     return original_css
 end
 
--- Add font color to footnote popup CSS
+-- Add link color to footnote popup CSS
 local original_FootnoteWidget_init = FootnoteWidget.init
 function FootnoteWidget:init()
     original_FootnoteWidget_init(self)
