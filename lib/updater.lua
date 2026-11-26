@@ -85,6 +85,15 @@ local function isNewer(v1, v2)
     return false
 end
 
+local function findZipUrl(release)
+    if not (release and release.assets) then return nil end
+    for _, asset in ipairs(release.assets) do
+        if asset.name and asset.name:match("%.zip$") then
+            return asset.browser_download_url
+        end
+    end
+end
+
 --- Try LuaSocket first, fall back to curl for platforms where SSL crashes.
 local function httpGetJSON(url, user_agent)
     local json = require("json")
@@ -188,15 +197,7 @@ function Updater.checkBackground(on_update_found)
         local ver = release.tag_name:gsub("^v", "")
         if isNewer(ver, installed_version) then
             _cached_version = ver
-            _cached_zip_url = nil
-            if release.assets then
-                for _, asset in ipairs(release.assets) do
-                    if asset.name:match("%.zip$") then
-                        _cached_zip_url = asset.browser_download_url
-                        break
-                    end
-                end
-            end
+            _cached_zip_url = findZipUrl(release)
             if on_update_found then
                 on_update_found(ver)
             end
@@ -246,24 +247,17 @@ function Updater.check()
 
         -- Collect releases newer than installed version
         local new_releases = {}
-        local latest_zip_url
         for _, rel in ipairs(releases) do
-            if rel.draft or rel.prerelease then goto continue end
-            local ver = rel.tag_name:gsub("^v", "")
-            if isNewer(ver, installed_version) then
+            if rel.tag_name and not rel.draft and not rel.prerelease
+                and isNewer(rel.tag_name, installed_version) then
                 table.insert(new_releases, rel)
-                -- Find ZIP asset from the newest release
-                if not latest_zip_url and rel.assets then
-                    for _, asset in ipairs(rel.assets) do
-                        if asset.name:match("%.zip$") then
-                            latest_zip_url = asset.browser_download_url
-                            break
-                        end
-                    end
-                end
             end
-            ::continue::
         end
+        -- Don't rely on API ordering to decide which release is "newest".
+        table.sort(new_releases, function(a, b)
+            return isNewer(a.tag_name, b.tag_name)
+        end)
+        local latest_zip_url = findZipUrl(new_releases[1])
 
         -- Update the background cache too
         _last_check_time = os.time()
