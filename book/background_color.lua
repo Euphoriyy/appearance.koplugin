@@ -216,6 +216,17 @@ function ReaderStyleTweak:getCssText()
     local original_css = original_ReaderStyleTweak_getCssText(self) or ""
     local css_hex = calculateHex(true, self.ui.document)
 
+    -- Apply to alt status bar
+    if self.ui.document.setBackgroundColor then
+        local hex_number
+        if Screen.night_mode then
+            hex_number = tonumber(common.invertColor(css_hex):gsub("#", ""), 16)
+        else
+            hex_number = tonumber(css_hex:gsub("#", ""), 16)
+        end
+        self.ui.document:setBackgroundColor(hex_number)
+    end
+
     local bg_css = [[
         body {
             background-color: ]] .. css_hex .. [[ !important;
