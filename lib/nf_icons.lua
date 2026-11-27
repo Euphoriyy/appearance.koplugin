@@ -14,6 +14,7 @@ local icons = {
     CURSOR_DEFAULT = "\u{E8B3}",
     CURSOR_TEXT = "\u{ECE6}",
     EYEDROPPER = "\u{E909}",
+    FILE_TEXT = "\u{F15C}",
     FONT = "\u{F031}",
     FORMAT_COLOR = "\u{E965}",
     FORMAT_LINE_WEIGHT = "\u{ECC8}",
