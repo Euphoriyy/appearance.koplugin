@@ -8,11 +8,8 @@ local background_image_menu = require("ui/background_image")
 local borders_menu = require("ui/borders")
 local common = require("lib/common")
 local font_color = require("ui/font_color")
-local font_face_menu = require("ui/font_face")
-local dict_font_face_menu = require("ui/dict_font_face")
-local virtual_kb_font_face = require("ui/virtual_kb_font_face")
+local fonts_menu = require("ui/fonts")
 local nf_icons = require("lib/nf_icons")
-local text_editor_font_face_menu = require("ui/text_editor_font_face")
 local transparency_menu = require("ui/transparency")
 local _ = require("gettext")
 
@@ -24,10 +21,7 @@ local function ui_menu()
             font_color.menu(),
             common.add_separator(accent_color.menu()),
             common.add_separator(background_image_menu()),
-            font_face_menu(),
-            dict_font_face_menu(),
-            virtual_kb_font_face(),
-            common.add_separator(text_editor_font_face_menu()),
+            fonts_menu(),
             transparency_menu(),
             borders_menu(),
         }

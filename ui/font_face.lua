@@ -177,7 +177,8 @@ local T = require("ffi/util").template
 local function font_face_menu()
     return {
         text_func = function()
-            return T(nf_icons.label(nf_icons.FONT, _("Font: %1")), UIFontEnabled.get() and UIFontName.get() or "default")
+            return T(nf_icons.label(nf_icons.FONT, _("Main font: %1")),
+                UIFontEnabled.get() and UIFontName.get() or "default")
         end,
         sub_item_table_func = function()
             local items = {
