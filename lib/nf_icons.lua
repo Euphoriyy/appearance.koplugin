@@ -19,6 +19,7 @@ local icons = {
     FORMAT_LINE_WEIGHT = "\u{ECC8}",
     GREASE_PENCIL = "\u{ED47}",
     INFO = "\u{F449}",
+    KEYBOARD = "\u{EA0B}",
     LINK = "\u{EA36}",
     LINK_EXTERNAL = "\u{F465}",
     LINK_VARIANT_1 = "\u{EA38}",
