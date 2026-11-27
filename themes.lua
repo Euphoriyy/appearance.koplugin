@@ -193,7 +193,7 @@ end
 local function replace_theme(theme, val)
     if not theme.night then
         for i, v in ipairs(cached.dayThemes) do
-            if v.key == theme.key then
+            if v == theme then
                 cached.dayThemes[i] = val
                 break
             end
@@ -201,7 +201,7 @@ local function replace_theme(theme, val)
         DayThemes.set(cached.dayThemes)
     else
         for i, v in ipairs(cached.nightThemes) do
-            if v.key == theme.key then
+            if v == theme then
                 cached.nightThemes[i] = val
                 break
             end
@@ -215,7 +215,7 @@ end
 local function remove_theme(theme)
     if not theme.night then
         for i, v in ipairs(cached.dayThemes) do
-            if v.key == theme.key then
+            if v == theme then
                 table.remove(cached.dayThemes, i)
                 break
             end
@@ -223,7 +223,7 @@ local function remove_theme(theme)
         DayThemes.set(cached.dayThemes)
     else
         for i, v in ipairs(cached.nightThemes) do
-            if v.key == theme.key then
+            if v == theme then
                 table.remove(cached.nightThemes, i)
                 break
             end
