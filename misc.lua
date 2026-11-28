@@ -20,6 +20,9 @@ end
 
 local function start_themewatcher()
     ThemeWatcher:start(function(is_dark)
+        if is_dark == nil then
+            is_dark = common.isSystemDark()
+        end
         apply_night_mode(is_dark)
     end)
 end

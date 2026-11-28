@@ -205,7 +205,9 @@ local checks = {
             .. " org.freedesktop.appearance color-scheme",
         parse = function(out)
             local v = out:match("uint32 (%d)")
-            if v then return v == "1" end
+            if v == "1" then return true end
+            if v == "2" then return false end
+            return nil -- 0 = no preference
         end,
     },
     -- GNOME color-scheme: 'default', 'prefer-dark' or 'prefer-light'

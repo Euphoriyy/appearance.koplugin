@@ -49,7 +49,14 @@ function ThemeWatcher:_tick()
             self.buf = self.buf .. ffi.string(buf, got)
             -- Process complete lines, keep any partial remainder
             for line in self.buf:gmatch("([^\n]*)\n") do
-                self.on_change(line == "1") -- true = dark
+                local scheme = tonumber(line)
+                if scheme == 0 then
+                    self.on_change(nil) -- No preference; allow desktop fallback
+                elseif scheme == 1 then
+                    self.on_change(true) -- Prefer dark
+                elseif scheme == 2 then
+                    self.on_change(false) -- Prefer light
+                end
             end
             self.buf = self.buf:match("[^\n]*$")
         end
