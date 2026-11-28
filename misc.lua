@@ -8,7 +8,7 @@ local nf_icons          = require("lib/nf_icons")
 
 -- Settings
 local MenuIcons         = Setting("ui_misc_icons", true)
-local DetectSystemTheme = Setting("ui_misc_detect_sys_theme", true)
+local FollowSystemTheme = Setting("ui_misc_follow_sys_theme", true)
 
 -- Menu
 local _                 = require("gettext")
@@ -43,11 +43,11 @@ local function misc_menu()
 
     if Device.isDesktop() and jit.os == "Linux" then
         table.insert(menu.sub_item_table, {
-            text = _("Detect system theme"),
-            checked_func = DetectSystemTheme.get,
+            text = _("Follow system theme"),
+            checked_func = FollowSystemTheme.get,
             callback = function()
-                DetectSystemTheme.toggle()
-                if DetectSystemTheme.get() then
+                FollowSystemTheme.toggle()
+                if FollowSystemTheme.get() then
                     start_themewatcher()
                 else
                     ThemeWatcher:stop()
@@ -61,7 +61,7 @@ end
 
 -- Start checking for the system theme if on Desktop (Linux)
 if Device:isDesktop() and jit.os == "Linux" then
-    if DetectSystemTheme.get() then
+    if FollowSystemTheme.get() then
         -- Startup check
         UIManager:nextTick(function()
             local is_dark = common.isSystemDark()
