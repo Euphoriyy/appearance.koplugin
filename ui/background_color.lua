@@ -1093,14 +1093,14 @@ function Button:_doFeedbackHighlight()
     UIManager:setDirty(nil, "fast", self[1].dimen)
 end
 
--- Restore virtual keyboard key border with appropriate color
+-- Restore virtual keyboard key borders with appropriate color
 local MIN_KEY_BORDER_CONTRAST = 5
 
 local original_VirtualKeyboard_initLayer = VirtualKeyboard.initLayer
 function VirtualKeyboard:initLayer(...)
     original_VirtualKeyboard_initLayer(self, ...)
 
-    local border_color = bg_cached.fgcolor
+    local border_color = get_font_fgcolor()
 
     -- Set border color to dark gray when more contrast is needed
     if common.contrast(border_color, bg_cached.bgcolor) < MIN_KEY_BORDER_CONTRAST then
