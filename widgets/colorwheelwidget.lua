@@ -521,6 +521,33 @@ function ColorWheelWidget:init()
                         w = self.screen_width, h = self.screen_height }
                 }
             },
+            ForwardingTouch = {
+                GestureRange:new {
+                    ges = "touch",
+                    range = Geom:new {
+                        x = 0, y = 0,
+                        w = self.screen_width, h = self.screen_height,
+                    },
+                },
+            },
+            ForwardingPan = {
+                GestureRange:new {
+                    ges = "pan",
+                    range = Geom:new {
+                        x = 0, y = 0,
+                        w = self.screen_width, h = self.screen_height,
+                    },
+                },
+            },
+            ForwardingPanRelease = {
+                GestureRange:new {
+                    ges = "pan_release",
+                    range = Geom:new {
+                        x = 0, y = 0,
+                        w = self.screen_width, h = self.screen_height,
+                    },
+                },
+            },
         }
     end
 
@@ -718,7 +745,14 @@ function ColorWheelWidget:update()
         vgroup,
     }
 
-    self.movable        = MovableContainer:new { self.frame }
+    self.movable        = MovableContainer:new {
+        ignore_events = {
+            "touch",
+            "pan",
+            "pan_release",
+        },
+        self.frame,
+    }
 
     self[1]             = CenterContainer:new {
         dimen = Geom:new {
@@ -805,6 +839,50 @@ end
 function ColorWheelWidget:_previewSwatchRegion()
     if self._preview_frame and self._preview_frame.dimen then
         return self._preview_frame.dimen:copy()
+    end
+end
+
+-- Check whether a gesture starts over an interactive control.
+function ColorWheelWidget:_isInteractiveGesture(pos)
+    if self.color_wheel and self.color_wheel.dimen
+        and pos:intersectWith(self.color_wheel.dimen) then
+        return true
+    end
+
+    if self._slider and self._slider:hit(pos) then
+        return true
+    end
+
+    if self._hex_frame and self._hex_frame.dimen
+        and pos:intersectWith(self._hex_frame.dimen) then
+        return true
+    end
+
+    return false
+end
+
+-- Only forward touches outside interactive controls.
+function ColorWheelWidget:onForwardingTouch(arg, ges)
+    if not self:_isInteractiveGesture(ges.pos) then
+        return self.movable:onMovableTouch(arg, ges)
+    end
+
+    -- Prevent a previous movable touch from being reused.
+    self.movable._touch_pre_pan_was_inside = false
+end
+
+-- Only move the window if its initial touch was forwarded.
+function ColorWheelWidget:onForwardingPan(arg, ges)
+    if self.movable._touch_pre_pan_was_inside
+        or self.movable._moving then
+        return self.movable:onMovablePan(arg, ges)
+    end
+end
+
+function ColorWheelWidget:onForwardingPanRelease(arg, ges)
+    if self.movable._touch_pre_pan_was_inside
+        or self.movable._moving then
+        return self.movable:onMovablePanRelease(arg, ges)
     end
 end
 
