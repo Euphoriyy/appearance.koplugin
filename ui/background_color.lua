@@ -422,6 +422,30 @@ local SquareOtherCorners = Setting("ui_borders_square_other_corners", false)
 
 -- Hook into FrameContainer painting (responsible for 80% of background)
 local original_FrameContainer_paintTo = FrameContainer.paintTo
+
+-- Paints rounded RGB32 frame backgrounds without the inverse flag
+-- so their corners match the fill on Android in night mode
+local function fix_fc_corners(self, bb, x, y)
+    local background, radius = self.background, self.radius or 0
+    if not background or radius == 0 or Blitbuffer.isColor8(background)
+        or not common.shouldRunWithoutInverse(bb)
+    then
+        return original_FrameContainer_paintTo(self, bb, x, y)
+    end
+
+    local size = self:getSize()
+    common.runWithoutInverse(
+        bb, bb.paintRoundedRectRGB32, bb, x, y, self.width or size.w,
+        self.height or size.h, background, radius + (self.bordersize or 0)
+    )
+
+    self.background = nil
+    local ok, err = pcall(original_FrameContainer_paintTo, self, bb, x, y)
+    self.background = background
+
+    if not ok then error(err, 0) end
+end
+
 function FrameContainer:paintTo(bb, x, y)
     local original_background = self.background
     local original_color = self.color
@@ -440,7 +464,7 @@ function FrameContainer:paintTo(bb, x, y)
         self.background = self.original_background or Blitbuffer.COLOR_WHITE
     end
 
-    original_FrameContainer_paintTo(self, bb, x, y)
+    fix_fc_corners(self, bb, x, y)
 
     -- After default painting, repaint border
     if bg_cached.set_border_color then

@@ -241,4 +241,19 @@ function common.isSystemDark()
     return nil
 end
 
+function common.shouldRunWithoutInverse(bb)
+    return bb.canUseCbb and bb:getInverse() == 1 and bb:canUseCbb() or false
+end
+
+-- Runs a blitbuffer function with the inverse flag cleared so both paths store raw pixels
+function common.runWithoutInverse(bb, func, ...)
+    if not common.shouldRunWithoutInverse(bb) then return func(...) end
+
+    bb:setInverse(0)
+    local ok, err = pcall(func, ...)
+    bb:setInverse(1)
+
+    if not ok then error(err, 0) end
+end
+
 return common
